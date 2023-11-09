@@ -9,7 +9,7 @@ import java.util.*
  */
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.20"
+//    id("org.jetbrains.kotlin.jvm") version "1.9.10"
     application
 //    alias(libs.plugins.kotlin.qa)
 //    alias(libs.plugins.multiJvmTesting)
@@ -22,14 +22,7 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.alchemist)
-    // Use the Kotlin JUnit 5 integration.
-//    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-//
-//    // Use the JUnit 5 integration.
-//    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
-//
-//    // This dependency is used by the application.
-//    implementation("com.google.guava:guava:31.1-jre")
+//    implementation(files("res/kenya-park.pbf"))
 }
 
 application {
@@ -40,6 +33,15 @@ application {
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        resources {
+//            srcDir("res")
+            srcDir("src/main/protelis")
+        }
+    }
 }
 
 val alchemistGroup = "Run Alchemist"
@@ -67,7 +69,7 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
             // Uses the latest version of java
             javaLauncher.set(
                 javaToolchains.launcherFor {
-                    languageVersion.set(JavaLanguageVersion.of(21))
+                    languageVersion.set(JavaLanguageVersion.of(20))
                 },
             )
             // These are the program arguments
@@ -87,3 +89,10 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
         // task.dependsOn(classpathJar) // Uncomment to switch to jar-based classpath resolution
         runAll.dependsOn(task)
     }
+
+tasks.withType<Tar>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
+tasks.withType<Zip>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
