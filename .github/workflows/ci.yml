@@ -33,7 +33,7 @@ jobs:
           check-command: ./gradlew runAll
           should-run-codecov: false
           should-validate-wrapper: ${{ runner.os == 'Linux' }}
-          java-version: ${{ java-version }}
+          java-version: ${{ matrix.java-version }}
   success:
     runs-on: ubuntu-latest
     needs:
