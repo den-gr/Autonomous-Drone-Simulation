@@ -22,7 +22,7 @@ jobs:
         java-version: [8, 11, 17, 21]
     runs-on: ${{ matrix.os }}-latest
     concurrency:
-      group: build-${{ github.workflow }}-${{ matrix.os }}-${{ github.event.number || github.ref }}
+      group: build-${{ github.workflow }}-${{ matrix.os }}-${{ matrix.java-version }}-${{ github.event.number || github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout
