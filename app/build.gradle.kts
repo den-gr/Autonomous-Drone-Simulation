@@ -3,6 +3,7 @@ plugins {
 //    alias(libs.plugins.kotlin.qa)
     alias(libs.plugins.multiJvmTesting)
     alias(libs.plugins.taskTree)
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -11,6 +12,8 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.alchemist)
+    implementation(libs.slf4j)
+    implementation(libs.mapsforge)
 }
 
 multiJvm {
@@ -79,7 +82,7 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                 args(
                     """
                         launcher:
-                          type: SingleRunSwingUI
+                          type: SingleRunSwingUI2
                           parameters:
                             graphics: ../effects/${it.nameWithoutExtension}.json
                     """,
