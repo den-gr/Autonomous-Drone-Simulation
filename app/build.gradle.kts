@@ -82,7 +82,7 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                 args(
                     """
                         launcher:
-                          type: SingleRunSwingUI2
+                          type: SingleRunSwingUI
                           parameters:
                             graphics: ../effects/${it.nameWithoutExtension}.json
                     """,
