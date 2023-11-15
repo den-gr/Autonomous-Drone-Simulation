@@ -22,7 +22,7 @@ Tasks are named after the corresponding YAML file, with the pattern `run<name-of
 
 Note that the first launch will be slow, since Gradle will download all the required files. They will get cached in the user's home folder (as per Gradle normal behavior) and thus subsequent execution will be much faster.
 
-### Gps Trace based version:
+### GPS Trace based version:
 Simulation configuration: `app/src/main/yaml/03-gpsTrac.yml`    
 1. To execute `./gradlew run03`
 2. Zoom to the points in Kenya
@@ -36,7 +36,7 @@ Simulation configuration: `app/src/main/yaml/02-protelis.yml`
 2. Zoom to the points in Kenya
 3. Click `P` to start the simulation
 
-Technical note: This code use a custom action that ignores streets: `CustomTargetMapWalker` located in `app/src/main/java/`
+Technical note: this implementation use a custom action that ignores streets: `CustomTargetMapWalker` located in `app/src/main/java/`
 
 ### Using the graphical interface
 
