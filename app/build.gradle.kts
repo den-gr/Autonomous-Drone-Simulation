@@ -3,7 +3,7 @@ plugins {
 //    alias(libs.plugins.kotlin.qa)
     alias(libs.plugins.multiJvmTesting)
     alias(libs.plugins.taskTree)
-    alias(libs.plugins.kotlin.jvm)
+//    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -12,8 +12,6 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.alchemist)
-    implementation(libs.slf4j)
-    implementation(libs.mapsforge)
 }
 
 multiJvm {
