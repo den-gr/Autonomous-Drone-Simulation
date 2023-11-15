@@ -45,18 +45,15 @@ ax.axis("off")
 def create_rectangle(xtl, ytl, xbr, ybr): 
     return patches.Rectangle((xtl, ybr), xbr - xtl, ytl - ybr, linewidth=4, edgecolor='g', facecolor='none')
 
-box = boxes[0][3][0]
-ax.add_patch(create_rectangle(box[0], box[1], box[2], box[3]))
-
 def animate(f_id):
     for patch in ax.patches:
         patch.remove()
     for text in ax.texts:
         text.remove()
     
-    for box in boxes[f_id][3]:
+    for box in boxes[f_id-1][3]:
         # Original coordinates has (0; 0) in top left corner
-        # Mathplot (0; 0) is in bottom left corner
+        # Matplotlib initial (0; 0) coordinates are in bottom left corner
         xtl, ytl, xbr, ybr, id, behaviour = box
         # invert top and bottom
         ytl = height - ytl 
@@ -66,9 +63,9 @@ def animate(f_id):
         text_y = (ytl + ybr) / 2
         ax.text(text_x, text_y, str(int(id)), color='black', ha='center', va='center', fontsize=17)
         ax.text(text_x, ytl + 40, behaviour, color='black', ha='center', va='center', fontsize=17)
-    ax.set_title("(" + str(boxes[f_id][0]) + "; " + str(boxes[f_id][1]) + ") | Altitude: " + str(boxes[f_id][2]), fontsize=30)
+    ax.set_title("(" + str(boxes[f_id][0]) + "; " + str(boxes[f_id][1]) + ") | Altitude: " + str(boxes[f_id][2]) + "m", fontsize=30)
 
 
-ani = animation.FuncAnimation(fig, animate, frames=90)
-FFwriter = animation.FFMpegWriter(fps=30)
+ani = animation.FuncAnimation(fig, animate, frames=len(boxes))
+FFwriter = animation.FFMpegWriter(fps=60)
 ani.save('data/drone_bonded_boxes_60pfs.mp4', writer=FFwriter)

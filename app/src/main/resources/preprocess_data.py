@@ -1,6 +1,9 @@
 # %%
 import pandas as pd
 import random
+import gpxpy
+import gpxpy.gpx
+from datetime import datetime, timedelta
 
 file_path = 'data/12_01_23-DJI_0994.csv'
 
@@ -16,7 +19,7 @@ def remove_noise(df, filter_window=3):
 
 df = remove_noise(df)
 
-# %% define export functions
+# Define exports functions
 def get_drone_coordinates(df, skip):
     dff = df[["latitude", "longitude"]]
     dff = dff.drop_duplicates()
@@ -29,7 +32,6 @@ def get_drone_coordinates(df, skip):
             arr.append(i)
         k = k + 1
     return arr
-
 
 def get_drone_and_zebras_coords(df):
     dff = df[['frame', 'latitude', 'longitude', "id"]]
@@ -44,34 +46,14 @@ def get_drone_and_zebras_coords(df):
     return dff.values.tolist()
 
 
-# %%
-df.info()
-# %% there are 1-6, 8, 10-16 ids (14 in total)
-df['id'].value_counts().sort_index()
-
-# %% The are only zebras
-df['label'].value_counts()
-
-# %%
-coordinates = get_drone_coordinates(df, 4)
-
-# %%
+# %% Export coordinates
+# coordinates = get_drone_coordinates(df, 4)
 coords_d_zb = get_drone_and_zebras_coords(df)
 
-
-
-# %%
-import gpxpy
-import gpxpy.gpx
-from datetime import datetime, timedelta
-
-# Create a new GPX object
 gpx_drone = gpxpy.gpx.GPX()
 gpx_zebras = gpxpy.gpx.GPX()
-
 start_time = datetime(2023, 1, 1)
 
-# Create a track and segment
 track_d = gpxpy.gpx.GPXTrack()
 gpx_drone.tracks.append(track_d)
 segment_d = gpxpy.gpx.GPXTrackSegment()
@@ -84,18 +66,11 @@ for i in df['id'].unique():
     segment_zb = gpxpy.gpx.GPXTrackSegment()
     track_zb.segments.append(segment_zb)
     zebras_segments_dict[i] = segment_zb
-    print(i)
-
-
 
 def get_zb_offset():
     return random.random() / 10000
 
-# gpx_zebras.tracks
-
-
-# Time increment for each point (5 minutes)
-# time_increment = timedelta(minutes=5)
+# Time increment for each point
 time_increment = timedelta(seconds=5)
 
 offsets = dict()
@@ -112,7 +87,6 @@ for coordinate in coords_d_zb:
         point_zb = gpxpy.gpx.GPXTrackPoint(lat, lon + offsets[id] + offset, time=start_time)
         zebras_segments_dict[id].points.append(point_zb)
     
-    # Increment time by 5 minutes for the next point
     start_time += time_increment
 
 # Serialize the GPX data to a file
@@ -123,5 +97,3 @@ with open('zebras/zebras.gpx', 'w') as gpx_file:
     gpx_file.write(gpx_zebras.to_xml())
 
 print("GPX file generated with time for each point.")
-
-# %%
