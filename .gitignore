@@ -6,3 +6,5 @@
 build
 
 app/res
+
+app/src/main/resources/data
