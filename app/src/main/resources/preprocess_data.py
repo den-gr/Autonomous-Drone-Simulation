@@ -5,7 +5,8 @@ import gpxpy
 import gpxpy.gpx
 from datetime import datetime, timedelta
 
-file_path = 'data/12_01_23-DJI_0994.csv'
+# file_path = 'data/12_01_23-DJI_0994.csv'
+file_path = 'data/Jan-12th-2023-12-04PM-Flight-Airdata.csv'
 
 df = pd.read_csv(file_path)
 
@@ -22,6 +23,7 @@ df = remove_noise(df)
 # Define exports functions
 def get_drone_coordinates(df, skip):
     dff = df[["latitude", "longitude"]]
+    dff = dff.round(6)
     dff = dff.drop_duplicates()
     ris = dff.values.tolist()
 
@@ -45,9 +47,11 @@ def get_drone_and_zebras_coords(df):
 
     return dff.values.tolist()
 
+# %%
+coordinates = get_drone_coordinates(df, 4)
+coordinates
 
 # %% Export coordinates
-# coordinates = get_drone_coordinates(df, 4)
 coords_d_zb = get_drone_and_zebras_coords(df)
 
 gpx_drone = gpxpy.gpx.GPX()
@@ -89,6 +93,8 @@ for coordinate in coords_d_zb:
     
     start_time += time_increment
 
+
+# %%
 # Serialize the GPX data to a file
 with open('drone/drone.gpx', 'w') as gpx_file:
     gpx_file.write(gpx_drone.to_xml())

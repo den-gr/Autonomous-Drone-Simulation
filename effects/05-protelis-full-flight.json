@@ -11,7 +11,7 @@
     "blue": {
       "max": 255,
       "min": 0,
-      "val": 255
+      "val": 0
     },
     "green": {
       "max": 255,
@@ -21,17 +21,17 @@
     "alpha": {
       "max": 255,
       "min": 0,
-      "val": 255
+      "val": 63
     },
     "scaleFactor": {
       "max": 100,
       "min": 0,
-      "val": 30
+      "val": 50
     },
     "size": {
       "max": 100,
       "min": 0,
-      "val": 12
+      "val": 5
     },
     "molFilter": false,
     "molString": "",
@@ -56,7 +56,7 @@
       "val": 10
     },
     "colorCache": {
-      "value": -16776961
+      "value": 1056964608
     }
   },
   {
@@ -94,7 +94,7 @@
       "val": 12
     },
     "molFilter": true,
-    "molString": "camera",
+    "molString": "drone",
     "molPropertyFilter": false,
     "property": "",
     "writingPropertyValue": false,
@@ -118,9 +118,5 @@
     "colorCache": {
       "value": -65536
     }
-  },
-  {
-    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawSmartcam",
-    "alreadyLogged": true
   }
 ]

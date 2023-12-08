@@ -32,7 +32,7 @@ def get_drone_and_zebras_coords(df):
 
 # boxes = get_drone_and_zebras_coords(df)
 boxes = df[502:]
-boxes = boxes[:-500]
+boxes = boxes[:-800]
 # boxes = boxes
 
 # %% Animation creation
@@ -47,6 +47,9 @@ ax.axis("off")
 
 def create_rectangle(xtl, ytl, xbr, ybr): 
     return patches.Rectangle((xtl, ybr), xbr - xtl, ytl - ybr, linewidth=4, edgecolor='g', facecolor='none')
+
+def box_value(f_id, value_name):
+    return str(round(boxes.iloc[f_id][value_name],1))
 
 def animate(f_id):
     for patch in ax.patches:
@@ -69,10 +72,10 @@ def animate(f_id):
         ax.text(text_x, ytl + 40, behaviour, color='black', ha='center', va='center', fontsize=17)
     coords = "(" + str(round(boxes.iloc[f_id]["latitude"], 6)) + "; " + str(round(boxes.iloc[f_id]["longitude"],6)) + ")"
     alt = " | Altitude: " + str(boxes.iloc[f_id]["altitude"]) + "m "
-    orient =  "compass: " + str(round(boxes.iloc[f_id]["compass"],1)) + ", pitch: " + str(round(boxes.iloc[f_id]["pitch"], 1)) + ", roll: " + str(round(boxes.iloc[f_id]["roll"], 1))
+    orient =  "compass: " + box_value(f_id, "compass") + "°, pitch: " + box_value(f_id, "pitch") + "°, roll: " + box_value(f_id, "roll") + "°, g_pitch: " + box_value(f_id, "gimbal_pitch") + "°"
     ax.set_title( coords + alt + orient, fontsize=30)
 
 
 ani = animation.FuncAnimation(fig, animate, frames=len(boxes))
 FFwriter = animation.FFMpegWriter(fps=10)
-ani.save('test.mp4', writer=FFwriter)
+ani.save('test1.mp4', writer=FFwriter)

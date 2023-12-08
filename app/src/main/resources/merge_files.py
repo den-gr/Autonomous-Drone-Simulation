@@ -84,7 +84,7 @@ df_video = group_df_by_metadata(df_video)
 df_f[ALTITUDE] = round(df_f["height_above_takeoff(feet)"] * 0.3048, 1)
 df_f[LATITUDE] = df_f[LATITUDE].round(6)
 df_f[LONGITUDE] = df_f[LONGITUDE].round(6)
-df_flight = df_f[["time(millisecond)", "datetime(utc)", LATITUDE, LONGITUDE, ALTITUDE, " compass_heading(degrees)"," pitch(degrees)"," roll(degrees)"]]
+df_flight = df_f[["time(millisecond)", "datetime(utc)", LATITUDE, LONGITUDE, ALTITUDE, " compass_heading(degrees)"," pitch(degrees)"," roll(degrees)", "gimbal_pitch(degrees)"]]
 
 # %%
 def make_new_row(row, frames=[], animals=[]):
@@ -98,13 +98,18 @@ def make_new_row(row, frames=[], animals=[]):
             ANIMALS: animals,
             "compass": row[" compass_heading(degrees)"],
             "pitch": row[" pitch(degrees)"],
-            "roll": row[" roll(degrees)"]
+            "roll": row[" roll(degrees)"],
+            "gimbal_pitch": row["gimbal_pitch(degrees)"]
         }
 
 def are_same(row1, row2):
-    return (np.isclose(row1[LATITUDE], row2[LATITUDE], atol=1e-06, rtol=1e-08) 
-            and np.isclose(row1[LONGITUDE], row2[LONGITUDE], atol=1e-06, rtol=1e-08) 
-            and np.isclose(row1[ALTITUDE], row2[ALTITUDE], atol=0.11, rtol=0))
+    alt_equal = np.isclose(row1[ALTITUDE], row2[ALTITUDE], atol=0.001, rtol=0)
+    lat_equal = np.isclose(row1[LATITUDE], row2[LATITUDE], atol=1e-09, rtol=0)
+    lon_equal = np.isclose(row1[LONGITUDE], row2[LONGITUDE], atol=1e-09, rtol=0)
+
+    return ((np.isclose(row1[LATITUDE], row2[LATITUDE], atol=1e-06, rtol=1e-08) and alt_equal and lon_equal) 
+            or 
+            (np.isclose(row1[LONGITUDE], row2[LONGITUDE], atol=1e-06, rtol=1e-08) and alt_equal and lat_equal))
     
 
 JOIN_POINT = 502 # flight dataset record when video recording beggin
