@@ -1,0 +1,19 @@
+incarnation: protelis
+
+environment:
+  type: EnvironmentWithDynamics
+  parameters: [planimetry.png]
+  global-programs:
+    - time-distribution:
+        type: DiracComb
+        parameters: [1.5]
+      type: PhysicsUpdate
+      parameters: [0.5]
+
+deployments:
+  - type: Point
+    parameters: [44, 143]
+    properties:
+      - type: Pedestrian
+      - type: PhysicalPedestrian2D
+      - type: CircularArea

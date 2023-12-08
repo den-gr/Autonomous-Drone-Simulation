@@ -8,29 +8,42 @@ _pools:
         type: Event
         actions:
           - type: ReproduceGPSTrace
-            parameters: ["drone", false, "AlignToFirstTrace"]
+            parameters: ["drone_m", false, "AlignToFirstTrace"]
   - pool_zb: &move_zebras
       - time-distribution: 1
         type: Event
         actions:
           - type: ReproduceGPSTrace
-            parameters: [ "zebras", false, "AlignToFirstTrace" ]
+            parameters: [ "zebras_m", false, "AlignToFirstTrace" ]
+  - pool_zb: &move_zebras_best
+      - time-distribution: 1
+        type: Event
+        actions:
+          - type: ReproduceGPSTrace
+            parameters: [ "zebras_best", false, "AlignToFirstTrace" ]
 
 deployments:
   - type: FromGPSTrace
-    parameters: [1, "drone", false, "AlignToFirstTrace"]
+    parameters: [1, "drone_m", false, "AlignToFirstTrace"]
     contents:
       - molecule: drone
         concentration: true
     programs:
       - *move_drone
   - type: FromGPSTrace
-    parameters: [14, "zebras", false, "AlignToFirstTrace"]
+    parameters: [14, "zebras_m", false, "AlignToFirstTrace"]
     contents:
       - molecule: zebra
         concentration: true
     programs:
       - *move_zebras
+  - type: FromGPSTrace
+    parameters: [ 14, "zebras_best", false, "AlignToFirstTrace" ]
+    contents:
+      - molecule: best
+        concentration: true
+    programs:
+      - *move_zebras_best
   - type: SpecificPositions # only for path demonstration
     parameters: [[0.381851, 36.863116],
                  [0.381849, 36.863117],
