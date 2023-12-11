@@ -5,7 +5,7 @@ deployments:
   - type: SpecificPositions
     parameters: [[1,0],[1, 1], [0, 1], [-1,0], [0, -1], [-1, -1], [-1, 1], [1, -1]]
   - type: SpecificPositions
-    parameters: [0,0]
+    parameters: [[0,0]]
     contents:
       molecule: camera
       concentration: 1
