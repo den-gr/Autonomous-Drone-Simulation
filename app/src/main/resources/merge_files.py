@@ -1,10 +1,8 @@
 # %%
 import pandas as pd
-import random
-import gpxpy
 import numpy as np
-import gpxpy.gpx
-from datetime import datetime, timedelta
+
+PRODUCE_CSV = True
 
 LATITUDE = "latitude"
 LONGITUDE = "longitude"
@@ -19,42 +17,55 @@ ANIMALS = "animals"
 
 columns = ["frame", LATITUDE, LONGITUDE, ALTITUDE, "id", XTL, YTL, XBR, YBR, "behaviour"]
 
-
 video_data_path = 'data/12_01_23-DJI_0994.csv'
 flight_data_path = 'data/Jan-12th-2023-12-04PM-Flight-Airdata.csv'
+
+output_path = "data/"
+
 
 df_v = pd.read_csv(video_data_path)
 df_f = pd.read_csv(flight_data_path)
 
-### Preproces
+### Preproces video dataframe
 df_video = df_v.loc[:, columns]
+df_video.loc[df_video['id'] != 1, 'id'] = 2
+
 df_video[ANIMALS] = df_video.apply(lambda row: (row["id"], row["behaviour"], (row["xtl"], row["ytl"], row["xbr"], row["ybr"])), axis=1)
 df_video = df_video.groupby(["frame", LATITUDE, LONGITUDE, ALTITUDE])[ANIMALS].apply(list).reset_index(name=ANIMALS)
-df_video = df_video[2:]
-def have_same_metadata(row1, row2): # at moment joining process is based on latitude, longitude and altitude
-    return (row1[LATITUDE] == row2[LATITUDE]
-            and row1[LONGITUDE] == row2[LONGITUDE]
-            and row1[ALTITUDE] == row2[ALTITUDE])
+
+
 
 def round_and_average(vec):
     return [round(sum(x) / len(x)) for x in zip(*vec)]
+
 # Group multiple dataframe rows in a single df row
 def group_video_df_rows(rows):
     rows_df = pd.DataFrame(rows)['animals'].explode().values.tolist()
     df = pd.DataFrame(rows_df, columns=["id", "behaviour", 'box'])
     df_behavior = df.groupby(['id'])['behaviour'].first().reset_index()
     df_box = df.groupby(['id'])['box'].apply(round_and_average).reset_index()
-    # print(df.values.tolist())
     df = pd.merge(df_behavior, df_box, on='id')
+
+    lon = rows[0][LONGITUDE]
+    lat = rows[0][LATITUDE]
+    if(lat > 90 or lat < -90):
+        lat = lat/1000
+    if(lon > 180 or lon < -180):
+        lon = lon/1000
 
     return {
             FRAMES: [r['frame'] for r in rows],
-            LATITUDE: rows[0][LATITUDE],
-            LONGITUDE: rows[0][LONGITUDE],
+            LATITUDE: lat,
+            LONGITUDE: lon,
             ALTITUDE: rows[0][ALTITUDE],
             ANIMALS: df.values.tolist(),
-            # "xtl": round(np.mean([r["xtl"] for r in rows]))
         }
+
+def have_same_metadata(row1, row2): 
+    return (row1[LATITUDE] == row2[LATITUDE]
+            and row1[LONGITUDE] == row2[LONGITUDE]
+            and row1[ALTITUDE] == row2[ALTITUDE])
+
 # Group multiple video frame rows in a single row
 def group_df_by_metadata(df):
     new_df = pd.DataFrame()
@@ -72,14 +83,13 @@ def group_df_by_metadata(df):
                 i = i + 2
             new_df = pd.concat([new_df, pd.DataFrame([new_row])], ignore_index=True)
         else:
-            # Skipping of the single-frame rows prevents some joining from getting stuck
+            # Skipping of the single-frame rows prevents some joins from getting stuck
             print("skip single frame row: " + str(i))
             i = i + 1
     return new_df
-    
-
 df_video = group_df_by_metadata(df_video)
 
+### Process flight dataframe
 
 df_f[ALTITUDE] = round(df_f["height_above_takeoff(feet)"] * 0.3048, 1)
 df_f[LATITUDE] = df_f[LATITUDE].round(6)
@@ -112,7 +122,7 @@ def are_same(row1, row2):
             (np.isclose(row1[LONGITUDE], row2[LONGITUDE], atol=1e-06, rtol=1e-08) and alt_equal and lat_equal))
     
 
-JOIN_POINT = 502 # flight dataset record when video recording beggin
+JOIN_POINT = 501 # flight dataset record when video recording beggin
 i = 0
 result_df = pd.DataFrame()
 for index, row in df_flight.iterrows():
@@ -133,6 +143,11 @@ for index, row in df_flight.iterrows():
             i = i + 1
 
     result_df = pd.concat([result_df, pd.DataFrame([new_row])],ignore_index=True)
-result_df
-result_df.to_csv("merged.csv", index=False)
-result_df.to_json("merged.json", index=False)
+result_df = result_df[JOIN_POINT:]
+
+output_file_name = "dataset2"
+path = output_path + output_file_name
+if(PRODUCE_CSV):
+    result_df.to_csv(path + ".csv", index=False)
+
+result_df.to_json(path + ".json", index=False)

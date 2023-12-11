@@ -6,13 +6,15 @@ import pandas as pd
 
 RAW_CSV = False
 FRAME_WIDTH, FRAME_HEIGHT = 3840, 2160
+output_path = 'data/flight.mp4'
+FPS = 10
 
 # TODO external file name input
 if(RAW_CSV):
     file_path = 'data/12_01_23-DJI_0994.csv'
     df = pd.read_csv(file_path)
 else:
-    file_path = 'merged.json'
+    file_path = 'data/dataset.json'
     df = pd.read_json(file_path)
 
 # Get Zebras data and drone postion grouped by frames (RAW CSV)
@@ -31,7 +33,6 @@ else:
     # TODO make generic
     boxes = df[502:] 
     boxes = boxes[:-800]
-
 
 #Animation creation
 plt.rcParams['animation.ffmpeg_path'] = 'ffmpeg'
@@ -75,6 +76,6 @@ def animate(f_id):
     ax.set_title( coords + alt + orient, fontsize=30)
 
 
-ani = animation.FuncAnimation(fig, animate, frames=300)
-FFwriter = animation.FFMpegWriter(fps=10)
-ani.save('flight.mp4', writer=FFwriter)
+ani = animation.FuncAnimation(fig, animate, frames=len(boxes))
+FFwriter = animation.FFMpegWriter(fps=FPS)
+ani.save(output_path, writer=FFwriter)

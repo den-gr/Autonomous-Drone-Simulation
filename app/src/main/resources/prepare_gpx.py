@@ -1,31 +1,18 @@
 # %%
 import pandas as pd
 import numpy as np
-import random
 import gpxpy
 import gpxpy.gpx
 from datetime import datetime, timedelta
 import math
-import statistics
-# file_path = 'data/12_01_23-DJI_0994.csv'
-file_path = 'merged.json'
+
+file_path = 'data/dataset.json'
+# file_path = 'data/test.json'
+zebras_output_folder_name = "zebras_m/"
+drone_output_folder_name = "drone_m/"
 
 df = pd.read_json(file_path)
-df = df[502:]
 
-def get_drone_and_zebras_coords(df):
-    dff = df[['frame', 'latitude', 'longitude', "id"]]
-    dff = dff.groupby(["frame", "latitude", "longitude"])['id'].apply(list).reset_index(name='id_arrays')
-    dff["id_arrays"] = dff["id_arrays"].apply(sorted)
-    dff = dff[['latitude', 'longitude', "id_arrays"]]
-
-    # dff['id_arrays_tuple'] = dff['id_arrays'].apply(tuple)
-    # unique_df = dff.drop_duplicates(subset=['latitude', 'longitude', 'id_arrays_tuple'])
-    # unique_df = unique_df.drop('id_arrays_tuple', axis=1)
-
-    return dff.values.tolist()
-
-# %% Export coordinates
 coords_d_zb = df[["latitude", "longitude", "altitude", "animals", "compass", "gimbal_pitch"]].values.tolist()
 
 gpx_drone = gpxpy.gpx.GPX()
@@ -61,13 +48,15 @@ def get_box_center(box):
     y = round((ytl + ybr)/2)
     return x, y
 
-# GIMBAL_PITCH = -16.1
-# MAIN_ANGLE = 90 + GIMBAL_PITCH
 HORISONTAL_ANGLE = 77.6
-VERTICAL_ANGLE = 48.6
+VERTICAL_ANGLE = 48.6  #47.4715 #48.6
 width, height = 3840, 2160
 x_center = width / 2
 y_center = height / 2
+
+physical_focal_len = 8.4 #mm
+# physical_pixel_size = 0.0024 #mm
+physical_pixel_size = 0.003512625 #mm
 
 
 def rotate_point(x, y, center_x, center_y, angle_degrees):
@@ -92,41 +81,79 @@ def rotate_point(x, y, center_x, center_y, angle_degrees):
 last_altitudes = []
 last_compasses = []
 
-coords_d_zb = coords_d_zb[23:33]
+lat, lon, alt, animals, compass, gimbal_pitch = coords_d_zb[0]
+alpha_lat = lat
+alpha_lon = lon
+alpha_alt = alt
+
+alpha_x = dict()
+alpha_y = dict()
+alpha_compass = compass
+
+alpha = 0.98
+# coords_d_zb = coords_d_zb[23:24]
+
+def update_alpha(a_v, v):
+    return alpha * a_v + (1-alpha) * v
+
+def update_alpha_comass(a_v, v):
+    if(a_v < 90 and v > 180):
+        alpha = update_alpha(a_v, v-360)
+        if(alpha < 0):
+            alpha = 360 + alpha
+    elif(a_v > 180 and v < 90):
+        alpha = update_alpha(a_v, 360+v)
+        if(alpha > 360):
+            alpha = alpha - 360
+    else:
+        alpha = update_alpha(a_v, v)
+    return alpha
 
 # Add each coordinate as a track point with time
 for row in coords_d_zb:
     lat, lon, alt, animals, compass, gimbal_pitch = row
     vertical_center_angle = 90 + gimbal_pitch
+
+    alpha_compass = update_alpha_comass(alpha_compass, compass)
+    compass = alpha_compass
+
+    alpha_alt = update_alpha(alpha_alt, alt)
+    alt = alpha_alt
+    alpha_lat = update_alpha(alpha_lat, lat)
+    alpha_lon = update_alpha(alpha_lon, lon)
+    lat = alpha_lat
+    lon = alpha_lon
+
     point = gpxpy.gpx.GPXTrackPoint(lat, lon, time=start_time)
     segment_d.points.append(point)
-
-    # last_altitudes.append(alt)
-
-    # if(len(last_compasses) > 0 and abs(last_compasses[-1] - compass) > 90):
-    #     last_compasses = [compass]
-    # else:
-    #     last_compasses.append(compass)
-    # alt = round(statistics.mean(last_altitudes),1)
-    # compass = round(statistics.mean(last_compasses))
-
-    # if(len(last_altitudes) > 4):
-    #     last_altitudes.pop(0)
-    #     last_compasses.pop(0)
+    
     
     for animal in animals:
         id, behaviour, box, = animal
         box_x, box_y = get_box_center(box)
 
+        if(id not in alpha_x.keys()):
+            alpha_x[id] = box_x
+            alpha_y[id] = box_y
+        alpha_x[id] = update_alpha(alpha_x[id], box_x)
+        alpha_y[id] = update_alpha(alpha_y[id], box_y)
+        box_x = alpha_x[id]
+        box_y = alpha_y[id]
+
         y_dis = y_center - box_y
-        y_angle_from_center = (y_dis / y_center) * (VERTICAL_ANGLE/2)
+        x_dis = x_center - box_x
 
-
+        y_angle_from_center = np.rad2deg(np.arctan((y_dis * physical_pixel_size)/(physical_focal_len)))
+        # y_angle_from_center = (y_dis / y_center) * (VERTICAL_ANGLE/2)
 
         vertical_hypotenuse_len = alt / np.cos(np.deg2rad(vertical_center_angle + y_angle_from_center))
         vertical_oposit_len = np.tan(np.deg2rad(vertical_center_angle + y_angle_from_center)) * alt
 
-        x_dis = x_center - box_x
+        # vertical_oposit_blind_len = np.tan(np.deg2rad(vertical_center_angle - VERTICAL_ANGLE/2 )) * alt
+        # vertical_oposit_len = (alt * 7.58 * 1.425)/(8.4*2160)*(height-box_y) *(1/np.cos(np.deg2rad(vertical_center_angle + y_angle_from_center)))
+        # vertical_oposit_len = vertical_oposit_len + vertical_oposit_blind_len
+
+    
         x_angle_from_center = (x_dis / x_center) * (HORISONTAL_ANGLE/2)
         horisonal_oposit_len = np.tan(np.deg2rad(abs(x_angle_from_center))) * vertical_hypotenuse_len
 
@@ -143,12 +170,12 @@ for row in coords_d_zb:
     
     start_time += time_increment
 
-# %%
+
 # Serialize the GPX data to a file
-with open('drone_m/drone.gpx', 'w') as gpx_file:
+with open(drone_output_folder_name + 'drone.gpx', 'w') as gpx_file:
     gpx_file.write(gpx_drone.to_xml())
 
-with open('zebras_m/zebras.gpx', 'w') as gpx_file:
+with open(zebras_output_folder_name + 'zebras.gpx', 'w') as gpx_file:
     gpx_file.write(gpx_zebras.to_xml())
 
 print("GPX file generated with time for each point.")
