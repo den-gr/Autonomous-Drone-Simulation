@@ -1,0 +1,39 @@
+incarnation: protelis
+environment:
+  type: ContinuousPhysics2DEnvironment
+network-model: { type: ConnectWithinDistance, parameters: [50] }
+variables:
+  body_width: &body_width
+    formula: body_len / 2
+  body_len: &body_len
+    formula: 2
+  stress_zone_w: &stress_zone_w
+    formula: 2 * body_len
+  stress_zone_h: &stress_zone_h
+    formula: 4 * body_len
+  repulsion_factor: &repulsion_factor
+    formula: 0.5
+  intrinsic_forward_velocity: &forward_velocity
+    formula: 0.4 * body_len
+  intrinsic_lateral_velocity: &lateral_velocity
+    formula: 0.2 * body_len
+deployments:
+  - type: Circle
+    parameters: [100, 0, 0, 30]
+    contents:
+      - molecule: bodyLen
+        concentration: *body_len
+      - molecule: MovementProbabilities
+        concentration: [0.25, 0.5, 0.25]
+      - molecule: Velocities
+        concentration: [*lateral_velocity, *forward_velocity]
+    programs:
+      - time-distribution: 1
+        type: Event
+        actions:
+          type: Grouping
+          parameters: [*stress_zone_w, *stress_zone_h, *repulsion_factor]
+    properties:
+      - type: RectangularArea
+        parameters: [*body_len, *body_width]
+

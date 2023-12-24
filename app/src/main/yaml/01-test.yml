@@ -4,6 +4,8 @@ environment:
 deployments:
   - type: SpecificPositions
     parameters: [[1,0],[1, 1], [0, 1], [-1,0], [0, -1], [-1, -1], [-1, 1], [1, -1]]
+    properties:
+      - type: CircularArea
   - type: SpecificPositions
     parameters: [[0,0]]
     contents:
@@ -20,4 +22,3 @@ deployments:
         actions:
           type: Spin
           parameters: [5.0]
-
