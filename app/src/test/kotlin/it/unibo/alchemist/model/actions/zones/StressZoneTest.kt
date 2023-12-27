@@ -10,7 +10,7 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
 class StressZoneTest : AbstractZoneTest() {
-    private lateinit var environment: Physics2DEnvironment<Any>
+    override lateinit var environment: Physics2DEnvironment<Any>
     private lateinit var node1: Node<Any>
     private lateinit var node2: Node<Any>
     private lateinit var node3: Node<Any>
@@ -63,8 +63,7 @@ class StressZoneTest : AbstractZoneTest() {
 
     @Test
     fun testStressZoneLeftAndRightMovement() {
-        environment.moveNodeToPosition(node2, LEFT_POSITION)
-        assertEquals(LEFT_POSITION, environment.getPosition(node2))
+        setPositionAndVerifySetting(node2, LEFT_POSITION)
 
         assertTrue(stressZone1.areNodesInZone())
         assertTrue(stressZone2.areNodesInZone())

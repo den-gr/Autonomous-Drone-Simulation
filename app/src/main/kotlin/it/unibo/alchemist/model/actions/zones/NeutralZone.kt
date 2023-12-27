@@ -3,6 +3,7 @@ package it.unibo.alchemist.model.actions.zones
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.atan2
@@ -18,21 +19,23 @@ class NeutralZone(
     private val movements: Map<Direction, Movement>,
     neutralZoneWidth: Double,
     private val neutralZoneHeight: Double,
+//    stressZone: Zone,
 ) : AbstractZone(ownerNodeId, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-    private val shape = environment.shapeFactory.rectangle(neutralZoneWidth * 2, neutralZoneHeight)
+    override val shape = environment.shapeFactory.rectangle(neutralZoneWidth * 2, neutralZoneHeight)
 
     override fun areNodesInZone(): Boolean {
-        lastPosition = environment.getPosition(environment.getNodeByID(ownerNodeId))
+        val node = environment.getNodeByID(ownerNodeId)
+        lastPosition = environment.getPosition(node)
         val heading = environment.getHeading(environment.getNodeByID(ownerNodeId))
 
         val neutralZone = shape.transformed {
             origin(Euclidean2DPosition(lastPosition.x, lastPosition.y + neutralZoneHeight / 2))
-            rotate(heading.asAngle)
+            rotate(heading.asAngle - Math.PI / 2)
         }
-
         lastDetectedNodes = findNodesInZone(neutralZone)
+        node.setConcentration(SimpleMolecule("ids neutral"), lastDetectedNodes.map { it.id })
         return lastDetectedNodes.isNotEmpty()
     }
 
@@ -51,12 +54,11 @@ class NeutralZone(
             }
         }
         if (positions.contains(RelativeNeutralZonePosition.LEFT) && !positions.contains(RelativeNeutralZonePosition.RIGHT)) {
-            return movements.getValue(Direction.LEFT)
+            return movements.getValue(Direction.RIGHT)
         } else if (!positions.contains(RelativeNeutralZonePosition.LEFT) && positions.contains(RelativeNeutralZonePosition.RIGHT)) {
             return movements.getValue(Direction.LEFT)
         }
 
         return getRandomMovement()
-
     }
 }

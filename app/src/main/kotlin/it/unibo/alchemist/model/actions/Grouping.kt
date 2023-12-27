@@ -41,9 +41,10 @@ class Grouping @JvmOverloads constructor(
             Direction.RIGHT to Movement(velocities[0], 0.0, probabilities[2]),
         )
         val list: MutableList<Zone> = mutableListOf()
-        list.add(StressZone(node.id, environment, movements, stressZoneWidth, stressZoneHeight, repulsionFactor))
+        val stressZone = StressZone(node.id, environment, movements, stressZoneWidth, stressZoneHeight, repulsionFactor)
+        list.add(stressZone)
         list.add(NeutralZone(node.id, environment, movements, 6.0, 12.0))
-        zones = list
+        zones = list.toList()
     }
 
     private fun getMoleculeDoubleTupleValues(moleculeName: String): List<Double> {
@@ -68,16 +69,19 @@ class Grouping @JvmOverloads constructor(
 
     private fun getNextPosition(): Euclidean2DPosition {
         println()
-        for(zone in zones){
-            print(zone)
+        for (zone in zones) {
             if (zone.areNodesInZone()) {
                 val movement = zone.getNextMovement()
+                node.setConcentration(SimpleMolecule("zone"), zone::class)
+                node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
+                node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
                 return environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
             }
         }
-
-
         val movement = getRandomMovement()
+        node.setConcentration(SimpleMolecule("zone"), " ")
+        node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
+        node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
         return environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
     }
 

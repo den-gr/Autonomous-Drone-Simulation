@@ -15,7 +15,8 @@ abstract class AbstractZone(
 ) : Zone {
 
     protected fun findNodesInZone(zoneShape: Euclidean2DShape): List<Node<Any>> {
-        return environment.getNodesWithin(zoneShape).filter { it.id != ownerNodeId }
+        val nodes = environment.getNodesWithin(zoneShape)
+        return nodes.filter { it.id != ownerNodeId }
     }
 
     protected fun getRandomMovement(): Movement {

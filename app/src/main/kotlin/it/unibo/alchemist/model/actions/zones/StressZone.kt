@@ -4,6 +4,7 @@ import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
+import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.atan2
@@ -18,7 +19,7 @@ class StressZone(
 ) : AbstractZone(ownerNodeId, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-    private val shape: Euclidean2DShape
+    override val shape: Euclidean2DShape
 
     init {
         shape = environment.shapeFactory.rectangle(stressZoneWidth * 2, stressZoneHeight * 2)
@@ -31,10 +32,11 @@ class StressZone(
         val nodesInStressZone = findNodesInZone(
             shape.transformed {
                 origin(position)
-                rotate(heading.asAngle)
+                rotate(heading.asAngle - Math.PI / 2)
             },
         )
         lastDetectedNodes = nodesInStressZone
+        node.setConcentration(SimpleMolecule("ids stress"), nodesInStressZone.map { it.id })
         lastPosition = position
         return nodesInStressZone.isNotEmpty()
     }

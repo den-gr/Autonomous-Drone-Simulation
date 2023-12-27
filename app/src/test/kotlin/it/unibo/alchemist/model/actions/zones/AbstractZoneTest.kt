@@ -8,8 +8,10 @@ import it.unibo.alchemist.model.nodes.GenericNode
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.physics.properties.RectangularArea
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
+import kotlin.test.* // ktlint-disable no-wildcard-imports
 
 abstract class AbstractZoneTest {
+    abstract val environment: Physics2DEnvironment<Any>
 
     protected val movements = mapOf(
         Direction.LEFT to Movement(-StressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
@@ -28,5 +30,10 @@ abstract class AbstractZoneTest {
         }
         environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
         return node
+    }
+
+    protected fun setPositionAndVerifySetting(node: Node<Any>, position: Euclidean2DPosition) {
+        environment.moveNodeToPosition(node, position)
+        assertEquals(position, environment.getPosition(node))
     }
 }
