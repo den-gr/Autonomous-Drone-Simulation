@@ -92,6 +92,7 @@ class NeutralZoneTest : AbstractZoneTest() {
 
     @Test
     fun testSpin() {
+        setPositionAndVerifySetting(node1, Euclidean2DPosition(0.0, 10.0))
         val x: Euclidean2DPosition = environment.getHeading(node1)
         assertEquals(Euclidean2DPosition(0.0, 1.0), x)
         for (i in 1..10) {
@@ -108,7 +109,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         assertTrue(neutralZone1.areNodesInZone())
 
         val movement = neutralZone1.getNextMovement()
-        assertTrue(movement.lateralVelocity > 0)
+        assertTrue(movement.lateralVelocity < 0)
     }
 
     @Test
@@ -117,7 +118,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         assertTrue(neutralZone1.areNodesInZone())
 
         val movement = neutralZone1.getNextMovement()
-        assertTrue(movement.lateralVelocity < 0)
+        assertTrue(movement.lateralVelocity > 0)
     }
 
     @Test

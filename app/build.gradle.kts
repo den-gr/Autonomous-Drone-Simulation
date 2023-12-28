@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.alchemist)
+    implementation(libs.slf4j)
     testImplementation(kotlin("test"))
 }
 

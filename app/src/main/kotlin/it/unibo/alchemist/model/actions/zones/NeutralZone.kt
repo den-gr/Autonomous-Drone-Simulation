@@ -3,6 +3,7 @@ package it.unibo.alchemist.model.actions.zones
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
@@ -19,19 +20,32 @@ class NeutralZone(
     private val movements: Map<Direction, Movement>,
     neutralZoneWidth: Double,
     private val neutralZoneHeight: Double,
-//    stressZone: Zone,
 ) : AbstractZone(ownerNodeId, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-    override val shape = environment.shapeFactory.rectangle(neutralZoneWidth * 2, neutralZoneHeight)
+    override val zoneShape: ZoneShape<Euclidean2DShape> = RectangularShape(
+        environment.shapeFactory.rectangle(neutralZoneWidth * 2, neutralZoneHeight),
+        neutralZoneWidth * 2,
+        neutralZoneHeight,
+        neutralZoneHeight / 2,
+    )
+//    override val shape: Euclidean2DShape
+//
+//    init {
+//        shape = environment.shapeFactory.circleSector(
+//            neutralZoneHeight,
+//            180.0,
+//            Euclidean2DPosition(0.0, 1.0).asAngle,
+//        )
+//    }
 
     override fun areNodesInZone(): Boolean {
         val node = environment.getNodeByID(ownerNodeId)
         lastPosition = environment.getPosition(node)
-        val heading = environment.getHeading(environment.getNodeByID(ownerNodeId))
+        val heading = environment.getHeading(node)
 
-        val neutralZone = shape.transformed {
-            origin(Euclidean2DPosition(lastPosition.x, lastPosition.y + neutralZoneHeight / 2))
+        val neutralZone = zoneShape.shape.transformed {
+            origin(Euclidean2DPosition(lastPosition.x, lastPosition.y + zoneShape.gap)) // TODO zone margin with heading consideration
             rotate(heading.asAngle - Math.PI / 2)
         }
         lastDetectedNodes = findNodesInZone(neutralZone)
@@ -54,9 +68,9 @@ class NeutralZone(
             }
         }
         if (positions.contains(RelativeNeutralZonePosition.LEFT) && !positions.contains(RelativeNeutralZonePosition.RIGHT)) {
-            return movements.getValue(Direction.RIGHT)
-        } else if (!positions.contains(RelativeNeutralZonePosition.LEFT) && positions.contains(RelativeNeutralZonePosition.RIGHT)) {
             return movements.getValue(Direction.LEFT)
+        } else if (!positions.contains(RelativeNeutralZonePosition.LEFT) && positions.contains(RelativeNeutralZonePosition.RIGHT)) {
+            return movements.getValue(Direction.RIGHT)
         }
 
         return getRandomMovement()

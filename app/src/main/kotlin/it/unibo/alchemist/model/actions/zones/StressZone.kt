@@ -3,7 +3,6 @@ package it.unibo.alchemist.model.actions.zones
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
-import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
@@ -19,18 +18,19 @@ class StressZone(
 ) : AbstractZone(ownerNodeId, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-    override val shape: Euclidean2DShape
 
-    init {
-        shape = environment.shapeFactory.rectangle(stressZoneWidth * 2, stressZoneHeight * 2)
-    }
+    override val zoneShape = RectangularShape(
+        environment.shapeFactory.rectangle(stressZoneWidth * 2, stressZoneHeight * 2),
+        stressZoneWidth * 2,
+        stressZoneHeight * 2,
+    )
 
     override fun areNodesInZone(): Boolean {
         val node = environment.getNodeByID(ownerNodeId)
         val position = environment.getPosition(node)
         val heading = environment.getHeading(node)
         val nodesInStressZone = findNodesInZone(
-            shape.transformed {
+            zoneShape.shape.transformed {
                 origin(position)
                 rotate(heading.asAngle - Math.PI / 2)
             },
@@ -46,27 +46,31 @@ class StressZone(
     }
 
     private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Movement {
-        val positions = mutableSetOf<RelativeNeighbourPosition>()
+        val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
             val targetNodePosition = environment.getPosition(neighbourNode)
             val angle = atan2(targetNodePosition.y - nodePosition.y, targetNodePosition.x - nodePosition.x)
-            for (relativePos in RelativeNeighbourPosition.values()) {
-                if (relativePos == RelativeNeighbourPosition.LEFT && (relativePos.startAngle <= angle || angle <= relativePos.endAngle)) {
+            for (relativePos in RelativePosition.values()) {
+                if (relativePos == RelativePosition.LEFT && (relativePos.startAngle <= angle || angle <= relativePos.endAngle)) {
                     positions.add(relativePos)
                 } else if (relativePos.startAngle <= angle && angle <= relativePos.endAngle) {
                     positions.add(relativePos)
                 }
             }
         }
-        if (positions.contains(RelativeNeighbourPosition.FORWARD)) {
+        if (positions.contains(RelativePosition.FORWARD)) {
             return movements.getValue(Direction.FORWARD).addVelocityModifier(0.0, -repulsionFactor)
-        } else if (positions.contains(RelativeNeighbourPosition.RIGHT) && positions.contains(RelativeNeighbourPosition.LEFT)) {
+        } else if (positions.contains(RelativePosition.RIGHT) && positions.contains(RelativePosition.LEFT)) {
             return movements.getValue(Direction.FORWARD)
-        } else if (positions.contains(RelativeNeighbourPosition.BEHIND_LEFT) && positions.contains(RelativeNeighbourPosition.BEHIND_RIGHT)) {
+        } else if (positions.contains(RelativePosition.BEHIND_LEFT) && positions.contains(RelativePosition.BEHIND_RIGHT)) {
             return movements.getValue(Direction.FORWARD).addVelocityModifier(0.0, repulsionFactor)
-        } else if (positions.contains(RelativeNeighbourPosition.RIGHT) || positions.contains(RelativeNeighbourPosition.BEHIND_RIGHT)) {
+        } else if (positions.containsAll(listOf(RelativePosition.BEHIND_LEFT, RelativePosition.RIGHT))) {
+            return movements.getValue(Direction.FORWARD)
+        } else if (positions.containsAll(listOf(RelativePosition.BEHIND_RIGHT, RelativePosition.LEFT))) {
+            return movements.getValue(Direction.FORWARD)
+        } else if (positions.contains(RelativePosition.RIGHT) || positions.contains(RelativePosition.BEHIND_RIGHT)) {
             return movements.getValue(Direction.LEFT)
-        } else if (positions.contains(RelativeNeighbourPosition.LEFT) || positions.contains(RelativeNeighbourPosition.BEHIND_LEFT)) {
+        } else if (positions.contains(RelativePosition.LEFT) || positions.contains(RelativePosition.BEHIND_LEFT)) {
             return movements.getValue(Direction.RIGHT)
         }
         return Movement(0.0, 0.0)

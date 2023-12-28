@@ -2,10 +2,9 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
-import it.unibo.alchemist.model.positions.Euclidean2DPosition
 
 interface Zone {
-    val shape: Euclidean2DShape
+    val zoneShape: ZoneShape<Euclidean2DShape>
 
     /**
      * Search for nodes in zone and if find nodes save them in cache

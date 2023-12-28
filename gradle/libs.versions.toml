@@ -8,13 +8,16 @@ alchemist-incarnation-protelis = { module = "it.unibo.alchemist:alchemist-incarn
 alchemist-swingui = { module = "it.unibo.alchemist:alchemist-swingui", version.ref = "alchemist" }
 alchemist-maps = {module = "it.unibo.alchemist:alchemist-maps", version.ref = "alchemist" }
 alchemist-physics = {module = "it.unibo.alchemist:alchemist-physics", version.ref = "alchemist" }
+alchemist-ui-tooling = {module = "it.unibo.alchemist:alchemist-ui-tooling", version.ref = "alchemist" }
+alchemist-euclidean-geometry = {module = "it.unibo.alchemist:alchemist-euclidean-geometry", version.ref = "alchemist" }
+slf4j = "org.slf4j:slf4j-api:2.0.9"
 
 #alchemist-ui-tooling = {module = "it.unibo.alchemist:alchemist-ui-tooling", version.ref = "alchemist" }
 #slf4j = "org.slf4j:slf4j-api:2.0.9"
 #mapsforge = "org.mapsforge:mapsforge-map-awt:0.20.0"
 
 [bundles]
-alchemist = [ "alchemist", "alchemist-incarnation-protelis", "alchemist-swingui", "alchemist-maps", "alchemist-physics"]
+alchemist = [ "alchemist", "alchemist-incarnation-protelis", "alchemist-swingui", "alchemist-maps", "alchemist-physics", "alchemist-ui-tooling", "alchemist-euclidean-geometry"]
 
 [plugins]
 kotlin-qa = { id = "org.danilopianini.gradle-kotlin-qa", version = "0.52.0" }

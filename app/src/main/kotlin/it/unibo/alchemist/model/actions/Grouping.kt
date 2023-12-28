@@ -22,7 +22,7 @@ class Grouping @JvmOverloads constructor(
     private val stressZoneHeight: Double,
     private val repulsionFactor: Double = 0.5,
 ) : AbstractAction<Any>(node) {
-    private val zones: List<Zone>
+    val zones: List<Zone>
 //    private val stressZone: StressZone
 
     private val bodyLen = getMoleculeValue("bodyLen")
@@ -68,7 +68,6 @@ class Grouping @JvmOverloads constructor(
         node.contents.getValue(SimpleMolecule(moleculeName))
 
     private fun getNextPosition(): Euclidean2DPosition {
-        println()
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 val movement = zone.getNextMovement()
