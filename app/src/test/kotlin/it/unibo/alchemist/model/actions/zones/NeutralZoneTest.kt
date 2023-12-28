@@ -75,7 +75,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         environment.addNode(node1, nextOutPosition())
         environment.addNode(node2, nextOutPosition())
         environment.addNode(node3, nextOutPosition())
-        neutralZone1 = NeutralZone(node1.id, environment, movements, NEUTRAL_ZONE_WIDTH_FACTOR * BODY_LEN, NEUTRAL_ZONE_HEIGHT_FACTOR * BODY_LEN)
+        neutralZone1 = NeutralZone(node1, environment, movements, NEUTRAL_ZONE_WIDTH_FACTOR * BODY_LEN, NEUTRAL_ZONE_HEIGHT_FACTOR * BODY_LEN)
     }
 
     private fun setHeading(node: Node<Any>) {

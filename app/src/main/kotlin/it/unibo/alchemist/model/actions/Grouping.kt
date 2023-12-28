@@ -23,7 +23,7 @@ class Grouping @JvmOverloads constructor(
     private val repulsionFactor: Double = 0.5,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
-//    private val stressZone: StressZone
+    private val stressZone: StressZone
 
     private val bodyLen = getMoleculeValue("bodyLen")
     private val movements: Map<Direction, Movement>
@@ -41,9 +41,9 @@ class Grouping @JvmOverloads constructor(
             Direction.RIGHT to Movement(velocities[0], 0.0, probabilities[2]),
         )
         val list: MutableList<Zone> = mutableListOf()
-        val stressZone = StressZone(node.id, environment, movements, stressZoneWidth, stressZoneHeight, repulsionFactor)
+        stressZone = StressZone(node, environment, movements, stressZoneWidth, stressZoneHeight, repulsionFactor)
         list.add(stressZone)
-        list.add(NeutralZone(node.id, environment, movements, 6.0, 12.0))
+        list.add(NeutralZone(node, environment, movements, 6.0, 12.0))
         zones = list.toList()
     }
 
@@ -71,10 +71,19 @@ class Grouping @JvmOverloads constructor(
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 val movement = zone.getNextMovement()
+
                 node.setConcentration(SimpleMolecule("zone"), zone::class)
                 node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
                 node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
-                return environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
+
+                val newPosition = environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
+
+                if (zone !is StressZone && stressZone.areNodesInZone(newPosition.plus(environment.getPosition(node)))) {
+                    println(zone)
+                    val randomMovement = getRandomMovement()
+                    return environment.makePosition(randomMovement.lateralVelocity, randomMovement.forwardVelocity)
+                }
+                return newPosition
             }
         }
         val movement = getRandomMovement()

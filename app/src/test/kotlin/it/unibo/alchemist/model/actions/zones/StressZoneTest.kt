@@ -42,9 +42,9 @@ class StressZoneTest : AbstractZoneTest() {
         environment.addNode(node2, Euclidean2DPosition(1.0, 2.0))
         environment.addNode(node3, Euclidean2DPosition(999.0, 999.0))
         environment.addNode(node4, Euclidean2DPosition(10.0, 10.0))
-        stressZone1 = StressZone(node1.id, environment, movements, 2 * bodyLen, 4 * bodyLen, REPULSION_FACTOR)
-        stressZone2 = StressZone(node2.id, environment, movements, 2 * bodyLen, 4 * bodyLen, REPULSION_FACTOR)
-        stressZone4 = StressZone(node4.id, environment, movements, 2 * bodyLen, 4 * bodyLen, REPULSION_FACTOR)
+        stressZone1 = StressZone(node1, environment, movements, 2 * bodyLen, 4 * bodyLen, REPULSION_FACTOR)
+        stressZone2 = StressZone(node2, environment, movements, 2 * bodyLen, 4 * bodyLen, REPULSION_FACTOR)
+        stressZone4 = StressZone(node4, environment, movements, 2 * bodyLen, 4 * bodyLen, REPULSION_FACTOR)
     }
 
     @Test

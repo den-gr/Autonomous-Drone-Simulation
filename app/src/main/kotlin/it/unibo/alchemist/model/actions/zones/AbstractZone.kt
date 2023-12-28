@@ -9,14 +9,14 @@ import java.lang.IllegalStateException
 import kotlin.random.Random
 
 abstract class AbstractZone(
-    protected val ownerNodeId: Int,
+    protected val node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>
 ) : Zone {
 
     protected fun findNodesInZone(zoneShape: Euclidean2DShape): List<Node<Any>> {
         val nodes = environment.getNodesWithin(zoneShape)
-        return nodes.filter { it.id != ownerNodeId }
+        return nodes.filter { it.id != node.id }
     }
 
     protected fun getRandomMovement(): Movement {

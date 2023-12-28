@@ -9,13 +9,13 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.atan2
 
 class StressZone(
-    ownerNodeId: Int,
+    node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>,
     stressZoneWidth: Double,
     stressZoneHeight: Double,
     private val repulsionFactor: Double,
-) : AbstractZone(ownerNodeId, environment, movements) {
+) : AbstractZone(node, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
 
@@ -26,8 +26,11 @@ class StressZone(
     )
 
     override fun areNodesInZone(): Boolean {
-        val node = environment.getNodeByID(ownerNodeId)
         val position = environment.getPosition(node)
+        return areNodesInZone(position)
+    }
+
+    override fun areNodesInZone(position: Euclidean2DPosition): Boolean {
         val heading = environment.getHeading(node)
         val nodesInStressZone = findNodesInZone(
             zoneShape.shape.transformed {

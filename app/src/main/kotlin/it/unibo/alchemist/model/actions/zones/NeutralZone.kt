@@ -15,12 +15,12 @@ enum class RelativeNeutralZonePosition(val startAngle: Double, val endAngle: Dou
 }
 
 class NeutralZone(
-    ownerNodeId: Int,
+    node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>,
     neutralZoneWidth: Double,
     private val neutralZoneHeight: Double,
-) : AbstractZone(ownerNodeId, environment, movements) {
+) : AbstractZone(node, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
     override val zoneShape: ZoneShape<Euclidean2DShape> = RectangularShape(
@@ -40,8 +40,11 @@ class NeutralZone(
 //    }
 
     override fun areNodesInZone(): Boolean {
-        val node = environment.getNodeByID(ownerNodeId)
         lastPosition = environment.getPosition(node)
+        return areNodesInZone(lastPosition)
+    }
+
+    override fun areNodesInZone(position: Euclidean2DPosition): Boolean {
         val heading = environment.getHeading(node)
 
         val neutralZone = zoneShape.shape.transformed {
