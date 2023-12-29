@@ -5,7 +5,7 @@ import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position2D
 import it.unibo.alchemist.boundary.ui.api.Wormhole2D
 import it.unibo.alchemist.model.actions.Grouping
-import it.unibo.alchemist.model.actions.zones.RectangularShape
+import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
@@ -68,8 +68,8 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
             .forEach { a ->
                 val zones: List<Zone> = a.zones
                 zones.forEach { z ->
-                    if (z.zoneShape is RectangularShape<Euclidean2DShape>) {
-                        val shape = z.zoneShape as RectangularShape<Euclidean2DShape>
+                    if (z.zoneShape is RectangularZoneShape<Euclidean2DShape>) {
+                        val shape = z.zoneShape as RectangularZoneShape<Euclidean2DShape>
                         val fov: java.awt.Shape = Rectangle2D.Double(-(shape.width / 2), -shape.height / 2 - shape.gap, shape.width, shape.height)
                         graphics.draw(transform.createTransformedShape(fov))
                         if(z is StressZone) {

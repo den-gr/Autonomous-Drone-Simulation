@@ -1,6 +1,7 @@
 package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 

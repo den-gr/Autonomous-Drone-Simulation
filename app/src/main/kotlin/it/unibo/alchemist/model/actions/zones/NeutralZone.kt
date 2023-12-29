@@ -3,6 +3,7 @@ package it.unibo.alchemist.model.actions.zones
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
@@ -10,27 +11,19 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.atan2
 
 enum class RelativeNeutralZonePosition(val startAngle: Double, val endAngle: Double) {
-    LEFT(Math.PI * (0.5), -Math.PI * 0.5),
-    RIGHT(-Math.PI * 0.5, Math.PI * (0.5)),
+    LEFT(Math.PI * (0.4), -Math.PI * 0.4),
+    RIGHT(-Math.PI * 0.4, Math.PI * (0.4)),
 }
 
 class NeutralZone(
+    override val zoneShape: ZoneShape<Euclidean2DShape>,
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>,
-    neutralZoneWidth: Double,
-    private val neutralZoneHeight: Double,
 ) : AbstractZone(node, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-    override val zoneShape: ZoneShape<Euclidean2DShape> = RectangularShape(
-        environment.shapeFactory.rectangle(neutralZoneWidth * 2, neutralZoneHeight),
-        neutralZoneWidth * 2,
-        neutralZoneHeight,
-        neutralZoneHeight / 2,
-    )
-//    override val shape: Euclidean2DShape
-//
+
 //    init {
 //        shape = environment.shapeFactory.circleSector(
 //            neutralZoneHeight,

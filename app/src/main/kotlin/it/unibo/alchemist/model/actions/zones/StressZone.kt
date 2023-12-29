@@ -3,27 +3,22 @@ package it.unibo.alchemist.model.actions.zones
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
+import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.atan2
 
 class StressZone(
+    override val zoneShape: ZoneShape<Euclidean2DShape>,
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>,
-    stressZoneWidth: Double,
-    stressZoneHeight: Double,
     private val repulsionFactor: Double,
 ) : AbstractZone(node, environment, movements) {
     private var lastDetectedNodes: List<Node<Any>> = listOf()
     private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-
-    override val zoneShape = RectangularShape(
-        environment.shapeFactory.rectangle(stressZoneWidth * 2, stressZoneHeight * 2),
-        stressZoneWidth * 2,
-        stressZoneHeight * 2,
-    )
 
     override fun areNodesInZone(): Boolean {
         val position = environment.getPosition(node)

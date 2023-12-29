@@ -13,6 +13,13 @@ import kotlin.test.* // ktlint-disable no-wildcard-imports
 abstract class AbstractZoneTest {
     abstract val environment: Physics2DEnvironment<Any>
 
+    companion object {
+        const val BODY_LEN = 1.0
+        const val BODY_WIDTH = BODY_LEN / 2
+        val CENTER_POSITION = Euclidean2DPosition(0.0, 0.0)
+        val CIAONE: Int = 100
+    }
+
     protected val movements = mapOf(
         Direction.LEFT to Movement(-StressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
         Direction.FORWARD to Movement(0.0, StressZoneTest.FORWARD_VELOCITY, 0.5),

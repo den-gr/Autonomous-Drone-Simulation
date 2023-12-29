@@ -6,8 +6,11 @@ import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.actions.zones.NeutralZone
+import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
+import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
+import it.unibo.alchemist.model.actions.zones.shapes.ZoneType
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
@@ -24,12 +27,7 @@ class Grouping @JvmOverloads constructor(
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
     private val stressZone: StressZone
-
-    private val bodyLen = getMoleculeValue("bodyLen")
     private val movements: Map<Direction, Movement>
-
-    private var largestShapeDiameter: Double = 0.0
-    private var i = 0
 
     init {
         environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
@@ -41,9 +39,14 @@ class Grouping @JvmOverloads constructor(
             Direction.RIGHT to Movement(velocities[0], 0.0, probabilities[2]),
         )
         val list: MutableList<Zone> = mutableListOf()
-        stressZone = StressZone(node, environment, movements, stressZoneWidth, stressZoneHeight, repulsionFactor)
+
+        val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
+        val stressZoneShape = zoneShapeFactory.produceRectangularZoneShape(stressZoneWidth * 2, stressZoneHeight * 2, ZoneType.FRONT_AND_REAR)
+        stressZone = StressZone(stressZoneShape, node, environment, movements, stressZoneWidth)
         list.add(stressZone)
-        list.add(NeutralZone(node, environment, movements, 6.0, 12.0))
+
+        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(12.0, 12.0, ZoneType.FRONT)
+        list.add(NeutralZone(neutralZoneShape, node, environment, movements))
         zones = list.toList()
     }
 
@@ -79,7 +82,6 @@ class Grouping @JvmOverloads constructor(
                 val newPosition = environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
 
                 if (zone !is StressZone && stressZone.areNodesInZone(newPosition.plus(environment.getPosition(node)))) {
-                    println(zone)
                     val randomMovement = getRandomMovement()
                     return environment.makePosition(randomMovement.lateralVelocity, randomMovement.forwardVelocity)
                 }
