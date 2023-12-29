@@ -7,4 +7,8 @@ class Movement(val lateralVelocity: Double, val forwardVelocity: Double, val pro
             forwardVelocity + forwardVelocity * forwardModifier,
         )
     }
+
+    override fun toString(): String {
+        return "Movement(lateralVelocity=$lateralVelocity, forwardVelocity=$forwardVelocity, probability=$probability)"
+    }
 }

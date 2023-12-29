@@ -8,9 +8,9 @@ variables:
   body_len: &body_len
     formula: 2
   stress_zone_w: &stress_zone_w
-    formula: 2 * body_len
+    formula: 1 * body_len
   stress_zone_h: &stress_zone_h
-    formula: 4 * body_len
+    formula: 2 * body_len
   repulsion_factor: &repulsion_factor
     formula: 0.5
   intrinsic_forward_velocity: &forward_velocity
@@ -19,7 +19,7 @@ variables:
     formula: 0.2 * body_len
 deployments:
   - type: Circle
-    parameters: [100, 0, 0, 40]
+    parameters: [50, 0, 0, 40]
     contents:
       - molecule: bodyLen
         concentration: *body_len

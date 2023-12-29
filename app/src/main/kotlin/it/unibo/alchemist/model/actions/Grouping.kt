@@ -5,6 +5,7 @@ import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.zones.AttractionZone
 import it.unibo.alchemist.model.actions.zones.NeutralZone
 import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.actions.zones.StressZone
@@ -42,11 +43,14 @@ class Grouping @JvmOverloads constructor(
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceRectangularZoneShape(stressZoneWidth * 2, stressZoneHeight * 2, ZoneType.FRONT_AND_REAR)
-        stressZone = StressZone(stressZoneShape, node, environment, movements, stressZoneWidth)
+        stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
         list.add(stressZone)
 
         val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(12.0, 12.0, ZoneType.FRONT)
         list.add(NeutralZone(neutralZoneShape, node, environment, movements))
+
+        val attractionZoneShape = zoneShapeFactory.produceRectangularZoneShape(20.0, 20.0, ZoneType.FRONT)
+        list.add(AttractionZone(attractionZoneShape, node, environment, movements, 0.5))
         zones = list.toList()
     }
 

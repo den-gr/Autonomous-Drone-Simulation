@@ -70,7 +70,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                 zones.forEach { z ->
                     if (z.zoneShape is RectangularZoneShape<Euclidean2DShape>) {
                         val shape = z.zoneShape as RectangularZoneShape<Euclidean2DShape>
-                        val fov: java.awt.Shape = Rectangle2D.Double(-(shape.width / 2), -shape.height / 2 - shape.gap, shape.width, shape.height)
+                        val fov: java.awt.Shape = Rectangle2D.Double(-(shape.width / 2), -shape.height / 2 - shape.offset, shape.width, shape.height)
                         graphics.draw(transform.createTransformedShape(fov))
                         if(z is StressZone) {
                             graphics.color = transparentRed

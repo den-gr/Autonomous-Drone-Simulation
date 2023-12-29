@@ -1,5 +1,6 @@
 package it.unibo.alchemist.model.actions.zones
 
+import it.unibo.alchemist.model.Molecule
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
@@ -17,30 +18,15 @@ class StressZone(
     private val movements: Map<Direction, Movement>,
     private val repulsionFactor: Double,
 ) : AbstractZone(node, environment, movements) {
-    private var lastDetectedNodes: List<Node<Any>> = listOf()
-    private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
+    override val visibleNodes: Molecule = SimpleMolecule("Stress zone")
 
-    override fun areNodesInZone(): Boolean {
-        val position = environment.getPosition(node)
-        return areNodesInZone(position)
-    }
-
-    override fun areNodesInZone(position: Euclidean2DPosition): Boolean {
-        val heading = environment.getHeading(node)
-        val nodesInStressZone = findNodesInZone(
-            zoneShape.shape.transformed {
-                origin(position)
-                rotate(heading.asAngle - Math.PI / 2)
-            },
-        )
-        lastDetectedNodes = nodesInStressZone
-        node.setConcentration(SimpleMolecule("ids stress"), nodesInStressZone.map { it.id })
-        lastPosition = position
-        return nodesInStressZone.isNotEmpty()
+    override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
+        return position
     }
 
     override fun getNextMovement(): Movement {
-        return getStressZoneMovement(lastPosition, lastDetectedNodes)
+        val pos = environment.getPosition(node)
+        return getStressZoneMovement(pos, getNodesInZone(pos))
     }
 
     private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Movement {
