@@ -8,6 +8,10 @@ class Movement(val lateralVelocity: Double, val forwardVelocity: Double, val pro
         )
     }
 
+    fun multiplyVelocity(factor: Double): Movement {
+        return Movement(lateralVelocity * factor, forwardVelocity * factor)
+    }
+
     override fun toString(): String {
         return "Movement(lateralVelocity=$lateralVelocity, forwardVelocity=$forwardVelocity, probability=$probability)"
     }

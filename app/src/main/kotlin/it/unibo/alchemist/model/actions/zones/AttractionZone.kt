@@ -16,12 +16,9 @@ class AttractionZone(
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>,
-    val speedUpFactor: Double,
+    private val speedUpFactor: Double,
 ) : AbstractZone(node, environment, movements) {
-    private var lastPosition: Euclidean2DPosition = Euclidean2DPosition(0.0, 0.0)
-    private var lastDetectedNodes: List<Node<Any>> = listOf()
     override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
-
 
     override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
         // TODO zone margin with heading consideration
@@ -30,10 +27,10 @@ class AttractionZone(
 
     override fun getNextMovement(): Movement {
         val positions = mutableSetOf<RelativeLateralZonePosition>()
-
-        for (neighbourNode in lastDetectedNodes) {
+        val pos = environment.getPosition(node)
+        for (neighbourNode in getNodesInZone(pos)) {
             val targetNodePosition = environment.getPosition(neighbourNode)
-            val angle = atan2(targetNodePosition.y - lastPosition.y, targetNodePosition.x - lastPosition.x)
+            val angle = atan2(targetNodePosition.y - pos.y, targetNodePosition.x - pos.x)
             for (relativePos in RelativeLateralZonePosition.values()) {
                 if (relativePos == RelativeLateralZonePosition.LEFT && (relativePos.startAngle <= angle || angle <= relativePos.endAngle)) {
                     positions.add(relativePos)
@@ -45,13 +42,14 @@ class AttractionZone(
         val forwardV = movements.getValue(Direction.FORWARD)
         val lateralV = movements.getValue(Direction.LEFT)
         if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return Movement(lateralV.lateralVelocity, forwardV.forwardVelocity).addVelocityModifier(speedUpFactor, -0.4)
+            return Movement(lateralV.lateralVelocity, forwardV.forwardVelocity).addVelocityModifier(speedUpFactor, speedUpFactor)
         } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return Movement(-lateralV.lateralVelocity, forwardV.forwardVelocity).addVelocityModifier(speedUpFactor, -0.4)
+            return Movement(-lateralV.lateralVelocity, forwardV.forwardVelocity).addVelocityModifier(speedUpFactor, speedUpFactor)
         } else if (positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
             return movements.getValue(Direction.FORWARD).addVelocityModifier(0.0, speedUpFactor)
         }
 
-        throw IllegalStateException("Attraction zone is not active with no nodes in zone")
+        return movements.getValue(Direction.FORWARD)
+//        throw IllegalStateException("Attraction zone is not active with no nodes in zone")
     }
 }

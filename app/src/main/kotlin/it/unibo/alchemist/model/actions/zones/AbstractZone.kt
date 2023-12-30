@@ -11,8 +11,8 @@ import java.lang.IllegalStateException
 import kotlin.random.Random
 
 enum class RelativeLateralZonePosition(val startAngle: Double, val endAngle: Double) {
-    LEFT(Math.PI * (0.5), -Math.PI * 0.5),
-    RIGHT(-Math.PI * 0.5, Math.PI * (0.5)),
+    LEFT(Math.PI * (0.6), -Math.PI * 0.5),
+    RIGHT(-Math.PI * 0.5, Math.PI * (0.4)),
 }
 
 abstract class AbstractZone(

@@ -5,11 +5,8 @@ import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
-import it.unibo.alchemist.model.actions.zones.AttractionZone
-import it.unibo.alchemist.model.actions.zones.NeutralZone
+import it.unibo.alchemist.model.actions.zones.*
 import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
-import it.unibo.alchemist.model.actions.zones.StressZone
-import it.unibo.alchemist.model.actions.zones.Zone
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneType
 import it.unibo.alchemist.model.molecules.SimpleMolecule
@@ -46,11 +43,14 @@ class Grouping @JvmOverloads constructor(
         stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
         list.add(stressZone)
 
-        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(12.0, 12.0, ZoneType.FRONT)
+        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(24.0, 24.0, ZoneType.FRONT)
         list.add(NeutralZone(neutralZoneShape, node, environment, movements))
 
-        val attractionZoneShape = zoneShapeFactory.produceRectangularZoneShape(20.0, 20.0, ZoneType.FRONT)
+        val attractionZoneShape = zoneShapeFactory.produceRectangularZoneShape(40.0, 40.0, ZoneType.FRONT)
         list.add(AttractionZone(attractionZoneShape, node, environment, movements, 0.5))
+
+        val rearZoneShape = zoneShapeFactory.produceRectangularZoneShape(40.0, 40.0, ZoneType.REAR)
+        list.add(RearZone(rearZoneShape, node, environment, movements, 0.5))
         zones = list.toList()
     }
 
@@ -77,7 +77,10 @@ class Grouping @JvmOverloads constructor(
     private fun getNextPosition(): Euclidean2DPosition {
         for (zone in zones) {
             if (zone.areNodesInZone()) {
-                val movement = zone.getNextMovement()
+                var movement = zone.getNextMovement()
+                if(zone is RearZone && Random.nextDouble() < 0.55){
+                    movement = movement.multiplyVelocity(2.0)
+                }
 
                 node.setConcentration(SimpleMolecule("zone"), zone::class)
                 node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
