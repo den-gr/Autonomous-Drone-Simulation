@@ -9,6 +9,7 @@ import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
+import kotlin.random.Random
 
 class RearZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
@@ -16,7 +17,7 @@ class RearZone(
     private val environment: Physics2DEnvironment<Any>,
     private val movements: Map<Direction, Movement>,
     private val slowDownFactor: Double,
-): AbstractZone(node, environment, movements) {
+) : AbstractZone(node, environment, movements) {
     override val visibleNodes: Molecule = SimpleMolecule("Rear zone")
 
     override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
@@ -25,7 +26,7 @@ class RearZone(
     }
 
     override fun getNextMovement(): Movement {
-        return getRandomMovement().multiplyVelocity(slowDownFactor)
+        val velocityModifier = if (Random.nextDouble() > 0.6) slowDownFactor else 1.0
+        return getRandomMovement().multiplyVelocity(velocityModifier)
     }
-
 }

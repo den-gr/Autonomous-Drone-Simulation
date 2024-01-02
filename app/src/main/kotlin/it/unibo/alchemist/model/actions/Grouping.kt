@@ -25,6 +25,7 @@ class Grouping @JvmOverloads constructor(
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
     private val stressZone: StressZone
+    private val rearZone: RearZone
     private val movements: Map<Direction, Movement>
 
     init {
@@ -39,7 +40,8 @@ class Grouping @JvmOverloads constructor(
         val list: MutableList<Zone> = mutableListOf()
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
-        val stressZoneShape = zoneShapeFactory.produceRectangularZoneShape(stressZoneWidth * 2, stressZoneHeight * 2, ZoneType.FRONT_AND_REAR)
+//        val stressZoneShape = zoneShapeFactory.produceRectangularZoneShape(stressZoneWidth * 2, stressZoneHeight * 2, ZoneType.FRONT_AND_REAR)
+        val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(stressZoneHeight)
         stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
         list.add(stressZone)
 
@@ -50,7 +52,8 @@ class Grouping @JvmOverloads constructor(
         list.add(AttractionZone(attractionZoneShape, node, environment, movements, 0.5))
 
         val rearZoneShape = zoneShapeFactory.produceRectangularZoneShape(40.0, 40.0, ZoneType.REAR)
-        list.add(RearZone(rearZoneShape, node, environment, movements, 0.5))
+        rearZone = RearZone(rearZoneShape, node, environment, movements, 0.5)
+        list.add(rearZone)
         zones = list.toList()
     }
 
@@ -78,7 +81,7 @@ class Grouping @JvmOverloads constructor(
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 var movement = zone.getNextMovement()
-                if(zone is RearZone && Random.nextDouble() < 0.55){
+                if(!rearZone.areNodesInZone() && Random.nextDouble() <= 0.6){
                     movement = movement.multiplyVelocity(2.0)
                 }
 

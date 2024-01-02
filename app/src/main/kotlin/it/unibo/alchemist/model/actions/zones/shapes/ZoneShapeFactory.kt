@@ -9,4 +9,6 @@ interface ZoneShapeFactory<T, P> {
      * @return Rectangular zone shape
      */
     fun produceRectangularZoneShape(width: T, height: T, zoneType: ZoneType): ZoneShape<P>
+
+    fun produceCircleZoneShape(radius: T): ZoneShape<P>
 }

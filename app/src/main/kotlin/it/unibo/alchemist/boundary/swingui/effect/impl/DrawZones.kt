@@ -1,13 +1,14 @@
 package it.unibo.alchemist.boundary.swingui.effect.impl
 
+import it.unibo.alchemist.boundary.ui.api.Wormhole2D
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position2D
-import it.unibo.alchemist.boundary.ui.api.Wormhole2D
 import it.unibo.alchemist.model.actions.Grouping
-import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
+import it.unibo.alchemist.model.actions.zones.shapes.CircularZoneShape
+import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import jdk.jshell.spi.ExecutionControl.NotImplementedException
@@ -18,6 +19,7 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Point
 import java.awt.geom.AffineTransform
+import java.awt.geom.Ellipse2D
 import java.awt.geom.Rectangle2D
 
 @Suppress("DEPRECATION")
@@ -72,11 +74,15 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                         val shape = z.zoneShape as RectangularZoneShape<Euclidean2DShape>
                         val fov: java.awt.Shape = Rectangle2D.Double(-(shape.width / 2), -shape.height / 2 - shape.offset, shape.width, shape.height)
                         graphics.draw(transform.createTransformedShape(fov))
-                        if(z is StressZone) {
+                        if (z is StressZone) {
                             graphics.color = transparentRed
                             graphics.fill(transform.createTransformedShape(fov))
                             graphics.color = colorSummary
                         }
+                    } else if (z.zoneShape is CircularZoneShape<Euclidean2DShape>) {
+                        val shape = z.zoneShape as CircularZoneShape<Euclidean2DShape>
+                        val fov: java.awt.Shape = Ellipse2D.Double(-(shape.radius / 2), -shape.radius / 2 - shape.offset, shape.radius, shape.radius)
+                        graphics.draw(transform.createTransformedShape(fov))
                     } else {
                         throw NotImplementedException("AAAAAAAAAAAAAAAA") // TODO
                     }

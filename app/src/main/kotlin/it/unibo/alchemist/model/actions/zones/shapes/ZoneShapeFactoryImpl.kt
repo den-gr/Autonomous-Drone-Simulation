@@ -10,7 +10,7 @@ class ZoneShapeFactoryImpl(private val shapeFactory: Euclidean2DShapeFactory) : 
         height: Double,
         zoneType: ZoneType,
     ): ZoneShape<Euclidean2DShape> {
-        val gap = when(zoneType){
+        val gap = when (zoneType) {
             ZoneType.FRONT -> height / 2
             ZoneType.REAR -> -height / 2
             ZoneType.FRONT_AND_REAR -> 0.0
@@ -20,6 +20,13 @@ class ZoneShapeFactoryImpl(private val shapeFactory: Euclidean2DShapeFactory) : 
             width,
             height,
             gap,
+        )
+    }
+
+    override fun produceCircleZoneShape(radius: Double): ZoneShape<Euclidean2DShape> {
+        return CircularZoneShape(
+            shapeFactory.circle(radius),
+            radius,
         )
     }
 }

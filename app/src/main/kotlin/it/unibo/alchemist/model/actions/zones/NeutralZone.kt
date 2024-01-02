@@ -48,10 +48,13 @@ class NeutralZone(
                 }
             }
         }
+
+        val forwardV = movements.getValue(Direction.FORWARD)
+        val lateralV = movements.getValue(Direction.LEFT)
         if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movements.getValue(Direction.LEFT)
+            return Movement(lateralV.lateralVelocity, forwardV.forwardVelocity)
         } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movements.getValue(Direction.RIGHT)
+            return Movement(-lateralV.lateralVelocity, forwardV.forwardVelocity)
         }
 
         return getRandomMovement()
