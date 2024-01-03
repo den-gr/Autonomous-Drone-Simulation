@@ -9,7 +9,6 @@ import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import kotlin.math.atan2
 
 class StressZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
@@ -25,19 +24,22 @@ class StressZone(
     }
 
     override fun getNextMovement(): Movement {
-        val pos = environment.getPosition(node)
+        val pos = environment.getPosition(owner)
         return getStressZoneMovement(pos, getNodesInZone(pos))
     }
 
     private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Movement {
         val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
-            val targetNodePosition = environment.getPosition(neighbourNode)
-            val angle = atan2(targetNodePosition.y - nodePosition.y, targetNodePosition.x - nodePosition.x)
+//            val rotated = rotateVector(Euclidean2DPosition(targetNodePosition.x - nodePosition.x, targetNodePosition.y - nodePosition.y), Euclidean2DPosition(0.0, 1.0).asAngle - environment.getHeading(owner).asAngle) //- Math.PI / 2)
+            val (angle, offset) = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
+
             for (relativePos in RelativePosition.values()) {
-                if (relativePos == RelativePosition.LEFT && (relativePos.startAngle <= angle || angle <= relativePos.endAngle)) {
+                val startAngle = relativePos.startAngle - offset
+                val endAngle = relativePos.endAngle - offset
+                if (relativePos == RelativePosition.FORWARD && (angle <= startAngle || angle >= endAngle)) {
                     positions.add(relativePos)
-                } else if (relativePos.startAngle <= angle && angle <= relativePos.endAngle) {
+                } else if (relativePos != RelativePosition.FORWARD && startAngle <= angle && angle <= endAngle) {
                     positions.add(relativePos)
                 }
             }

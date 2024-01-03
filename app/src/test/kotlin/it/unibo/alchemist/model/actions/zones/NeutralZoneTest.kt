@@ -19,7 +19,7 @@ class NeutralZoneTest : AbstractZoneTest() {
     private lateinit var node1: Node<Any>
     private lateinit var node2: Node<Any>
     private lateinit var neutralZone1: NeutralZone
-    private val positionProvider: PositionProvider<Euclidean2DPosition> = PositionProviderImpl(
+    private val positionProvider: PositionProvider<Euclidean2DPosition> = RectangularPositionProviderImpl(
         BODY_LEN,
         NEUTRAL_ZONE_WIDTH,
         NEUTRAL_ZONE_HEIGHT,
@@ -43,6 +43,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         node2 = createRectangleNode(incarnation, environment, BODY_WIDTH, BODY_LEN)
         environment.addNode(node1, positionProvider.getNextExternalPosition())
         environment.addNode(node2, positionProvider.getNextExternalPosition())
+        setHeading(node1)
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(

@@ -27,14 +27,13 @@ class AttractionZone(
 
     override fun getNextMovement(): Movement {
         val positions = mutableSetOf<RelativeLateralZonePosition>()
-        val pos = environment.getPosition(node)
-        for (neighbourNode in getNodesInZone(pos)) {
-            val targetNodePosition = environment.getPosition(neighbourNode)
-            val angle = atan2(targetNodePosition.y - pos.y, targetNodePosition.x - pos.x)
+        val nodePosition = environment.getPosition(owner)
+        for (neighbourNode in getNodesInZone(nodePosition)) {
+            val (angle, offset) = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
             for (relativePos in RelativeLateralZonePosition.values()) {
-                if (relativePos == RelativeLateralZonePosition.LEFT && (relativePos.startAngle <= angle || angle <= relativePos.endAngle)) {
-                    positions.add(relativePos)
-                } else if (relativePos.startAngle <= angle && angle <= relativePos.endAngle) {
+                val startAngle = relativePos.startAngle - offset
+                val endAngle = relativePos.endAngle - offset
+                if (angle in startAngle..endAngle) {
                     positions.add(relativePos)
                 }
             }

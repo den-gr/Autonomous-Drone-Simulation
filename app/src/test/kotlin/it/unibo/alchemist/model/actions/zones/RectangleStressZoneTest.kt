@@ -11,7 +11,7 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
-class StressZoneTest : AbstractZoneTest() {
+class RectangleStressZoneTest : AbstractZoneTest() {
     override lateinit var environment: Physics2DEnvironment<Any>
     private lateinit var node1: Node<Any>
     private lateinit var node2: Node<Any>
@@ -19,7 +19,7 @@ class StressZoneTest : AbstractZoneTest() {
     private lateinit var stressZone1: StressZone
     private lateinit var stressZone2: StressZone
     private lateinit var stressZone4: StressZone
-    private val positionProvider: PositionProvider<Euclidean2DPosition> = PositionProviderImpl(
+    private val positionProvider: PositionProvider<Euclidean2DPosition> = RectangularPositionProviderImpl(
         BODY_LEN,
         STRESS_ZONE_WIDTH,
         STRESS_ZONE_HEIGHT,

@@ -19,13 +19,25 @@ class RectangularZoneShape<T>(
     }
 }
 
-class CircularZoneShape<T>(
+class CircleZoneShape<T>(
     override val shape: T,
     val radius: Double,
 ) : ZoneShape<T> {
     override val offset: Double = 0.0
 
     override fun makeCopy(): ZoneShape<T> {
-        return CircularZoneShape(shape, radius)
+        return CircleZoneShape(shape, radius)
+    }
+}
+
+class CircularSegmentZoneShape<T>(
+    override val shape: T,
+    val radius: Double,
+    val angle: Double
+) : ZoneShape<T> {
+    override val offset: Double = 0.0
+
+    override fun makeCopy(): ZoneShape<T> {
+        return CircularSegmentZoneShape(shape, radius, angle)
     }
 }

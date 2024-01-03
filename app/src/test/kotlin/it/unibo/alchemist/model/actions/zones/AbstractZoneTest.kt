@@ -20,9 +20,9 @@ abstract class AbstractZoneTest {
     }
 
     protected val movements = mapOf(
-        Direction.LEFT to Movement(-StressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
-        Direction.FORWARD to Movement(0.0, StressZoneTest.FORWARD_VELOCITY, 0.5),
-        Direction.RIGHT to Movement(StressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
+        Direction.LEFT to Movement(-RectangleStressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
+        Direction.FORWARD to Movement(0.0, RectangleStressZoneTest.FORWARD_VELOCITY, 0.5),
+        Direction.RIGHT to Movement(RectangleStressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
     )
 
     protected fun createRectangleNode(
@@ -41,5 +41,9 @@ abstract class AbstractZoneTest {
     protected fun setPositionAndVerifySetting(node: Node<Any>, position: Euclidean2DPosition) {
         environment.moveNodeToPosition(node, position)
         assertEquals(position, environment.getPosition(node))
+    }
+
+    protected fun setDefaultHeading(node: Node<Any>) {
+        environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
     }
 }

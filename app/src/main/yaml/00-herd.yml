@@ -6,7 +6,7 @@ variables:
   body_width: &body_width
     formula: body_len / 2
   body_len: &body_len
-    formula: 2
+    formula: 1
   stress_zone_w: &stress_zone_w
     formula: 2 * body_len
   stress_zone_h: &stress_zone_h
@@ -19,7 +19,7 @@ variables:
     formula: 0.2 * body_len
 deployments:
   - type: Circle
-    parameters: [50, 0, 0, 100]
+    parameters: [2, 0, 0, 100]
     contents:
       - molecule: bodyLen
         concentration: *body_len
@@ -36,22 +36,22 @@ deployments:
     properties:
       - type: RectangularArea
         parameters: [*body_len, *body_width]
-  - type: Circle
-    parameters: [ 25, 0, 0, 100 ]
-    contents:
-      - molecule: bodyLen
-        concentration: *body_len
-      - molecule: MovementProbabilities
-        concentration: [ 0.5, 0.25, 0.25 ]
-      - molecule: Velocities
-        concentration: [ *lateral_velocity, *forward_velocity ]
-    programs:
-      - time-distribution: 1
-        type: Event
-        actions:
-          type: Grouping
-          parameters: [ *stress_zone_w, *stress_zone_h, *repulsion_factor ]
-    properties:
-      - type: RectangularArea
-        parameters: [ *body_len, *body_width ]
+#  - type: Circle
+#    parameters: [ 1, 0, 0, 100 ]
+#    contents:
+#      - molecule: bodyLen
+#        concentration: *body_len
+#      - molecule: MovementProbabilities
+#        concentration: [ 0.5, 0.25, 0.25 ]
+#      - molecule: Velocities
+#        concentration: [ *lateral_velocity, *forward_velocity ]
+#    programs:
+#      - time-distribution: 1
+#        type: Event
+#        actions:
+#          type: Grouping
+#          parameters: [ *stress_zone_w, *stress_zone_h, *repulsion_factor ]
+#    properties:
+#      - type: RectangularArea
+#        parameters: [ *body_len, *body_width ]
 

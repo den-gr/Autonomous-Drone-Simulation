@@ -6,7 +6,6 @@ import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.actions.zones.*
-import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneType
 import it.unibo.alchemist.model.molecules.SimpleMolecule
@@ -14,7 +13,10 @@ import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironm
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.protelis.lang.datatype.impl.ArrayTupleImpl
 import java.lang.IllegalStateException
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.random.Random
+import java.lang.Math.toRadians
 
 class Grouping @JvmOverloads constructor(
     node: Node<Any>,
@@ -29,7 +31,7 @@ class Grouping @JvmOverloads constructor(
     private val movements: Map<Direction, Movement>
 
     init {
-        environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
+        environment.setHeading(node, Euclidean2DPosition(1.0, 0.0))
         val probabilities = getMoleculeDoubleTupleValues("MovementProbabilities")
         val velocities = getMoleculeDoubleTupleValues("Velocities")
         movements = mapOf(
@@ -45,13 +47,14 @@ class Grouping @JvmOverloads constructor(
         stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
         list.add(stressZone)
 
-        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(24.0, 24.0, ZoneType.FRONT)
+//        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(24.0, 24.0, ZoneType.FRONT)
+        val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(24.0, 180.0)
         list.add(NeutralZone(neutralZoneShape, node, environment, movements))
 
-        val attractionZoneShape = zoneShapeFactory.produceRectangularZoneShape(40.0, 40.0, ZoneType.FRONT)
+        val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, 180.0)
         list.add(AttractionZone(attractionZoneShape, node, environment, movements, 0.5))
 
-        val rearZoneShape = zoneShapeFactory.produceRectangularZoneShape(40.0, 40.0, ZoneType.REAR)
+        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, -180.0)
         rearZone = RearZone(rearZoneShape, node, environment, movements, 0.5)
         list.add(rearZone)
         zones = list.toList()
@@ -78,10 +81,14 @@ class Grouping @JvmOverloads constructor(
         node.contents.getValue(SimpleMolecule(moleculeName))
 
     private fun getNextPosition(): Euclidean2DPosition {
+//        if (Random.nextDouble() < 0.05) {
+//            val headingAngle = environment.getHeading(node).asAngle + toRadians(1.0)
+//            environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
+//        }
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 var movement = zone.getNextMovement()
-                if(!rearZone.areNodesInZone() && Random.nextDouble() <= 0.6){
+                if (!rearZone.areNodesInZone() && Random.nextDouble() <= 0.3) {
                     movement = movement.multiplyVelocity(2.0)
                 }
 
@@ -93,16 +100,16 @@ class Grouping @JvmOverloads constructor(
 
                 if (zone !is StressZone && stressZone.areNodesInZone(newPosition.plus(environment.getPosition(node)))) {
                     val randomMovement = getRandomMovement()
-                    return environment.makePosition(randomMovement.lateralVelocity, randomMovement.forwardVelocity)
+                    return rotateVector(environment.makePosition(randomMovement.lateralVelocity, randomMovement.forwardVelocity), getAngle(environment.getHeading(node)))
                 }
-                return newPosition
+                return rotateVector(newPosition, getAngle(environment.getHeading(node)))
             }
         }
         val movement = getRandomMovement()
-        node.setConcentration(SimpleMolecule("zone"), " ")
         node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
         node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
-        return environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
+        node.setConcentration(SimpleMolecule("zone"), "No zone")
+        return rotateVector(environment.makePosition(movement.lateralVelocity, movement.forwardVelocity), getAngle(environment.getHeading(node)))
     }
 
     private fun getRandomMovement(): Movement {
@@ -116,6 +123,14 @@ class Grouping @JvmOverloads constructor(
             }
         }
         throw IllegalStateException("The sum of movement probabilities is not equal to 1")
+    }
+
+    fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
+        val newX = vector.x * cos(angle) - vector.y * sin(angle)
+        val newY = vector.x * sin(angle) + vector.y * cos(angle)
+        node.setConcentration(SimpleMolecule("new x"), newX)
+        node.setConcentration(SimpleMolecule("new y"), newY)
+        return environment.makePosition(newX, newY)
     }
 
     private fun movePointAway(from: Euclidean2DPosition, to: Euclidean2DPosition, distance: Double): Euclidean2DPosition {

@@ -2,6 +2,7 @@ package it.unibo.alchemist.model.actions.zones.shapes
 
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShapeFactory
+import java.lang.Math.toRadians
 
 class ZoneShapeFactoryImpl(private val shapeFactory: Euclidean2DShapeFactory) : ZoneShapeFactory<Double, Euclidean2DShape> {
 
@@ -24,9 +25,17 @@ class ZoneShapeFactoryImpl(private val shapeFactory: Euclidean2DShapeFactory) : 
     }
 
     override fun produceCircleZoneShape(radius: Double): ZoneShape<Euclidean2DShape> {
-        return CircularZoneShape(
+        return CircleZoneShape(
             shapeFactory.circle(radius),
             radius,
+        )
+    }
+
+    override fun produceCircularSectorZoneShape(radius: Double, angle: Double): ZoneShape<Euclidean2DShape> {
+        return CircularSegmentZoneShape(
+            shapeFactory.circleSector(radius, toRadians(angle), 0.0),
+            radius,
+            angle,
         )
     }
 }

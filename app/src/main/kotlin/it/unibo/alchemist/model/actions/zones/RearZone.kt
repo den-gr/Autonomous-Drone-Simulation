@@ -22,7 +22,7 @@ class RearZone(
 
     override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
         // TODO zone margin with heading consideration
-        return Euclidean2DPosition(position.x, position.y + zoneShape.offset)
+        return Euclidean2DPosition(position.x, position.y)
     }
 
     override fun getNextMovement(): Movement {

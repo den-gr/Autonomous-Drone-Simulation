@@ -2,7 +2,7 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 
-class PositionProviderImpl(
+class RectangularPositionProviderImpl(
     val bodyLen: Double,
     private val zoneWidth: Double,
     private val zoneHeight: Double,
@@ -13,7 +13,7 @@ class PositionProviderImpl(
 
     override fun getNextExternalPosition(): Euclidean2DPosition {
         count++
-        return Euclidean2DPosition(offset, offset + (count * bodyLen) + epsilon)
+        return Euclidean2DPosition(offset, offset + (count * bodyLen * 2) + epsilon)
     }
 
     override fun getNorthInZonePosition(): Euclidean2DPosition {
@@ -37,7 +37,7 @@ class PositionProviderImpl(
     }
 
     override fun getSouthEastInZonePosition(): Euclidean2DPosition {
-        return Euclidean2DPosition(zoneWidth / 2, -zoneHeight / 4)
+        return Euclidean2DPosition(zoneWidth / 2, -zoneHeight - bodyLen - epsilon)
     }
 
     override fun getSouthEastOutZonePosition(): Euclidean2DPosition {
@@ -45,7 +45,7 @@ class PositionProviderImpl(
     }
 
     override fun getSouthWestInZonePosition(): Euclidean2DPosition {
-        return Euclidean2DPosition(-zoneWidth / 2, -zoneHeight / 4)
+        return Euclidean2DPosition(-zoneWidth / 2, -zoneHeight  - bodyLen - epsilon)
     }
 
     override fun getSouthWestOutZonePosition(): Euclidean2DPosition {
