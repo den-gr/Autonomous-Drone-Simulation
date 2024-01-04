@@ -19,14 +19,15 @@ class RectangularZoneShape<T>(
     }
 }
 
-class CircleZoneShape<T>(
+class EllipseZoneShape<T>(
     override val shape: T,
     val radius: Double,
+    val ratio: Double = 1.0
 ) : ZoneShape<T> {
     override val offset: Double = 0.0
 
     override fun makeCopy(): ZoneShape<T> {
-        return CircleZoneShape(shape, radius)
+        return EllipseZoneShape(shape, radius)
     }
 }
 

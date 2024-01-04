@@ -47,4 +47,20 @@ class CircularPositionProvider(
 
         return points.toList()
     }
+
+    fun generateEquidistantPointsInHalfCircle(radius: Double, numberOfPoints: Int, headingAngle: Double): List<Euclidean2DPosition> {
+        val points = mutableListOf<Euclidean2DPosition>()
+
+        val normalizedHeadingAngle = (headingAngle - PI / 2 + PI) % (2 * PI) - PI
+
+        for (i in 0 until numberOfPoints) {
+            val theta = normalizedHeadingAngle + PI * i / numberOfPoints
+            val x = radius * cos(theta)
+            val y = radius * sin(theta)
+
+            points.add(Euclidean2DPosition(x, y))
+        }
+
+        return points
+    }
 }

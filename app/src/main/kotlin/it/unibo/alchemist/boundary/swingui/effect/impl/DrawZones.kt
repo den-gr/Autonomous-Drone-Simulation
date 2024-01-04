@@ -7,7 +7,7 @@ import it.unibo.alchemist.model.Position2D
 import it.unibo.alchemist.model.actions.Grouping
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
-import it.unibo.alchemist.model.actions.zones.shapes.CircleZoneShape
+import it.unibo.alchemist.model.actions.zones.shapes.EllipseZoneShape
 import it.unibo.alchemist.model.actions.zones.shapes.CircularSegmentZoneShape
 import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
@@ -76,12 +76,12 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                         val shape = z.zoneShape as RectangularZoneShape<Euclidean2DShape>
                         val fov: java.awt.Shape = Rectangle2D.Double(-(shape.width / 2), -shape.height / 2 - shape.offset, shape.width, shape.height)
                         graphics.draw(transform.createTransformedShape(fov))
-                    } else if (z.zoneShape is CircleZoneShape<Euclidean2DShape>) {
-                        val shape = z.zoneShape as CircleZoneShape<Euclidean2DShape>
+                    } else if (z.zoneShape is EllipseZoneShape<Euclidean2DShape>) {
+                        val shape = z.zoneShape as EllipseZoneShape<Euclidean2DShape>
                         val fov: java.awt.Shape = Ellipse2D.Double(
+                            -shape.radius * shape.ratio,
                             -shape.radius,
-                            -shape.radius,
-                            shape.radius * 2,
+                            shape.radius * 2 * shape.ratio,
                             shape.radius * 2,
                         )
                         if (z is StressZone) {

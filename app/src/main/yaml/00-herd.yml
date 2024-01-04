@@ -18,7 +18,7 @@ variables:
     formula: 0.2 * body_len
 deployments:
   - type: Circle
-    parameters: [40, 0, 0, 100]
+    parameters: [50, 0, 0, 100]
     contents:
       - molecule: bodyLen
         concentration: *body_len
