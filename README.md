@@ -22,19 +22,24 @@ Tasks are named after the corresponding YAML file, with the pattern `run<name-of
 
 Note that the first launch will be slow, since Gradle will download all the required files. They will get cached in the user's home folder (as per Gradle normal behavior) and thus subsequent execution will be much faster.
 
-### GPS Trace based version:
+### Run herd movement simulation:
+To execute `./gradlew run00` and then press `P` to start
+
+### Run drone and zebras movement reconstruction
+To execute `./gradlew run05` and then pres `P` to start
+
+### Drone movement reconstruction: GPS Trace based version:
 Simulation configuration: `app/src/main/yaml/03-gpsTrac.yml`    
 1. To execute `./gradlew run03`
-2. Zoom to the points in Kenya
-3. Click `R` to activate real-time mode and then click `P` to start the simulation
+2. Click `R` to activate real-time mode and then click `P` to start the simulation
 
-### Protelis based version
+### Drone movement reconstruction: protelis based version
 
 Simulation configuration: `app/src/main/yaml/02-protelis.yml`
 
 1. To execute `./gradlew run02`
-2. Zoom to the points in Kenya
-3. Click `P` to start the simulation
+2. Click `P` to start the simulation
+
 
 Technical note: this implementation use a custom action that ignores streets: `CustomTargetMapWalker` located in `app/src/main/java/`
 
