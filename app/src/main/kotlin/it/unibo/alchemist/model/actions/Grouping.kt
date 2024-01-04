@@ -42,7 +42,7 @@ class Grouping @JvmOverloads constructor(
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
 //        val stressZoneShape = zoneShapeFactory.produceRectangularZoneShape(stressZoneWidth * 2, stressZoneHeight * 2, ZoneType.FRONT_AND_REAR)
-        val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(stressZoneHeight)
+        val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneHeight, 2.0)
         stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
         list.add(stressZone)
 

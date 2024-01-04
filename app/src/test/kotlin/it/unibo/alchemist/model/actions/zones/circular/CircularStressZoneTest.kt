@@ -58,8 +58,6 @@ class CircularStressZoneTest : AbstractZoneTest() {
         stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movements, REPULSION_FACTOR)
     }
 
-
-
     @BeforeTest
     fun resetPositions() {
         environment.removeNode(node4)
@@ -196,6 +194,11 @@ class CircularStressZoneTest : AbstractZoneTest() {
         assertEquals(west.x, rotatedVector.x, EPSILON)
         assertEquals(west.y, rotatedVector.y, EPSILON)
 //        assertEquals(west, rotatedVector)
+    }
+
+    @Test
+    fun testCirconference() {
+        println(positionProvider.generateEquidistantPointsInHalfCircle(1.0, 5, environment.getHeading(node1).asAngle))
     }
 
     private fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
