@@ -20,10 +20,6 @@ class AttractionZone(
 ) : AbstractZone(node, environment, movements) {
     override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
 
-    override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
-        // TODO zone margin with heading consideration
-        return Euclidean2DPosition(position.x, position.y + zoneShape.offset)
-    }
 
     override fun getNextMovement(): Movement {
         val positions = mutableSetOf<RelativeLateralZonePosition>()

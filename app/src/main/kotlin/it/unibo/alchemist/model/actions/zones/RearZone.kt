@@ -23,11 +23,6 @@ class RearZone(
 ) : AbstractZone(node, environment, movements) {
     override val visibleNodes: Molecule = SimpleMolecule("Rear zone")
 
-    override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
-        // TODO zone margin with heading consideration
-        return Euclidean2DPosition(position.x, position.y)
-    }
-
     override fun getNextMovement(): Movement {
         val velocityModifier = if (Random.nextDouble() > 0.6) slowDownFactor else 1.0
         return getRandomMovement().multiplyVelocity(velocityModifier)

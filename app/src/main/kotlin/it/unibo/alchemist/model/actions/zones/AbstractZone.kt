@@ -50,7 +50,7 @@ abstract class AbstractZone(
 
     protected fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>> {
         val transformedShape = zoneShape.shape.transformed {
-            origin(getZoneCentroid(position))
+            origin(position)
             rotate(getHeading())
         }
         return environment.getNodesWithin(transformedShape)
@@ -69,5 +69,4 @@ abstract class AbstractZone(
         return environment.getHeading(owner)
     }
 
-    abstract fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition
 }

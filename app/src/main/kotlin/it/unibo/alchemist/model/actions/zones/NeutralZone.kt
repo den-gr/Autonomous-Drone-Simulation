@@ -22,19 +22,6 @@ class NeutralZone(
 
     override val visibleNodes: Molecule = SimpleMolecule("Neutral zone")
 
-//    init {
-//        shape = environment.shapeFactory.circleSector(
-//            neutralZoneHeight,
-//            180.0,
-//            Euclidean2DPosition(0.0, 1.0).asAngle,
-//        )
-//    }
-
-    override fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition {
-        // TODO zone margin with heading consideration
-        return position
-    }
-
     override fun getNextMovement(): Movement {
         val positions = mutableSetOf<RelativeLateralZonePosition>()
         val nodePosition = environment.getPosition(owner)
@@ -59,27 +46,5 @@ class NeutralZone(
         }
 
         return getRandomMovement()
-    }
-
-    fun angleBetweenAngles(angle1: Double, angle2: Double): Double {
-        // Calculate the angle difference
-        var angleDiff = angle2 - angle1
-
-        // Normalize the angle to be within the range -PI to PI
-        while (angleDiff < -PI) {
-            angleDiff += 2 * PI
-        }
-
-        while (angleDiff > PI) {
-            angleDiff -= 2 * PI
-        }
-
-        return angleDiff
-    }
-
-    fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
-        val newX = vector.x * cos(angle) - vector.y * sin(angle)
-        val newY = vector.x * sin(angle) + vector.y * cos(angle)
-        return environment.makePosition(newX, newY)
     }
 }
