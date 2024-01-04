@@ -92,7 +92,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                         graphics.draw(transform.createTransformedShape(fov))
                     } else if (z.zoneShape is CircularSegmentZoneShape<Euclidean2DShape>) {
                         val shape = z.zoneShape as CircularSegmentZoneShape<Euclidean2DShape>
-                        val startAngle = -shape.angle / 2
+                        val startAngle = z.zoneShape.offset * -shape.angle / 2
                         val fov: java.awt.Shape = Arc2D.Double(-shape.radius, -shape.radius, shape.radius * 2, shape.radius * 2, startAngle, shape.angle, Arc2D.PIE)
                         graphics.draw(transform.createTransformedShape(fov))
                     } else {

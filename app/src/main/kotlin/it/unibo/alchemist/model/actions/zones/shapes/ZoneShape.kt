@@ -33,9 +33,9 @@ class CircleZoneShape<T>(
 class CircularSegmentZoneShape<T>(
     override val shape: T,
     val radius: Double,
-    val angle: Double
+    val angle: Double,
+    override val offset: Double = 1.0
 ) : ZoneShape<T> {
-    override val offset: Double = 0.0
 
     override fun makeCopy(): ZoneShape<T> {
         return CircularSegmentZoneShape(shape, radius, angle)

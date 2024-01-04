@@ -31,7 +31,7 @@ class Grouping @JvmOverloads constructor(
     private val movements: Map<Direction, Movement>
 
     init {
-        environment.setHeading(node, Euclidean2DPosition(1.0, 0.0))
+        environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
         val probabilities = getMoleculeDoubleTupleValues("MovementProbabilities")
         val velocities = getMoleculeDoubleTupleValues("Velocities")
         movements = mapOf(
@@ -54,7 +54,7 @@ class Grouping @JvmOverloads constructor(
         val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, 180.0)
         list.add(AttractionZone(attractionZoneShape, node, environment, movements, 0.5))
 
-        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, -180.0)
+        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, 180.0, true)
         rearZone = RearZone(rearZoneShape, node, environment, movements, 0.5)
         list.add(rearZone)
         zones = list.toList()

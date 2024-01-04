@@ -51,7 +51,7 @@ abstract class AbstractZone(
     protected fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>> {
         val transformedShape = zoneShape.shape.transformed {
             origin(getZoneCentroid(position))
-            rotate(environment.getHeading(owner))
+            rotate(getHeading())
         }
         return environment.getNodesWithin(transformedShape)
             .minusElement(owner)
@@ -63,6 +63,10 @@ abstract class AbstractZone(
         val offset = if (neighbourDirectionAngle < headingAngle) 2 * Math.PI else 0.0
         val angle = neighbourDirectionAngle - headingAngle
         return AngleAndOffset(angle, offset)
+    }
+
+    open fun getHeading(): Euclidean2DPosition {
+        return environment.getHeading(owner)
     }
 
     abstract fun getZoneCentroid(position: Euclidean2DPosition): Euclidean2DPosition

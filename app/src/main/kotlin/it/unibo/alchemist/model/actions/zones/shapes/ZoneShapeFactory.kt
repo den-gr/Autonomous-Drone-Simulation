@@ -12,5 +12,5 @@ interface ZoneShapeFactory<T, P> {
 
     fun produceCircleZoneShape(radius: T): ZoneShape<P>
 
-    fun produceCircularSectorZoneShape(radius: T, angle: T): ZoneShape<P>
+    fun produceCircularSectorZoneShape(radius: T, angle: T, inverseToHeading: Boolean = false): ZoneShape<P>
 }

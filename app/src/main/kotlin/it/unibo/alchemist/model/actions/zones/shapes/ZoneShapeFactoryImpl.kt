@@ -31,11 +31,12 @@ class ZoneShapeFactoryImpl(private val shapeFactory: Euclidean2DShapeFactory) : 
         )
     }
 
-    override fun produceCircularSectorZoneShape(radius: Double, angle: Double): ZoneShape<Euclidean2DShape> {
+    override fun produceCircularSectorZoneShape(radius: Double, angle: Double, inverseToHeading: Boolean): ZoneShape<Euclidean2DShape> {
         return CircularSegmentZoneShape(
             shapeFactory.circleSector(radius, toRadians(angle), 0.0),
             radius,
             angle,
+            if(inverseToHeading) -1.0 else 1.0
         )
     }
 }
