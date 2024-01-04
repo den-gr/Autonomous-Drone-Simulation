@@ -35,7 +35,7 @@ class CircularStressZoneTest : AbstractZoneTest() {
         const val FORWARD_VELOCITY = 2.0
         const val LATERAL_VELOCITY = 1.0
         val LEFT_POSITION = Euclidean2DPosition(-2.0, 0.0)
-        val EPSILON = 0.0001
+        const val EPSILON = 0.0001
     }
 
     @BeforeTest
@@ -58,10 +58,7 @@ class CircularStressZoneTest : AbstractZoneTest() {
         stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movements, REPULSION_FACTOR)
     }
 
-    private fun addNode(node: Node<Any>, position: Euclidean2DPosition) {
-        environment.addNode(node, position)
-        setDefaultHeading(node)
-    }
+
 
     @BeforeTest
     fun resetPositions() {
@@ -201,7 +198,7 @@ class CircularStressZoneTest : AbstractZoneTest() {
 //        assertEquals(west, rotatedVector)
     }
 
-    fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
+    private fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
         val newX = vector.x * cos(angle) - vector.y * sin(angle)
         val newY = vector.x * sin(angle) + vector.y * cos(angle)
         return environment.makePosition(newX, newY)

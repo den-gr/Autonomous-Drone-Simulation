@@ -46,4 +46,9 @@ abstract class AbstractZoneTest {
     protected fun setDefaultHeading(node: Node<Any>) {
         environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
     }
+
+    protected fun addNode(node: Node<Any>, position: Euclidean2DPosition) {
+        environment.addNode(node, position)
+        setDefaultHeading(node)
+    }
 }

@@ -48,7 +48,7 @@ abstract class AbstractZone(
         return nodesInZone.isNotEmpty()
     }
 
-    protected fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>> {
+    override fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>> {
         val transformedShape = zoneShape.shape.transformed {
             origin(position)
             rotate(getHeading())

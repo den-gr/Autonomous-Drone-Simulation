@@ -108,10 +108,10 @@ class NeutralZoneTest : AbstractZoneTest() {
 
     @Test
     fun testBehindOutOfZone() {
-        setPositionAndVerifySetting(node2, positionProvider.getSouthEastInZonePosition())
+        setPositionAndVerifySetting(node2, positionProvider.getSouthEastOutZonePosition())
         assertFalse(neutralZone1.areNodesInZone())
 
-        setPositionAndVerifySetting(node2, positionProvider.getSouthWestInZonePosition())
+        setPositionAndVerifySetting(node2, positionProvider.getSouthWestOutZonePosition())
         assertFalse(neutralZone1.areNodesInZone())
     }
 }

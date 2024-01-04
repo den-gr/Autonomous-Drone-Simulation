@@ -37,7 +37,7 @@ class RectangularPositionProviderImpl(
     }
 
     override fun getSouthEastInZonePosition(): Euclidean2DPosition {
-        return Euclidean2DPosition(zoneWidth / 2, -zoneHeight - bodyLen - epsilon)
+        return Euclidean2DPosition(zoneWidth / 4, -zoneHeight/4)
     }
 
     override fun getSouthEastOutZonePosition(): Euclidean2DPosition {
@@ -45,7 +45,7 @@ class RectangularPositionProviderImpl(
     }
 
     override fun getSouthWestInZonePosition(): Euclidean2DPosition {
-        return Euclidean2DPosition(-zoneWidth / 2, -zoneHeight  - bodyLen - epsilon)
+        return Euclidean2DPosition(-zoneWidth / 3, -zoneHeight/3)
     }
 
     override fun getSouthWestOutZonePosition(): Euclidean2DPosition {

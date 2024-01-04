@@ -7,16 +7,15 @@ import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.actions.zones.*
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
-import it.unibo.alchemist.model.actions.zones.shapes.ZoneType
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.protelis.lang.datatype.impl.ArrayTupleImpl
 import java.lang.IllegalStateException
+import java.lang.Math.toRadians
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
-import java.lang.Math.toRadians
 
 class Grouping @JvmOverloads constructor(
     node: Node<Any>,
@@ -81,15 +80,24 @@ class Grouping @JvmOverloads constructor(
         node.contents.getValue(SimpleMolecule(moleculeName))
 
     private fun getNextPosition(): Euclidean2DPosition {
-//        if (Random.nextDouble() < 0.05) {
-//            val headingAngle = environment.getHeading(node).asAngle + toRadians(1.0)
-//            environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
-//        }
+        if (Random.nextDouble() < 0.01) {
+            val headingAngle = environment.getHeading(node).asAngle + toRadians(1.0)
+            environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
+        }
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 var movement = zone.getNextMovement()
                 if (!rearZone.areNodesInZone() && Random.nextDouble() <= 0.3) {
                     movement = movement.multiplyVelocity(2.0)
+                }
+                if(zone is NeutralZone && Random.nextDouble() < 0.1) {
+                    val nodes = zone.getNodesInZone(environment.getPosition(node))
+
+                    val (vector, count) = nodes.map { environment.getHeading(it)}.foldRight(Pair(Euclidean2DPosition(0.0, 0.0), 0)){ elem,  acc ->
+                        Pair(Euclidean2DPosition(acc.first.x + elem.x, acc.first.y + elem.y), acc.second + 1)
+                    }
+                    val avgHeading = (Euclidean2DPosition(vector.x/ count, vector.y/count))
+                    environment.setHeading(node, avgHeading)
                 }
 
                 node.setConcentration(SimpleMolecule("zone"), zone::class)

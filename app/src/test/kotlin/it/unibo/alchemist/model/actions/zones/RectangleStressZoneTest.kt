@@ -26,8 +26,8 @@ class RectangleStressZoneTest : AbstractZoneTest() {
     )
 
     companion object {
-        const val STRESS_ZONE_WIDTH = 8.0 * BODY_LEN
-        const val STRESS_ZONE_HEIGHT = 8.0 * BODY_LEN
+        const val STRESS_ZONE_WIDTH = 10.0 * BODY_LEN
+        const val STRESS_ZONE_HEIGHT = 10.0 * BODY_LEN
         const val REPULSION_FACTOR = 0.5
         const val FORWARD_VELOCITY = 2.0
         const val LATERAL_VELOCITY = 1.0
@@ -104,8 +104,10 @@ class RectangleStressZoneTest : AbstractZoneTest() {
      */
     @Test
     fun testForwardMovement() {
-        setPositionAndVerifySetting(node2, positionProvider.getSouthEastInZonePosition())
-        setPositionAndVerifySetting(node4, positionProvider.getSouthWestInZonePosition())
+        environment.removeNode(node2)
+        environment.removeNode(node4)
+        addNode(node2, positionProvider.getSouthEastInZonePosition())
+        addNode(node4, positionProvider.getSouthWestInZonePosition())
 
         assertTrue(stressZone1.areNodesInZone())
 
