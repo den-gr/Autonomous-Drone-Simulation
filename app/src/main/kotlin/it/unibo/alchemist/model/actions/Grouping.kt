@@ -5,7 +5,11 @@ import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
-import it.unibo.alchemist.model.actions.zones.*
+import it.unibo.alchemist.model.actions.zones.AttractionZone
+import it.unibo.alchemist.model.actions.zones.NeutralZone
+import it.unibo.alchemist.model.actions.zones.RearZone
+import it.unibo.alchemist.model.actions.zones.StressZone
+import it.unibo.alchemist.model.actions.zones.Zone
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
@@ -17,17 +21,27 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Grouping @JvmOverloads constructor(
+// @JvmOverloads
+class Grouping constructor(
     node: Node<Any>,
     private val environment: ContinuousPhysics2DEnvironment<Any>,
-    private val stressZoneWidth: Double,
-    private val stressZoneHeight: Double,
-    private val repulsionFactor: Double = 0.5,
+    private val stressZoneRadius: Double,
+    private val neutralZoneRadius: Double,
+    private val attractionZoneRadius: Double,
+    private val rearZoneRadius: Double,
+    private val repulsionFactor: Double,
+    private val slowDownFactor: Double,
+    private val speedUpFactor: Double,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
     private val stressZone: StressZone
     private val rearZone: RearZone
     private val movements: Map<Direction, Movement>
+
+    companion object {
+        const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
+        const val DIRECTIONAL_ZONE_ANGLE = 180.0 // degrees
+    }
 
     init {
         environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
@@ -42,19 +56,19 @@ class Grouping @JvmOverloads constructor(
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
 //        val stressZoneShape = zoneShapeFactory.produceRectangularZoneShape(stressZoneWidth * 2, stressZoneHeight * 2, ZoneType.FRONT_AND_REAR)
-        val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneHeight, 2.0)
+        val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
         stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
         list.add(stressZone)
 
 //        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(24.0, 24.0, ZoneType.FRONT)
-        val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(24.0, 180.0)
+        val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, DIRECTIONAL_ZONE_ANGLE)
         list.add(NeutralZone(neutralZoneShape, node, environment, movements))
 
-        val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, 180.0)
-        list.add(AttractionZone(attractionZoneShape, node, environment, movements, 0.5))
+        val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, DIRECTIONAL_ZONE_ANGLE)
+        list.add(AttractionZone(attractionZoneShape, node, environment, movements, speedUpFactor))
 
-        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(40.0, 180.0, true)
-        rearZone = RearZone(rearZoneShape, node, environment, movements, 0.5)
+        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, DIRECTIONAL_ZONE_ANGLE, true)
+        rearZone = RearZone(rearZoneShape, node, environment, movements, slowDownFactor)
         list.add(rearZone)
         zones = list.toList()
     }
@@ -64,7 +78,7 @@ class Grouping @JvmOverloads constructor(
     }
 
     override fun cloneAction(node: Node<Any>, reaction: Reaction<Any>) =
-        Grouping(node, environment, repulsionFactor, stressZoneWidth, stressZoneHeight)
+        Grouping(node, environment, stressZoneRadius, neutralZoneRadius, attractionZoneRadius, rearZoneRadius, repulsionFactor, slowDownFactor, speedUpFactor)
 
     override fun execute() {
         environment.moveNode(node, getNextPosition())
@@ -90,13 +104,13 @@ class Grouping @JvmOverloads constructor(
                 if (!rearZone.areNodesInZone() && Random.nextDouble() <= 0.3) {
                     movement = movement.multiplyVelocity(2.0)
                 }
-                if(zone is NeutralZone && Random.nextDouble() < 0.1) {
+                if (zone is NeutralZone && Random.nextDouble() < 0.1) {
                     val nodes = zone.getNodesInZone(environment.getPosition(node))
 
-                    val (vector, count) = nodes.map { environment.getHeading(it)}.foldRight(Pair(Euclidean2DPosition(0.0, 0.0), 0)){ elem,  acc ->
+                    val (vector, count) = nodes.map { environment.getHeading(it) }.foldRight(Pair(Euclidean2DPosition(0.0, 0.0), 0)) { elem, acc ->
                         Pair(Euclidean2DPosition(acc.first.x + elem.x, acc.first.y + elem.y), acc.second + 1)
                     }
-                    val avgHeading = (Euclidean2DPosition(vector.x/ count, vector.y/count))
+                    val avgHeading = (Euclidean2DPosition(vector.x / count, vector.y / count))
                     environment.setHeading(node, avgHeading)
                 }
 
@@ -133,26 +147,11 @@ class Grouping @JvmOverloads constructor(
         throw IllegalStateException("The sum of movement probabilities is not equal to 1")
     }
 
-    fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
+    private fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
         val newX = vector.x * cos(angle) - vector.y * sin(angle)
         val newY = vector.x * sin(angle) + vector.y * cos(angle)
         node.setConcentration(SimpleMolecule("new x"), newX)
         node.setConcentration(SimpleMolecule("new y"), newY)
         return environment.makePosition(newX, newY)
-    }
-
-    private fun movePointAway(from: Euclidean2DPosition, to: Euclidean2DPosition, distance: Double): Euclidean2DPosition {
-        val deltaX = to.x - from.x
-        val deltaY = to.y - from.y
-
-        val currentDistance = kotlin.math.hypot(deltaX, deltaY)
-
-        val unitVectorX = deltaX / currentDistance
-        val unitVectorY = deltaY / currentDistance
-
-        val newX = unitVectorX * distance
-        val newY = unitVectorY * distance
-
-        return Euclidean2DPosition(newX, newY)
     }
 }

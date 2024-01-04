@@ -2,23 +2,31 @@ incarnation: protelis
 environment:
   type: ContinuousPhysics2DEnvironment
 variables:
+  body_len: &body_len
+    formula: 2
   body_width: &body_width
     formula: body_len / 2
-  body_len: &body_len
-    formula: 1
-  stress_zone_w: &stress_zone_w
+  stress_zone_radius: &stress_zone_r
     formula: 2 * body_len
-  stress_zone_h: &stress_zone_h
-    formula: 4 * body_len
-  repulsion_factor: &repulsion_factor
-    formula: 0.5
+  neutral_zone_radius: &neutral_zone_r
+    formula: 10 * body_len
+  attraction_zone_radius: &attr_zone_r
+    formula: 20 * body_len
+  rear_zone_radius: &rear_zone_r
+    formula: attraction_zone_radius
+  repulsion_factor: &repulsion_f
+    formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
+  slow_down_factor: &slow_down_f
+    formula: 0.5 # [0; 1] if there are neighbors in rear zone slow down by this value
+  speed_up_factor: &speed_up_f
+    formula: 0.5 # [0; inf] if there are nodes in attraction zone add velocity*speed_up_factor to current velocity
   intrinsic_forward_velocity: &forward_velocity
     formula: 0.4 * body_len
   intrinsic_lateral_velocity: &lateral_velocity
     formula: 0.2 * body_len
 deployments:
   - type: Circle
-    parameters: [50, 0, 0, 100]
+    parameters: [40, 0, 0, 80]
     contents:
       - molecule: bodyLen
         concentration: *body_len
@@ -31,9 +39,7 @@ deployments:
         type: Event
         actions:
           type: Grouping
-          parameters: [*stress_zone_w, *stress_zone_h, *repulsion_factor]
+          parameters: [*stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f]
     properties:
       - type: RectangularArea
         parameters: [*body_len, *body_width] #inverted
-
-
