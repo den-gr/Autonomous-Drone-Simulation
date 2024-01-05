@@ -24,6 +24,7 @@ Note that the first launch will be slow, since Gradle will download all the requ
 
 ### Run herd movement simulation:
 To execute `./gradlew run00` and then press `P` to start
+To be able slow down the movements press `R`
 
 ### Run drone and zebras movement reconstruction
 To execute `./gradlew run05` and then pres `P` to start
