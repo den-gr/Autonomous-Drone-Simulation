@@ -23,8 +23,9 @@ Tasks are named after the corresponding YAML file, with the pattern `run<name-of
 Note that the first launch will be slow, since Gradle will download all the required files. They will get cached in the user's home folder (as per Gradle normal behavior) and thus subsequent execution will be much faster.
 
 ### Run herd movement simulation:
-To execute `./gradlew run00` and then press `P` to start
-To be able slow down the movements press `R`
+To execute `./gradlew run00` and then press `P` to start.
+
+Press `R` to slow down the simulation
 
 ### Run drone and zebras movement reconstruction
 To execute `./gradlew run05` and then pres `P` to start
