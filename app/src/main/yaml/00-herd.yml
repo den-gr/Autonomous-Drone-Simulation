@@ -26,7 +26,7 @@ variables:
     formula: 0.2 * body_len
 deployments:
   - type: Circle
-    parameters: [40, 0, 0, 80]
+    parameters: [50, 0, 0, 80]
     contents:
       - molecule: bodyLen
         concentration: *body_len
@@ -43,3 +43,21 @@ deployments:
     properties:
       - type: RectangularArea
         parameters: [*body_len, *body_width] #inverted
+#  - type: Circle
+#    parameters: [ 50, 0, -200, 80 ]
+#    contents:
+#      - molecule: bodyLen
+#        concentration: *body_len
+#      - molecule: MovementProbabilities
+#        concentration: [ 0.25, 0.5, 0.25 ]
+#      - molecule: Velocities
+#        concentration: [ *lateral_velocity, *forward_velocity ]
+#    programs:
+#      - time-distribution: 1
+#        type: Event
+#        actions:
+#          type: Grouping
+#          parameters: [ *stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f, false ]
+#    properties:
+#      - type: RectangularArea
+#        parameters: [ *body_len, *body_width ] #inverted

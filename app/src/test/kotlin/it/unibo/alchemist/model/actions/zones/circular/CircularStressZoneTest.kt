@@ -10,10 +10,6 @@ import it.unibo.alchemist.model.linkingrules.NoLinks
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
 class CircularStressZoneTest : AbstractZoneTest() {
@@ -82,7 +78,10 @@ class CircularStressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone1.areNodesInZone())
         val movement = stressZone1.getNextMovement()
         assertEquals(movements.getValue(Direction.FORWARD).lateralVelocity, movement.lateralVelocity)
-        assertEquals(movements.getValue(Direction.FORWARD).forwardVelocity, movement.forwardVelocity + REPULSION_FACTOR * FORWARD_VELOCITY)
+        assertEquals(
+            movements.getValue(Direction.FORWARD).forwardVelocity,
+            movement.forwardVelocity + REPULSION_FACTOR * FORWARD_VELOCITY,
+        )
     }
 
     @Test
@@ -178,32 +177,7 @@ class CircularStressZoneTest : AbstractZoneTest() {
     }
 
     @Test
-    fun testAngles() {
-        val position = Euclidean2DPosition(0.0, -1.0)
-        val heading = atan2(position.y, position.x)
-        val headingPosition = Euclidean2DPosition(cos(heading), sin(heading))
-
-        val west = Euclidean2DPosition(-0.0, 1.0)
-        println("target angle ${west.asAngle}")
-        val updatedAngle = (west.asAngle - heading)
-        println("Heading angle $heading")
-        println("updated angle $updatedAngle")
-
-        println((PI % (2 * PI)) - PI)
-        val rotatedVector = rotateVector(headingPosition, updatedAngle)
-        assertEquals(west.x, rotatedVector.x, EPSILON)
-        assertEquals(west.y, rotatedVector.y, EPSILON)
-//        assertEquals(west, rotatedVector)
-    }
-
-    @Test
-    fun testCirconference() {
+    fun testCircumference() {
         println(positionProvider.generateEquidistantPointsInHalfCircle(1.0, 5, environment.getHeading(node1).asAngle))
-    }
-
-    private fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
-        val newX = vector.x * cos(angle) - vector.y * sin(angle)
-        val newY = vector.x * sin(angle) + vector.y * cos(angle)
-        return environment.makePosition(newX, newY)
     }
 }

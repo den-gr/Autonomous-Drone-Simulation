@@ -31,7 +31,7 @@ class RectangleStressZoneTest : AbstractZoneTest() {
         const val REPULSION_FACTOR = 0.5
         const val FORWARD_VELOCITY = 2.0
         const val LATERAL_VELOCITY = 1.0
-        val LEFT_POSITION = Euclidean2DPosition(-2.0, 0.0)
+        val EAST_POSITION = Euclidean2DPosition(-2.0, 0.0)
     }
 
     @BeforeTest
@@ -85,7 +85,7 @@ class RectangleStressZoneTest : AbstractZoneTest() {
 
     @Test
     fun testLeftAndRightMovement() {
-        setPositionAndVerifySetting(node2, LEFT_POSITION)
+        setPositionAndVerifySetting(node2, EAST_POSITION)
 
         assertTrue(stressZone1.areNodesInZone())
         assertTrue(stressZone2.areNodesInZone())
