@@ -21,7 +21,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-
 class Grouping @JvmOverloads constructor(
     node: Node<Any>,
     private val environment: ContinuousPhysics2DEnvironment<Any>,
@@ -32,7 +31,7 @@ class Grouping @JvmOverloads constructor(
     private val repulsionFactor: Double,
     private val slowDownFactor: Double,
     private val speedUpFactor: Double,
-    private val north: Boolean = true
+    north: Boolean = true,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
     private val stressZone: StressZone
@@ -47,7 +46,7 @@ class Grouping @JvmOverloads constructor(
     }
 
     init {
-        val y = if(north) 1.0 else -1.0
+        val y = if (north) 1.0 else -1.0
         environment.setHeading(node, Euclidean2DPosition(0.0, y))
         val probabilities = getMoleculeDoubleTupleValues("MovementProbabilities")
         val velocities = getMoleculeDoubleTupleValues("Velocities")
@@ -56,7 +55,6 @@ class Grouping @JvmOverloads constructor(
             Direction.FORWARD to Movement(0.0, velocities[1], probabilities[1]),
             Direction.RIGHT to Movement(velocities[0], 0.0, probabilities[2]),
         )
-        val list: MutableList<Zone> = mutableListOf()
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
@@ -109,7 +107,7 @@ class Grouping @JvmOverloads constructor(
         }
         for (zone in zones) {
             if (zone.areNodesInZone()) {
-                var movement = zone.getNextMovement() // .addVelocityModifier(getNoiseModifier(), getNoiseModifier())
+                var movement = zone.getNextMovement().addVelocityModifier(getNoiseModifier(), getNoiseModifier())
                 if (!rearZone.areNodesInZone() && Random.nextDouble() <= 0.3) {
                     movement = movement.multiplyVelocity(2.0)
                 }
@@ -149,7 +147,7 @@ class Grouping @JvmOverloads constructor(
         for (movement in movements.values) {
             cumulativeProbability += movement.probability
             if (randomNumber < cumulativeProbability) {
-                return movement // .addVelocityModifier(getNoiseModifier(), getNoiseModifier())
+                return movement.addVelocityModifier(getNoiseModifier(), getNoiseModifier())
             }
         }
         throw IllegalStateException("The sum of movement probabilities is not equal to 1")
