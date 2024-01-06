@@ -17,6 +17,7 @@ abstract class AbstractZoneTest {
         const val BODY_LEN = 1.0
         const val BODY_WIDTH = BODY_LEN / 2
         val CENTER_POSITION = Euclidean2DPosition(0.0, 0.0)
+        const val EPSILON = 0.001
     }
 
     protected val movements = mapOf(

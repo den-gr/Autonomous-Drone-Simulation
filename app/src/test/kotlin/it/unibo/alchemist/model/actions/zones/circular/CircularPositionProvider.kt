@@ -34,6 +34,10 @@ class CircularPositionProvider(
         return Euclidean2DPosition(radius / 2, radius / 2)
     }
 
+    fun getNorthWestInZonePosition(): Euclidean2DPosition {
+        return Euclidean2DPosition(-radius / 2, radius / 2 )
+    }
+
     fun getPointsInRadius(radius: Double, numPoints: Int = 10): List<Euclidean2DPosition> {
         val points = mutableListOf<Euclidean2DPosition>()
 
