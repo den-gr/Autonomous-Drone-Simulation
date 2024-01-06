@@ -8,8 +8,6 @@ import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
-import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import kotlin.math.atan2
 
 class AttractionZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
@@ -19,7 +17,6 @@ class AttractionZone(
     private val speedUpFactor: Double,
 ) : AbstractZone(node, environment, movements) {
     override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
-
 
     override fun getNextMovement(): Movement {
         val positions = mutableSetOf<RelativeLateralZonePosition>()

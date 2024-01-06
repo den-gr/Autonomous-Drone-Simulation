@@ -2,8 +2,8 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.SupportedIncarnations
+import it.unibo.alchemist.model.actions.zones.circular.CircularPositionProvider
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
-import it.unibo.alchemist.model.actions.zones.shapes.ZoneType
 import it.unibo.alchemist.model.linkingrules.NoLinks
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
@@ -19,19 +19,15 @@ class NeutralZoneTest : AbstractZoneTest() {
     private lateinit var node1: Node<Any>
     private lateinit var node2: Node<Any>
     private lateinit var neutralZone1: NeutralZone
-    private val positionProvider: PositionProvider<Euclidean2DPosition> = RectangularPositionProviderImpl(
+    private lateinit var neutralZone2: NeutralZone
+    private val positionProvider = CircularPositionProvider(
+        NEUTRAL_ZONE_RADIUS,
         BODY_LEN,
-        NEUTRAL_ZONE_WIDTH,
-        NEUTRAL_ZONE_HEIGHT,
     )
 
     companion object {
-        private const val NEUTRAL_ZONE_WIDTH_FACTOR = 6
-        private const val NEUTRAL_ZONE_HEIGHT_FACTOR = 12
-
-        const val NEUTRAL_ZONE_WIDTH = NEUTRAL_ZONE_WIDTH_FACTOR.toDouble() * BODY_LEN * 2
-        const val NEUTRAL_ZONE_HEIGHT = NEUTRAL_ZONE_HEIGHT_FACTOR.toDouble() * BODY_LEN
-//        val CIAONE: Int = 10
+        const val NEUTRAL_ZONE_RADIUS = 12 * BODY_LEN
+        const val NEUTRAL_ZONE_ANGLE = 180.0
     }
 
     @BeforeTest
@@ -43,26 +39,22 @@ class NeutralZoneTest : AbstractZoneTest() {
         node2 = createRectangleNode(incarnation, environment, BODY_WIDTH, BODY_LEN)
         environment.addNode(node1, positionProvider.getNextExternalPosition())
         environment.addNode(node2, positionProvider.getNextExternalPosition())
-        setHeading(node1)
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
-        val neutralZoneShape = zoneShapeFactory.produceRectangularZoneShape(
-            NEUTRAL_ZONE_WIDTH,
-            NEUTRAL_ZONE_HEIGHT,
-            ZoneType.FRONT,
+        val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(
+            NEUTRAL_ZONE_RADIUS,
+            NEUTRAL_ZONE_ANGLE,
         )
 
         neutralZone1 = NeutralZone(neutralZoneShape, node1, environment, movements)
-    }
-
-    private fun setHeading(node: Node<Any>) {
-        environment.setHeading(node, Euclidean2DPosition(0.0, 1.0))
+        neutralZone2 = NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movements)
     }
 
     @BeforeEach
     fun resetPositions() {
+        setDefaultHeading(node1)
+        environment.removeNode(node2)
         setPositionAndVerifySetting(node1, CENTER_POSITION)
-        environment.moveNodeToPosition(node2, positionProvider.getNextExternalPosition())
         assertFalse(neutralZone1.areNodesInZone())
     }
 
@@ -81,7 +73,7 @@ class NeutralZoneTest : AbstractZoneTest() {
 
     @Test
     fun testNeutralZoneLeftForwardDetection() {
-        setPositionAndVerifySetting(node2, positionProvider.getNorthWestInZonePosition())
+        addNode(node2, positionProvider.getNorthWestInZonePosition())
         assertTrue(neutralZone1.areNodesInZone())
 
         val movement = neutralZone1.getNextMovement()
@@ -90,7 +82,7 @@ class NeutralZoneTest : AbstractZoneTest() {
 
     @Test
     fun testNeutralZoneRightForwardDetection() {
-        setPositionAndVerifySetting(node2, positionProvider.getNorthEastInZonePosition())
+        addNode(node2, positionProvider.getNorthEastInZonePosition())
         assertTrue(neutralZone1.areNodesInZone())
 
         val movement = neutralZone1.getNextMovement()
@@ -98,20 +90,28 @@ class NeutralZoneTest : AbstractZoneTest() {
     }
 
     @Test
-    fun testForwardOutOfZone() {
-        setPositionAndVerifySetting(node2, positionProvider.getNorthEastOutZonePosition())
-        assertFalse(neutralZone1.areNodesInZone())
-
-        setPositionAndVerifySetting(node2, positionProvider.getNorthWestOutZonePosition())
-        assertFalse(neutralZone1.areNodesInZone())
+    fun testOutOfZone() {
+        val points = positionProvider.getPointsInRadius(NEUTRAL_ZONE_RADIUS + BODY_LEN + EPSILON)
+        addNode(node2, points.first())
+        for (p in points) {
+            setPositionAndVerifySetting(node2, p)
+            assertFalse(neutralZone1.areNodesInZone())
+            assertFalse(neutralZone2.areNodesInZone())
+        }
     }
 
-    @Test
-    fun testBehindOutOfZone() {
-        setPositionAndVerifySetting(node2, positionProvider.getSouthEastOutZonePosition())
-        assertFalse(neutralZone1.areNodesInZone())
-
-        setPositionAndVerifySetting(node2, positionProvider.getSouthWestOutZonePosition())
-        assertFalse(neutralZone1.areNodesInZone())
-    }
+//    @Test
+//    fun testInZoneNorth() {
+//        val points = positionProvider.generateEquidistantPointsInHalfCircle(
+//            NEUTRAL_ZONE_RADIUS - EPSILON,
+//            10,
+//            environment.getHeading(node1).asAngle,
+//        )
+//        addNode(node2, points.first())
+//        for (p in points) {
+//            setPositionAndVerifySetting(node2, p)
+//            assertTrue(neutralZone1.areNodesInZone())
+//            assertFalse(neutralZone2.areNodesInZone())
+//        }
+//    }
 }
