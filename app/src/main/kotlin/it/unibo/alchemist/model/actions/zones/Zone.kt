@@ -6,7 +6,14 @@ import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 
+/**
+ * An area that is visible to a node.
+ * It can define the next node's movement in base of the positions of neighbor nodes inside of zone.
+ */
 interface Zone {
+    /**
+     * Shape of zone.
+     */
     val zoneShape: ZoneShape<Euclidean2DShape>
 
     /**
@@ -23,9 +30,14 @@ interface Zone {
     fun areNodesInZone(position: Euclidean2DPosition): Boolean
 
     /**
-     * @return a list of nodes found by [areNodesInZone]
+     * In base of position of nodes in the zone define the next movement
+     * @return the next movement of node
      */
     fun getNextMovement(): Movement
 
+    /**
+     * @param position centroid of the zone
+     * @return all nodes that are in the zone, except zone owner
+     */
     fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>>
 }

@@ -60,7 +60,7 @@ class CircularPositionProvider(
         for (i in 0 until numberOfPoints) {
             val theta = normalizedHeadingAngle + PI * i / numberOfPoints
             val x = radius * cos(theta)
-            val y = radius * sin(theta) + epsilon
+            val y = radius * sin(theta)
 
             points.add(Euclidean2DPosition(x, y))
         }

@@ -8,6 +8,7 @@ import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironm
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.junit.jupiter.api.BeforeEach
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -34,8 +35,8 @@ class NeutralZoneTest : AbstractZoneTest() {
         val incarnation = SupportedIncarnations.get<Any, Euclidean2DPosition>("protelis").orElseThrow()
         environment = ContinuousPhysics2DEnvironment(incarnation)
         environment.linkingRule = NoLinks()
-        node1 = createRectangleNode(incarnation, environment, BODY_WIDTH, BODY_LEN)
-        node2 = createRectangleNode(incarnation, environment, BODY_WIDTH, BODY_LEN)
+        node1 = createRectangleNode(incarnation, environment, BODY_LEN, BODY_WIDTH)
+        node2 = createRectangleNode(incarnation, environment, BODY_LEN, BODY_WIDTH)
         environment.addNode(node1, positionProvider.getNextExternalPosition())
         environment.addNode(node2, positionProvider.getNextExternalPosition())
 
@@ -55,19 +56,6 @@ class NeutralZoneTest : AbstractZoneTest() {
         environment.removeNode(node2)
         setPositionAndVerifySetting(node1, CENTER_POSITION)
         assertFalse(neutralZone1.areNodesInZone())
-    }
-
-    @Test
-    fun testSpin() {
-        setPositionAndVerifySetting(node1, Euclidean2DPosition(0.0, 10.0))
-        val x: Euclidean2DPosition = environment.getHeading(node1)
-        assertEquals(Euclidean2DPosition(0.0, 1.0), x)
-        for (i in 1..10) {
-            val headingAngle = environment.getHeading(node1).asAngle + 18
-            environment.setHeading(node1, environment.makePosition(cos(headingAngle), sin(headingAngle)))
-            val heading = environment.getHeading(node1)
-            assertEquals(1.0, sqrt(heading.x * heading.x + heading.y * heading.y), 0.001)
-        }
     }
 
     @Test
@@ -110,6 +98,37 @@ class NeutralZoneTest : AbstractZoneTest() {
         for (p in points) {
             setPositionAndVerifySetting(node2, p)
             assertTrue(neutralZone1.areNodesInZone())
+        }
+    }
+
+    @Test
+    fun testOutZoneSouth() {
+        val a = environment.getHeading(node1).asAngle
+        val inverseHeading = if (PI >= 0) a - PI else a + PI
+
+        val points = positionProvider.generateEquidistantPointsInHalfCircle(
+            NEUTRAL_ZONE_RADIUS / 2,
+            10,
+            inverseHeading,
+        )
+        addNode(node2, points.first())
+        for (p in points) {
+            val p2 = p.minus(Euclidean2DPosition(0.0, BODY_LEN / 2))
+            setPositionAndVerifySetting(node2, p2)
+            assertFalse(neutralZone1.areNodesInZone())
+        }
+    }
+
+    @Test
+    fun testSpin() {
+        setPositionAndVerifySetting(node1, Euclidean2DPosition(0.0, 10.0))
+        val x: Euclidean2DPosition = environment.getHeading(node1)
+        assertEquals(Euclidean2DPosition(0.0, 1.0), x)
+        for (i in 1..10) {
+            val headingAngle = environment.getHeading(node1).asAngle + 18
+            environment.setHeading(node1, environment.makePosition(cos(headingAngle), sin(headingAngle)))
+            val heading = environment.getHeading(node1)
+            assertEquals(1.0, sqrt(heading.x * heading.x + heading.y * heading.y), 0.001)
         }
     }
 }
