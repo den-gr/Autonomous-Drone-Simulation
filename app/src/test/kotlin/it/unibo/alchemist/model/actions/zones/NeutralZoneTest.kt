@@ -2,7 +2,6 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.SupportedIncarnations
-import it.unibo.alchemist.model.actions.zones.circular.CircularPositionProvider
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.linkingrules.NoLinks
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
@@ -100,18 +99,17 @@ class NeutralZoneTest : AbstractZoneTest() {
         }
     }
 
-//    @Test
-//    fun testInZoneNorth() {
-//        val points = positionProvider.generateEquidistantPointsInHalfCircle(
-//            NEUTRAL_ZONE_RADIUS - EPSILON,
-//            10,
-//            environment.getHeading(node1).asAngle,
-//        )
-//        addNode(node2, points.first())
-//        for (p in points) {
-//            setPositionAndVerifySetting(node2, p)
-//            assertTrue(neutralZone1.areNodesInZone())
-//            assertFalse(neutralZone2.areNodesInZone())
-//        }
-//    }
+    @Test
+    fun testInZoneNorth() {
+        val points = positionProvider.generateEquidistantPointsInHalfCircle(
+            NEUTRAL_ZONE_RADIUS - EPSILON,
+            10,
+            environment.getHeading(node1).asAngle,
+        )
+        addNode(node2, points.first())
+        for (p in points) {
+            setPositionAndVerifySetting(node2, p)
+            assertTrue(neutralZone1.areNodesInZone())
+        }
+    }
 }

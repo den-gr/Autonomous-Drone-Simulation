@@ -72,31 +72,31 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
             .forEach { a ->
                 val zones: List<Zone> = a.zones
                 zones.forEach { z ->
-                    if (z.zoneShape is RectangularZoneShape<Euclidean2DShape>) {
-                        val shape = z.zoneShape as RectangularZoneShape<Euclidean2DShape>
-                        val fov: java.awt.Shape = Rectangle2D.Double(-(shape.width / 2), -shape.height / 2 - shape.offset, shape.width, shape.height)
-                        graphics.draw(transform.createTransformedShape(fov))
-                    } else if (z.zoneShape is EllipseZoneShape<Euclidean2DShape>) {
-                        val shape = z.zoneShape as EllipseZoneShape<Euclidean2DShape>
-                        val fov: java.awt.Shape = Ellipse2D.Double(
-                            -shape.radius * shape.ratio,
-                            -shape.radius,
-                            shape.radius * 2 * shape.ratio,
-                            shape.radius * 2,
-                        )
-                        if (z is StressZone) {
-                            graphics.color = transparentRed
-                            graphics.fill(transform.createTransformedShape(fov))
-                            graphics.color = colorSummary
+                    when (z.zoneShape) {
+                        is EllipseZoneShape<Euclidean2DShape> -> {
+                            val shape = z.zoneShape as EllipseZoneShape<Euclidean2DShape>
+                            val fov: java.awt.Shape = Ellipse2D.Double(
+                                -shape.radius * shape.ratio,
+                                -shape.radius,
+                                shape.radius * 2 * shape.ratio,
+                                shape.radius * 2,
+                            )
+                            if (z is StressZone) {
+                                graphics.color = transparentRed
+                                graphics.fill(transform.createTransformedShape(fov))
+                                graphics.color = colorSummary
+                            }
+                            graphics.draw(transform.createTransformedShape(fov))
                         }
-                        graphics.draw(transform.createTransformedShape(fov))
-                    } else if (z.zoneShape is CircularSegmentZoneShape<Euclidean2DShape>) {
-                        val shape = z.zoneShape as CircularSegmentZoneShape<Euclidean2DShape>
-                        val startAngle = z.zoneShape.offset * -shape.angle / 2
-                        val fov: java.awt.Shape = Arc2D.Double(-shape.radius, -shape.radius, shape.radius * 2, shape.radius * 2, startAngle, shape.angle, Arc2D.PIE)
-                        graphics.draw(transform.createTransformedShape(fov))
-                    } else {
-                        throw NotImplementedException("AAAAAAAAAAAAAAAA") // TODO
+                        is CircularSegmentZoneShape<Euclidean2DShape> -> {
+                            val shape = z.zoneShape as CircularSegmentZoneShape<Euclidean2DShape>
+                            val startAngle = z.zoneShape.offset * -shape.angle / 2
+                            val fov: java.awt.Shape = Arc2D.Double(-shape.radius, -shape.radius, shape.radius * 2, shape.radius * 2, startAngle, shape.angle, Arc2D.PIE)
+                            graphics.draw(transform.createTransformedShape(fov))
+                        }
+                        else -> {
+                            throw NotImplementedException("AAAAAAAAAAAAAAAA") // TODO
+                        }
                     }
                 }
             }

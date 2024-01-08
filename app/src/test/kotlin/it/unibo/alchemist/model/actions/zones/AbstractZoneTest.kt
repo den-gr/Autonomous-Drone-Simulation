@@ -18,12 +18,14 @@ abstract class AbstractZoneTest {
         const val BODY_WIDTH = BODY_LEN / 2
         val CENTER_POSITION = Euclidean2DPosition(0.0, 0.0)
         const val EPSILON = 0.001
+        const val FORWARD_VELOCITY = 2.0
+        const val LATERAL_VELOCITY = 1.0
     }
 
     protected val movements = mapOf(
-        Direction.LEFT to Movement(-RectangleStressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
-        Direction.FORWARD to Movement(0.0, RectangleStressZoneTest.FORWARD_VELOCITY, 0.5),
-        Direction.RIGHT to Movement(RectangleStressZoneTest.LATERAL_VELOCITY, 0.0, 0.25),
+        Direction.LEFT to Movement(-LATERAL_VELOCITY, 0.0, 0.25),
+        Direction.FORWARD to Movement(0.0, FORWARD_VELOCITY, 0.5),
+        Direction.RIGHT to Movement(LATERAL_VELOCITY, 0.0, 0.25),
     )
 
     protected fun createRectangleNode(

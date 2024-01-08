@@ -1,6 +1,5 @@
 package it.unibo.alchemist.model.actions.zones
 
-import it.unibo.alchemist.model.actions.zones.circular.CircularStressZoneTest
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.junit.jupiter.api.Test
 import kotlin.math.atan2
@@ -20,8 +19,8 @@ class GeometryTest {
         val updatedAngle = (west.asAngle - heading)
 
         val rotatedVector = rotateVector(headingPosition, updatedAngle)
-        assertEquals(west.x, rotatedVector.x, CircularStressZoneTest.EPSILON)
-        assertEquals(west.y, rotatedVector.y, CircularStressZoneTest.EPSILON)
+        assertEquals(west.x, rotatedVector.x, StressZoneTest.EPSILON)
+        assertEquals(west.y, rotatedVector.y, StressZoneTest.EPSILON)
     }
 
     private fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {

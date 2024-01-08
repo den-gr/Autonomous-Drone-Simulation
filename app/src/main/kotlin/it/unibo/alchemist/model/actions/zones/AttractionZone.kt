@@ -41,7 +41,7 @@ class AttractionZone(
             return movements.getValue(Direction.FORWARD).addVelocityModifier(0.0, speedUpFactor)
         }
 
+        throw IllegalStateException("Attraction zone is not active with no nodes in zone")
         return movements.getValue(Direction.FORWARD)
-//        throw IllegalStateException("Attraction zone is not active with no nodes in zone")
     }
 }

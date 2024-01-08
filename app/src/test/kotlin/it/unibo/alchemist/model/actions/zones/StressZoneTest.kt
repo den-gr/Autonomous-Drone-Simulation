@@ -1,10 +1,8 @@
-package it.unibo.alchemist.model.actions.zones.circular
+package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.SupportedIncarnations
 import it.unibo.alchemist.model.actions.utils.Direction
-import it.unibo.alchemist.model.actions.zones.AbstractZoneTest
-import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.linkingrules.NoLinks
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
@@ -12,7 +10,7 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
-class CircularStressZoneTest : AbstractZoneTest() {
+class StressZoneTest : AbstractZoneTest() {
     override lateinit var environment: Physics2DEnvironment<Any>
     private lateinit var node1: Node<Any>
     private lateinit var node2: Node<Any>
@@ -28,8 +26,7 @@ class CircularStressZoneTest : AbstractZoneTest() {
     companion object {
         const val STRESS_ZONE_RADIUS = 8.0 * BODY_LEN
         const val REPULSION_FACTOR = 0.5
-        const val FORWARD_VELOCITY = 2.0
-        const val LATERAL_VELOCITY = 1.0
+
         val LEFT_POSITION = Euclidean2DPosition(-2.0, 0.0)
         const val EPSILON = 0.0001
     }

@@ -27,7 +27,6 @@ class StressZone(
     private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Movement {
         val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
-//            val rotated = rotateVector(Euclidean2DPosition(targetNodePosition.x - nodePosition.x, targetNodePosition.y - nodePosition.y), Euclidean2DPosition(0.0, 1.0).asAngle - environment.getHeading(owner).asAngle) //- Math.PI / 2)
             val (angle, offset) = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
 
             for (relativePos in RelativePosition.values()) {
