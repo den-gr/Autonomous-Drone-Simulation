@@ -15,8 +15,6 @@ enum class RelativeLateralZonePosition(val startAngle: Double, val endAngle: Dou
     RIGHT(Math.PI, 2 * Math.PI),
 }
 
-data class AngleAndOffset(val angle: Double, val offset: Double)
-
 abstract class AbstractZone(
     protected val owner: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
@@ -57,16 +55,15 @@ abstract class AbstractZone(
             .minusElement(owner)
     }
 
-    protected fun getAngleFromHeadingToNeighbour(nodePosition: Euclidean2DPosition, neighbourPosition: Euclidean2DPosition): AngleAndOffset {
+    protected fun getAngleFromHeadingToNeighbour(nodePosition: Euclidean2DPosition, neighbourPosition: Euclidean2DPosition): Double {
         val neighbourDirectionAngle = atan2(neighbourPosition.y - nodePosition.y, neighbourPosition.x - nodePosition.x)
         val headingAngle = environment.getHeading(owner).asAngle
         val offset = if (neighbourDirectionAngle < headingAngle) 2 * Math.PI else 0.0
         val angle = neighbourDirectionAngle - headingAngle
-        return AngleAndOffset(angle, offset)
+        return angle + offset
     }
 
     open fun getHeading(): Euclidean2DPosition {
         return environment.getHeading(owner)
     }
-
 }

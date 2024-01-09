@@ -22,11 +22,9 @@ class AttractionZone(
         val positions = mutableSetOf<RelativeLateralZonePosition>()
         val nodePosition = environment.getPosition(owner)
         for (neighbourNode in getNodesInZone(nodePosition)) {
-            val (angle, offset) = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
+            val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
             for (relativePos in RelativeLateralZonePosition.values()) {
-                val startAngle = relativePos.startAngle - offset
-                val endAngle = relativePos.endAngle - offset
-                if (angle in startAngle..endAngle) {
+                if (angle in relativePos.startAngle..relativePos.endAngle) {
                     positions.add(relativePos)
                 }
             }

@@ -27,11 +27,11 @@ class StressZone(
     private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Movement {
         val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
-            val (angle, offset) = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
+            val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
 
             for (relativePos in RelativePosition.values()) {
-                val startAngle = relativePos.startAngle - offset
-                val endAngle = relativePos.endAngle - offset
+                val startAngle = relativePos.startAngle
+                val endAngle = relativePos.endAngle
                 if (relativePos == RelativePosition.FORWARD && (angle <= startAngle || angle >= endAngle)) {
                     positions.add(relativePos)
                 } else if (relativePos != RelativePosition.FORWARD && startAngle <= angle && angle <= endAngle) {

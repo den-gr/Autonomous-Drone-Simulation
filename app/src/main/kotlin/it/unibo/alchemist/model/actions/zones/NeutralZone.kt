@@ -8,10 +8,6 @@ import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
-import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 class NeutralZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
@@ -27,11 +23,9 @@ class NeutralZone(
         val nodePosition = environment.getPosition(owner)
 
         for (neighbourNode in getNodesInZone(nodePosition)) {
-            val (angle, offset) = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
+            val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
             for (relativePos in RelativeLateralZonePosition.values()) {
-                val startAngle = relativePos.startAngle - offset
-                val endAngle = relativePos.endAngle - offset
-                if (angle in startAngle..endAngle) {
+                if (angle in relativePos.startAngle..relativePos.endAngle) {
                     positions.add(relativePos)
                 }
             }
