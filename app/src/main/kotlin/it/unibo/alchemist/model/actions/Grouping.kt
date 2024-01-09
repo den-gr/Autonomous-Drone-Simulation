@@ -6,6 +6,7 @@ import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.actions.zones.AttractionZone
+import it.unibo.alchemist.model.actions.zones.GeometryUtils.Companion.rotateVector
 import it.unibo.alchemist.model.actions.zones.NeutralZone
 import it.unibo.alchemist.model.actions.zones.RearZone
 import it.unibo.alchemist.model.actions.zones.StressZone
@@ -156,13 +157,5 @@ class Grouping @JvmOverloads constructor(
     private fun getNoiseModifier(): Double {
         val sign = if (Random.nextBoolean()) 1 else -1
         return (Random.nextDouble() / 10.0) * sign
-    }
-
-    private fun rotateVector(vector: Euclidean2DPosition, angle: Double): Euclidean2DPosition {
-        val newX = vector.x * cos(angle) - vector.y * sin(angle)
-        val newY = vector.x * sin(angle) + vector.y * cos(angle)
-        node.setConcentration(SimpleMolecule("new x"), newX)
-        node.setConcentration(SimpleMolecule("new y"), newY)
-        return environment.makePosition(newX, newY)
     }
 }
