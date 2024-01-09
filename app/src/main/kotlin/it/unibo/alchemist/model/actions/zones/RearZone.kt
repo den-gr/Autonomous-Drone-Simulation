@@ -9,9 +9,6 @@ import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.random.Random
 
 class RearZone(
@@ -29,8 +26,7 @@ class RearZone(
     }
 
     override fun getHeading(): Euclidean2DPosition {
-        val a = environment.getHeading(owner).asAngle
-        val angle = if (PI >= 0) a - PI else a + PI
-        return Euclidean2DPosition(cos(angle), sin(angle))
+        val heading = environment.getHeading(owner)
+        return environment.makePosition(-heading.x, -heading.y)
     }
 }
