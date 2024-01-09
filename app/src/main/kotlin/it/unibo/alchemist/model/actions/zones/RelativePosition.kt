@@ -7,5 +7,5 @@ enum class RelativePosition(val startAngle: Double, val endAngle: Double) {
     BEHIND_LEFT(PI * (3.0 / 4.0), PI),
     BEHIND_RIGHT(PI, PI + PI * (1.0 / 4.0)),
     RIGHT(PI + PI * (1.0 / 4.0), PI + PI * (3.0 / 4.0)),
-    FORWARD(Math.PI * (1.0 / 4.0), PI + PI * (3.0 / 4.0)),
+    FORWARD(PI * (1.0 / 4.0), PI + PI * (3.0 / 4.0)),
 }

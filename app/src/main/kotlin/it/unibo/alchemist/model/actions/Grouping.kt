@@ -4,9 +4,9 @@ import it.unibo.alchemist.model.Context
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.actions.utils.Direction
+import it.unibo.alchemist.model.actions.utils.GeometryUtils.Companion.rotateVector
 import it.unibo.alchemist.model.actions.utils.Movement
 import it.unibo.alchemist.model.actions.zones.AttractionZone
-import it.unibo.alchemist.model.actions.zones.GeometryUtils.Companion.rotateVector
 import it.unibo.alchemist.model.actions.zones.NeutralZone
 import it.unibo.alchemist.model.actions.zones.RearZone
 import it.unibo.alchemist.model.actions.zones.StressZone

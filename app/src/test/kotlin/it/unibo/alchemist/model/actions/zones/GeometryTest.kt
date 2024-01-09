@@ -1,6 +1,6 @@
 package it.unibo.alchemist.model.actions.zones
 
-import it.unibo.alchemist.model.actions.zones.GeometryUtils.Companion.rotateVector
+import it.unibo.alchemist.model.actions.utils.GeometryUtils.Companion.rotateVector
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.junit.jupiter.api.Test
 import kotlin.math.* // ktlint-disable no-wildcard-imports

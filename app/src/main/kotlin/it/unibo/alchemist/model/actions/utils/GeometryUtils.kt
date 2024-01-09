@@ -1,4 +1,4 @@
-package it.unibo.alchemist.model.actions.zones
+package it.unibo.alchemist.model.actions.utils
 
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.cos
