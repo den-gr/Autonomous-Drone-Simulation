@@ -19,6 +19,7 @@ import org.protelis.lang.datatype.impl.ArrayTupleImpl
 import java.lang.IllegalStateException
 import java.lang.Math.toRadians
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -114,7 +115,14 @@ class Grouping @JvmOverloads constructor(
                 }
 
                 if (zone is RearZone) {
-                    if (Random.nextDouble() < 0.05) {
+                    val position = environment.getPosition(node)
+                    val angleToOrigin = environment.makePosition(-position.x, -position.y)
+                    val angle = environment.getHeading(node).angleBetween(angleToOrigin)
+                    val distanceFromOrigin = hypot(position.x, position.y)
+                    val coef = distanceFromOrigin / 1000
+                    val prob = (coef * (angle / Math.PI)) / 10
+                    node.setConcentration(SimpleMolecule("turn prob"), prob)
+                    if (Random.nextDouble() < prob) {
                         val headingAngle = environment.getHeading(node).asAngle + toRadians(2.0)
                         environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
                     }

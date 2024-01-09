@@ -36,15 +36,26 @@ class GeometryTest {
         assertEquals(minusHalfPi, p3.asAngle)
         assertEquals(-PI, p4.asAngle)
 
-        val diffFun = this::angleDifference2
+        val diffFun = this::getAngleDifference
 
         assertEquals(PI, diffFun(p1.asAngle, p3.asAngle))
+        assertEquals(PI, p1.angleBetween(p3))
+        assertEquals(PI, p3.angleBetween(p1))
         assertEquals(PI, diffFun(p3.asAngle, p1.asAngle))
         assertEquals(quarterPi, diffFun(p1.asAngle, p2.asAngle))
         assertEquals(quarterPi, diffFun(p2.asAngle, p1.asAngle))
 
+        assertEquals(quarterPi, p2.angleBetween(p1), 0.0001)
+        assertEquals(quarterPi, p1.angleBetween(p2), 0.0001)
+
         assertEquals(PI - quarterPi, diffFun(p2.asAngle, p3.asAngle))
         assertEquals(PI - quarterPi, diffFun(p3.asAngle, p2.asAngle))
+
+        assertEquals(PI - quarterPi, p2.angleBetween(p3))
+        assertEquals(PI - quarterPi, p3.angleBetween(p2))
+
+        assertEquals(halfPi, p3.angleBetween(p4))
+        assertEquals(halfPi, p4.angleBetween(p3))
 
         assertEquals(halfPi, diffFun(p3.asAngle, p4.asAngle))
         assertEquals(halfPi, diffFun(p4.asAngle, p3.asAngle))
@@ -56,9 +67,9 @@ class GeometryTest {
     }
 
     /**
-     * Return minor angle difference. The value is always > 0
+     * Return minor angle difference in radians. The value is always > 0
      */
-    private fun angleDifference2(angle1: Double, angle2: Double): Double {
+    private fun getAngleDifference(angle1: Double, angle2: Double): Double {
         val rawDiff = abs(angle2 - angle1)
         return if (rawDiff > PI) 2 * PI - rawDiff else rawDiff
     }

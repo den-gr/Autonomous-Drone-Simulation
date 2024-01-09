@@ -26,7 +26,7 @@ variables:
     formula: 0.2 * body_len
 deployments:
   - type: Circle
-    parameters: [50, 0, 0, 80]
+    parameters: [40, 0, 0, 80]
     contents:
       - molecule: bodyLen
         concentration: *body_len
@@ -39,10 +39,13 @@ deployments:
         type: Event
         actions:
           type: Grouping
-          parameters: [*stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f, false]
+          parameters: [*stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f]
     properties:
       - type: RectangularArea
         parameters: [*body_len, *body_width] #inverted
+
+  - type: SpecificPositions
+    parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
 #  - type: Circle
 #    parameters: [ 50, 0, -200, 80 ]
 #    contents:
