@@ -7,9 +7,8 @@ import it.unibo.alchemist.model.Position2D
 import it.unibo.alchemist.model.actions.Grouping
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
-import it.unibo.alchemist.model.actions.zones.shapes.EllipseZoneShape
 import it.unibo.alchemist.model.actions.zones.shapes.CircularSegmentZoneShape
-import it.unibo.alchemist.model.actions.zones.shapes.RectangularZoneShape
+import it.unibo.alchemist.model.actions.zones.shapes.EllipseZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import jdk.jshell.spi.ExecutionControl.NotImplementedException
@@ -22,7 +21,6 @@ import java.awt.Point
 import java.awt.geom.AffineTransform
 import java.awt.geom.Arc2D
 import java.awt.geom.Ellipse2D
-import java.awt.geom.Rectangle2D
 
 @Suppress("DEPRECATION")
 class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
@@ -31,7 +29,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
     }
 
     private var alreadyLogged: Boolean = false
-    private val transparentRed = Color(1.0f, 0.0f, 0.0f, 0.05f)
+    private val transparentRed = Color(1.0f, 1.0f, 0.0f, 0.05f)
 
     override fun <T, P : Position2D<P>?> apply(
         graphics: Graphics2D,
@@ -90,7 +88,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                         }
                         is CircularSegmentZoneShape<Euclidean2DShape> -> {
                             val shape = z.zoneShape as CircularSegmentZoneShape<Euclidean2DShape>
-                            val startAngle = z.zoneShape.offset * -shape.angle / 2
+                            val startAngle = shape.direction * -shape.angle / 2
                             val fov: java.awt.Shape = Arc2D.Double(-shape.radius, -shape.radius, shape.radius * 2, shape.radius * 2, startAngle, shape.angle, Arc2D.PIE)
                             graphics.draw(transform.createTransformedShape(fov))
                         }
@@ -110,7 +108,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
         }
 
     private fun <T> getRotation(node: Node<T>, environment: Physics2DEnvironment<T>): Double {
-        return environment.getHeading(node).asAngle //- Math.PI / 2
+        return environment.getHeading(node).asAngle
     }
 
     private fun logOnce(message: String, logger: Consumer2<Logger, String>) {

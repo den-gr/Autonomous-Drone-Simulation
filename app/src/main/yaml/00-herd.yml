@@ -34,6 +34,8 @@ deployments:
         concentration: [0.25, 0.5, 0.25]
       - molecule: Velocities
         concentration: [*lateral_velocity, *forward_velocity]
+      - molecule: zebra
+        concentration: true
     programs:
       - time-distribution: 1
         type: Event
@@ -46,6 +48,9 @@ deployments:
 
   - type: SpecificPositions
     parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
+    contents:
+      - molecule: landmark
+        concentration: true
 #  - type: Circle
 #    parameters: [ 50, 0, -200, 80 ]
 #    contents:

@@ -1,16 +1,12 @@
 [
   {
-    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawZones",
-    "alreadyLogged": false
-  },
-  {
     "type": "class it.unibo.alchemist.boundary.gui.effects.DrawShape",
     "curIncarnation": "protelis",
-    "mode": "FILL_ELLIPSE",
+    "mode": "FILL_RECTANGLE",
     "red": {
       "max": 255,
       "min": 0,
-      "val": 0
+      "val": 255
     },
     "blue": {
       "max": 255,
@@ -35,10 +31,10 @@
     "size": {
       "max": 100,
       "min": 0,
-      "val": 10
+      "val": 4
     },
-    "molFilter": false,
-    "molString": "",
+    "molFilter": true,
+    "molString": "landmark",
     "molPropertyFilter": false,
     "property": "",
     "writingPropertyValue": false,
@@ -60,11 +56,75 @@
       "val": 10
     },
     "colorCache": {
-      "value": -16776961
+      "value": -65281
+    }
+  },
+  {
+    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawZones",
+    "alreadyLogged": false
+  },
+  {
+    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawShape",
+    "curIncarnation": "protelis",
+    "mode": "FILL_ELLIPSE",
+    "red": {
+      "max": 255,
+      "min": 0,
+      "val": 0
+    },
+    "blue": {
+      "max": 255,
+      "min": 0,
+      "val": 0
+    },
+    "green": {
+      "max": 255,
+      "min": 0,
+      "val": 0
+    },
+    "alpha": {
+      "max": 255,
+      "min": 0,
+      "val": 255
+    },
+    "scaleFactor": {
+      "max": 100,
+      "min": 0,
+      "val": 50
+    },
+    "size": {
+      "max": 100,
+      "min": 0,
+      "val": 10
+    },
+    "molFilter": true,
+    "molString": "zebra",
+    "molPropertyFilter": false,
+    "property": "",
+    "writingPropertyValue": false,
+    "c": "ALPHA",
+    "reverse": false,
+    "propoom": {
+      "max": 10,
+      "min": -10,
+      "val": 0
+    },
+    "minprop": {
+      "max": 10,
+      "min": -10,
+      "val": 0
+    },
+    "maxprop": {
+      "max": 10,
+      "min": -10,
+      "val": 10
+    },
+    "colorCache": {
+      "value": -16777216
     }
   },
   {
     "type": "class it.unibo.alchemist.boundary.gui.effects.DrawSmartcam",
-    "alreadyLogged": false
+    "alreadyLogged": true
   }
 ]
