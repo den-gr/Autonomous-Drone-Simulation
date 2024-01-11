@@ -1,6 +1,5 @@
 package it.unibo.alchemist.model.actions.zones.shapes
 
-import it.unibo.alchemist.model.geometry.CustomShapeFactory
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShapeFactory
 import java.lang.Math.toRadians
@@ -16,7 +15,7 @@ class ZoneShapeFactoryImpl(private val shapeFactory: Euclidean2DShapeFactory) : 
 
     override fun produceEllipseZoneShape(radius: Double, ratio: Double): ZoneShape<Euclidean2DShape> {
         return EllipseZoneShape(
-            CustomShapeFactory.produceEggFormEllipse(radius, ratio),
+            shapeFactory.ellipse(radius * 2 * ratio, radius * 2),
             radius,
             ratio,
         )
