@@ -96,7 +96,7 @@ class Grouping @JvmOverloads constructor(
 
     private fun getNextPosition(): Euclidean2DPosition {
         if (Random.nextDouble() < 0.1) {
-            val nodes = attractionZone.getNodesInZone(environment.getPosition(node))
+            val nodes = neutralZone.getNodesInZone(environment.getPosition(node))
 
             var (vector, count) = nodes.map { environment.getHeading(it) }.foldRight(Pair(Euclidean2DPosition(0.0, 0.0), 0)) { elem, acc ->
                 Pair(Euclidean2DPosition(acc.first.x + elem.x, acc.first.y + elem.y), acc.second + 1)
