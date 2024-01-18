@@ -1,6 +1,5 @@
 package it.unibo.experiment
 
-import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.Position2D
 import it.unibo.alchemist.model.VisibleNode
@@ -75,7 +74,7 @@ class ProtelisUtils {
                     counts.merge(it, 1) { v1, v2 -> v1 + v2 }
                 }
             }
-            val min = counts.values.min() ?: Int.MAX_VALUE
+            val min = if (counts.values.isEmpty()) Int.MAX_VALUE else counts.values.min()
             return counts.filterValues { it <= min }.keys.toTuple()
         }
 
@@ -113,7 +112,7 @@ class ProtelisUtils {
             val node = nodee.node
             val allNodes = field.stream()
                 .filter { it.value == target }
-                .map {  (it.key as ProtelisDevice<Euclidean2DPosition>).node }
+                .map { (it.key as ProtelisDevice<Euclidean2DPosition>).node }
                 .sorted()
                 .collect(Collectors.toList())
             return if (allNodes.size <= 1) {
@@ -258,13 +257,18 @@ class OverlapRelationsGraphForProtelis(
     /**
      * Returns devices chosen according to the Smooth strategy described in "Online Multi-object k-coverage with Mobile Smart Cameras"
      */
-    fun smooth(ctx: ExecutionContext) =
-        graph.links.values.max()?.let { max ->
-            graph.links.entries.filter { entry ->
-                val odds = (1 + entry.value) / (1 + max)
-                ctx.nextRandomDouble() <= odds
-            }.map { it.key }.toTuple()
-        } ?: ArrayTupleImpl()
+    fun smooth(ctx: ExecutionContext): Tuple {
+        return if (graph.links.isEmpty()) {
+            ArrayTupleImpl()
+        } else {
+            graph.links.values.max().let { max ->
+                graph.links.entries.filter { entry ->
+                    val odds = (1 + entry.value) / (1 + max)
+                    ctx.nextRandomDouble() <= odds
+                }.map { it.key }.toTuple()
+            }
+        }
+    }
 
     override fun toString() = "OverlapRelationsGraph(${graph.links})"
 }
