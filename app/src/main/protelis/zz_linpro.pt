@@ -1,0 +1,19 @@
+module zz_linpro
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.ProtelisUtils.getLinproSolver
+import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
+import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
+import utils
+import exploration_strategies
+
+rep(solver <- getLinproSolver()) {
+let localTargets = getLocalTargets();
+let targets = unionHood PlusSelf(nbr(localTargets));
+let cameras = nbr(getCenterOfFov());
+let myTarget = solver.solve(cameras, targets, getMaxCamerasPerTarget(), false).getOrDefault(getUID(), noTarget());
+followOrExplore(myTarget, zigZagExploration)
+avoidCameraCollision(myTarget, localTargets)
+solver
+}

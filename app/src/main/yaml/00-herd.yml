@@ -42,6 +42,11 @@ deployments:
         actions:
           type: Grouping
           parameters: [*stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f]
+      - time-distribution: 1
+        program: >
+          import mytest
+          bla()
+
     properties:
       - type: RectangularArea
         parameters: [*body_len, *body_width] #inverted
@@ -51,21 +56,3 @@ deployments:
     contents:
       - molecule: landmark
         concentration: true
-#  - type: Circle
-#    parameters: [ 50, 0, -200, 80 ]
-#    contents:
-#      - molecule: bodyLen
-#        concentration: *body_len
-#      - molecule: MovementProbabilities
-#        concentration: [ 0.25, 0.5, 0.25 ]
-#      - molecule: Velocities
-#        concentration: [ *lateral_velocity, *forward_velocity ]
-#    programs:
-#      - time-distribution: 1
-#        type: Event
-#        actions:
-#          type: Grouping
-#          parameters: [ *stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f, false ]
-#    properties:
-#      - type: RectangularArea
-#        parameters: [ *body_len, *body_width ] #inverted

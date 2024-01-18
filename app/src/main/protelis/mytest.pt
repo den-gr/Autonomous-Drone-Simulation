@@ -1,0 +1,5 @@
+module mytest
+
+public def bla(){
+    env.put("zebra", self.getCoordinates().get(0))
+}

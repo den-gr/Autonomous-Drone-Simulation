@@ -13,7 +13,9 @@ repositories {
 dependencies {
     implementation(libs.bundles.alchemist)
     implementation(libs.slf4j)
+    implementation(fileTree("../libs"))
     testImplementation(kotlin("test"))
+
 }
 
 multiJvm {

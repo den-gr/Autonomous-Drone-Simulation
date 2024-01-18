@@ -1,0 +1,145 @@
+module exploration_strategies
+import utils
+import java.lang.Math.toRadians
+import java.lang.Math.cos
+import java.lang.Math.sin
+import java.lang.Math.abs
+import java.lang.Math.max
+import java.lang.Math.PI
+
+
+def getForceOfWill() {
+    40
+}
+
+def getRepulsiveForce(distance) {
+    (getForceOfWill() / 2) * (((getFoVDistance() * 2) ^ 2) / (max(1, distance) ^ 2))
+}
+
+def getAttractiveForce(distance) {
+    if(distance >= getFoVDistance()/3) {
+        - ((getMaxCamerasPerTarget() * getRepulsiveForce(distance) * 4) / max(1, distance))
+    } else {
+        0
+    }
+}
+
+def getEnvironmentBoundaryForce(envPoint) {
+    let myPos = self.getCoordinates()
+    let distance = distanceBetweenPos(myPos, envPoint)
+    if(!env.has("CommRange") || env.get("CommRange") >= distance){
+        let versor = unitVector(myPos - envPoint)
+        getRepulsiveForce(distance) * versor
+    } else {
+        0
+    }
+}
+
+def getEnvironmentBoundariesForce() {
+    let halfEnvSize = getEnvironmentSize() / 2
+    let myCoords = self.getCoordinates()
+    let myX = myCoords.get(0)
+    let myY = myCoords.get(1)
+    let top = getEnvironmentBoundaryForce([myX, halfEnvSize])
+    let right = getEnvironmentBoundaryForce([halfEnvSize, myY])
+    let bottom = getEnvironmentBoundaryForce([myX, -halfEnvSize])
+    let left = getEnvironmentBoundaryForce([-halfEnvSize, myY])
+    top + right + bottom + left
+}
+
+def randomAngle() {
+    2 * PI * self.nextRandomDouble()
+}
+
+public def fieldExploration() {
+    let cameraVersorsField = nbrVersor()
+    let distanceFromCamerasField = self.nbrRange()
+
+    let cameraForces = getRepulsiveForce(distanceFromCamerasField) * cameraVersorsField
+
+    let envBoundariesForce = getEnvironmentBoundariesForce()
+
+    let targetForces = unionHood PlusSelf(nbr(getVision())).map {
+            getAttractiveForce(distanceFromTarget(it)) * unitVector(self.getCoordinates() - posToTuple(it.getPosition()))
+        }.reduce([0,0]) { a,b -> a + b }
+
+    let sumOfForces = sumHood(cameraForces) + envBoundariesForce
+    if(env.has("noAttractiveForces")){
+        0
+    } else {
+        sumOfForces = sumOfForces + targetForces
+    }
+
+    rep(myDirectionAngle <- randomAngle()){
+        let myDirection = angleToVersor(myDirectionAngle)
+        let myForce = myDirection * getForceOfWill()
+        let destination = self.getCoordinates() + sumOfForces + myForce
+        let newDirectionAngle = directionToAngle(destination - self.getCoordinates())
+        let augment = getMaxMovementSpeed() * 2 // make sure we try to go at max speed
+        destination = destination + [augment * cos(newDirectionAngle), augment * sin(newDirectionAngle)]
+        env.put("destination", destination)
+        if(env.has("noSpin")){
+            env.put("heading", destination)
+        } else {
+            envRemove("heading")
+            env.put("doSpin", true)
+        }
+        newDirectionAngle
+    }
+}
+
+
+public def zigZagExploration() {
+    envRemove("destination")
+    envRemove("heading")
+    env.put("doSpin", true)
+    env.put("doZigZag", true)
+    noTarget()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* CODE FOR SLIDES
+def will() = 10
+
+def repulsion(dist) =
+    will() / 2 * ((getFoVDistance() * 2) ^ 2 / max(1, dist) ^ 2
+
+def attraction(dist) =
+    - (MaxCamsPerTarget() * repulsion(dist) * 4) / max(1, dist)
+
+public def fieldExploration() {
+    let myPos = self.getCoordinates()
+    let camForces = sumHood(repulsion(self.nbrRange()) * nbrVersor())
+    let targetForces = unionHood PlusSelf(nbr(getVision())).map {
+        attraction(distanceFrom(it)) * versor(myPos - it.getPosition())
+    }.reduce([0,0]) { a,b -> a + b }
+    rep(myDirection <- randomDirection()) {
+        let myForce = myDirection * will()
+        let destination = myPos + camForces + targetForces + myForce
+        destination - myPos
+    } yield { destination }
+}
+*/
