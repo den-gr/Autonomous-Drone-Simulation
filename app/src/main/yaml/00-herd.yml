@@ -14,6 +14,9 @@ variables:
     formula: 20 * body_len
   rear_zone_radius: &rear_zone_r
     formula: attraction_zone_radius
+  zones_radii: &zones_radii
+    type: ArbitraryVariable
+    parameters: [ [ *stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r] ]
   repulsion_factor: &repulsion_f
     formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
   slow_down_factor: &slow_down_f
@@ -24,32 +27,41 @@ variables:
     formula: 0.4 * body_len
   intrinsic_lateral_velocity: &lateral_velocity
     formula: 0.2 * body_len
+  velocities: &velocities
+    type: ArbitraryVariable
+    parameters: [[*lateral_velocity, *forward_velocity]]
+  movement_probabilities: &movement_probabilities
+    type: ArbitraryVariable
+    parameters: [[0.25, 0.5, 0.25]]
+
+
+_herd_parameters: &herd_parameters
+  - *zones_radii
+  - *repulsion_f
+  - *slow_down_f
+  - *speed_up_f
+  - *movement_probabilities
+  - *velocities
+
+_herd: &herd
+  - time-distribution: 1
+    type: Event
+    actions:
+      type: HerdBehavior
+      parameters: *herd_parameters
+_animal_area: &animal_area
+  - type: RectangularArea
+    parameters: [ *body_len, *body_width ] #inverted
+
 deployments:
   - type: Circle
     parameters: [40, 0, 0, 80]
     contents:
-      - molecule: bodyLen
-        concentration: *body_len
-      - molecule: MovementProbabilities
-        concentration: [0.25, 0.5, 0.25]
-      - molecule: Velocities
-        concentration: [*lateral_velocity, *forward_velocity]
       - molecule: zebra
         concentration: true
-    programs:
-      - time-distribution: 1
-        type: Event
-        actions:
-          type: Grouping
-          parameters: [*stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r, *repulsion_f, *slow_down_f, *speed_up_f]
-      - time-distribution: 1
-        program: >
-          import mytest
-          bla()
-
+    programs: *herd
     properties:
-      - type: RectangularArea
-        parameters: [*body_len, *body_width] #inverted
+      - *animal_area
 
   - type: SpecificPositions
     parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]

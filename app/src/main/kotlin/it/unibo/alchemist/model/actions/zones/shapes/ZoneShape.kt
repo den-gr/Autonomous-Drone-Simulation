@@ -8,8 +8,8 @@ interface ZoneShape<T> {
 
 class RectangularZoneShape<T>(
     override val shape: T,
-    val width: Double,
-    val height: Double,
+    private val width: Double,
+    private val height: Double,
 ) : ZoneShape<T> {
 
     override fun makeCopy(): ZoneShape<T> {

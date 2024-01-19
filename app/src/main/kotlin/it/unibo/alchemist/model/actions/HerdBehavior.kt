@@ -19,21 +19,21 @@ import org.protelis.lang.datatype.impl.ArrayTupleImpl
 import java.lang.IllegalStateException
 import java.lang.Math.random
 import java.lang.Math.toRadians
+import java.util.ArrayList
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Grouping @JvmOverloads constructor(
+class HerdBehavior @JvmOverloads constructor(
     node: Node<Any>,
     private val environment: ContinuousPhysics2DEnvironment<Any>,
-    private val stressZoneRadius: Double,
-    private val neutralZoneRadius: Double,
-    private val attractionZoneRadius: Double,
-    private val rearZoneRadius: Double,
+    private val zones_radii: ArrayList<Double>,
     private val repulsionFactor: Double,
     private val slowDownFactor: Double,
     private val speedUpFactor: Double,
+    private val movementProbabilities: ArrayList<Double>,
+    private val velocities: ArrayList<Double>,
     north: Boolean = true,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
@@ -45,31 +45,35 @@ class Grouping @JvmOverloads constructor(
 
     companion object {
         const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
-        const val DIRECTIONAL_ZONE_ANGLE = 180.0 // degrees
+        const val ANGLE_OF_ZONE = 180.0 // degrees
+        const val MAINTAIN_DIRECTION_WEIGHT = 0.95
     }
 
     init {
+        node.properties[0].node
+        val stressZoneRadius: Double = zones_radii[0]
+        val neutralZoneRadius: Double = zones_radii[1]
+        val attractionZoneRadius: Double = zones_radii[2]
+        val rearZoneRadius: Double = zones_radii[3]
         val y = if (north) 1.0 else -1.0
         environment.setHeading(node, Euclidean2DPosition(0.0, y))
-        val probabilities = getMoleculeDoubleTupleValues("MovementProbabilities")
-        val velocities = getMoleculeDoubleTupleValues("Velocities")
         movements = mapOf(
-            Direction.LEFT to Movement(-velocities[0], 0.0, probabilities[0]),
-            Direction.FORWARD to Movement(0.0, velocities[1], probabilities[1]),
-            Direction.RIGHT to Movement(velocities[0], 0.0, probabilities[2]),
+            Direction.LEFT to Movement(-velocities[0], 0.0, movementProbabilities[0]),
+            Direction.FORWARD to Movement(0.0, velocities[1], movementProbabilities[1]),
+            Direction.RIGHT to Movement(velocities[0], 0.0, movementProbabilities[2]),
         )
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
         stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
 
-        val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, DIRECTIONAL_ZONE_ANGLE)
+        val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, ANGLE_OF_ZONE)
         neutralZone = NeutralZone(neutralZoneShape, node, environment, movements)
 
-        val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, DIRECTIONAL_ZONE_ANGLE)
+        val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, ANGLE_OF_ZONE)
         attractionZone = AttractionZone(attractionZoneShape, node, environment, movements, speedUpFactor)
 
-        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, DIRECTIONAL_ZONE_ANGLE, true)
+        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, ANGLE_OF_ZONE, true)
         rearZone = RearZone(rearZoneShape, node, environment, movements, slowDownFactor)
 
         zones = listOf(stressZone, neutralZone, attractionZone, rearZone)
@@ -80,7 +84,16 @@ class Grouping @JvmOverloads constructor(
     }
 
     override fun cloneAction(node: Node<Any>, reaction: Reaction<Any>) =
-        Grouping(node, environment, stressZoneRadius, neutralZoneRadius, attractionZoneRadius, rearZoneRadius, repulsionFactor, slowDownFactor, speedUpFactor)
+        HerdBehavior(
+            node,
+            environment,
+            zones_radii,
+            repulsionFactor,
+            slowDownFactor,
+            speedUpFactor,
+            movementProbabilities,
+            velocities,
+        )
 
     override fun execute() {
         environment.moveNode(node, getNextPosition())
@@ -96,18 +109,7 @@ class Grouping @JvmOverloads constructor(
         node.contents.getValue(SimpleMolecule(moleculeName))
 
     private fun getNextPosition(): Euclidean2DPosition {
-        if (Random.nextDouble() < 0.1) {
-            val nodes = neutralZone.getNodesInZone(environment.getPosition(node))
-
-            var (vector, count) = nodes.map { environment.getHeading(it) }.foldRight(Pair(Euclidean2DPosition(0.0, 0.0), 0)) { elem, acc ->
-                Pair(Euclidean2DPosition(acc.first.x + elem.x, acc.first.y + elem.y), acc.second + 1)
-            }
-            val ownerHeading = environment.getHeading(node)
-            vector = Euclidean2DPosition(vector.x + ownerHeading.x, vector.y + ownerHeading.y)
-            count += 1
-            val avgHeading = (Euclidean2DPosition(vector.x / count, vector.y / count))
-            environment.setHeading(node, avgHeading)
-        }
+        alignDirection()
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 var movement = zone.getNextMovement().addVelocityModifier(getNoiseModifier(), getNoiseModifier())
@@ -137,6 +139,16 @@ class Grouping @JvmOverloads constructor(
         val movement = getRandomMovement()
         setMovementInConcentration(movement, "Out of Zone")
         return rotateVector(environment.makePosition(movement.lateralVelocity, movement.forwardVelocity), getAngle(environment.getHeading(node)))
+    }
+
+    private fun alignDirection() {
+        val nodes = neutralZone.getNodesInZone(environment.getPosition(node))
+        val ownerHeading = environment.getHeading(node)
+        val avgGroupHeading = nodes.map { environment.getHeading(it) }
+            .foldRight(environment.makePosition(0, 0)) { elem, acc -> acc + elem }
+        val normAvgGroupHeading = if (avgGroupHeading == environment.makePosition(0, 0)) avgGroupHeading else avgGroupHeading.normalized()
+        val newHeading = ownerHeading.times(MAINTAIN_DIRECTION_WEIGHT) + normAvgGroupHeading.times(1 - MAINTAIN_DIRECTION_WEIGHT)
+        environment.setHeading(node, newHeading)
     }
 
     private fun setMovementInConcentration(movement: Movement, zoneName: String) {

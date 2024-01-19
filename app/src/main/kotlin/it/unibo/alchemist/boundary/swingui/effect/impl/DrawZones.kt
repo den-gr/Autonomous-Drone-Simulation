@@ -4,7 +4,7 @@ import it.unibo.alchemist.boundary.ui.api.Wormhole2D
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position2D
-import it.unibo.alchemist.model.actions.Grouping
+import it.unibo.alchemist.model.actions.HerdBehavior
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
 import it.unibo.alchemist.model.actions.zones.shapes.CircularSegmentZoneShape
@@ -66,7 +66,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
         graphics.color = colorSummary
         node.reactions
             .flatMap { r -> r.actions }
-            .filterIsInstance<Grouping>()
+            .filterIsInstance<HerdBehavior>()
             .forEach { a ->
                 val zones: List<Zone> = a.zones
                 zones.forEach { z ->
@@ -93,7 +93,7 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                             graphics.draw(transform.createTransformedShape(fov))
                         }
                         else -> {
-                            throw NotImplementedException("AAAAAAAAAAAAAAAA") // TODO
+                            throw NotImplementedException("This zone shape is not implemented")
                         }
                     }
                 }
