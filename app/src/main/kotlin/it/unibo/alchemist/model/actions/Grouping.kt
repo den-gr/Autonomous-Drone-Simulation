@@ -17,6 +17,7 @@ import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironm
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.protelis.lang.datatype.impl.ArrayTupleImpl
 import java.lang.IllegalStateException
+import java.lang.Math.random
 import java.lang.Math.toRadians
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -115,22 +116,10 @@ class Grouping @JvmOverloads constructor(
                 }
 
                 if (zone is RearZone) {
-                    val position = environment.getPosition(node)
-                    val angleToOrigin = environment.makePosition(-position.x, -position.y)
-                    val angle = environment.getHeading(node).angleBetween(angleToOrigin)
-                    val distanceFromOrigin = hypot(position.x, position.y)
-                    val coef = distanceFromOrigin / 1000
-                    val prob = (coef * (angle / Math.PI)) / 10
-                    node.setConcentration(SimpleMolecule("turn prob"), prob)
-                    if (Random.nextDouble() < prob) {
-                        val headingAngle = environment.getHeading(node).asAngle + toRadians(2.0)
-                        environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
-                    }
+                    turning()
                 }
 
-                node.setConcentration(SimpleMolecule("zone"), zone::class)
-                node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
-                node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
+                setMovementInConcentration(movement, zone::class.toString())
 
                 val relativeMovement = environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
 
@@ -142,11 +131,32 @@ class Grouping @JvmOverloads constructor(
                 return relativeRotatedMovement
             }
         }
+        if (random() < 0.5) {
+            turning()
+        }
         val movement = getRandomMovement()
+        setMovementInConcentration(movement, "Out of Zone")
+        return rotateVector(environment.makePosition(movement.lateralVelocity, movement.forwardVelocity), getAngle(environment.getHeading(node)))
+    }
+
+    private fun setMovementInConcentration(movement: Movement, zoneName: String) {
         node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
         node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
-        node.setConcentration(SimpleMolecule("zone"), "No zone")
-        return rotateVector(environment.makePosition(movement.lateralVelocity, movement.forwardVelocity), getAngle(environment.getHeading(node)))
+        node.setConcentration(SimpleMolecule("zone"), zoneName)
+    }
+
+    private fun turning() {
+        val position = environment.getPosition(node)
+        val angleToOrigin = environment.makePosition(-position.x, -position.y)
+        val angle = environment.getHeading(node).angleBetween(angleToOrigin)
+        val distanceFromOrigin = hypot(position.x, position.y)
+        val coef = distanceFromOrigin / 1000
+        val prob = (coef * (angle / Math.PI)) / 10
+        node.setConcentration(SimpleMolecule("turn prob"), prob)
+        if (Random.nextDouble() < prob) {
+            val headingAngle = environment.getHeading(node).asAngle + toRadians(2.0)
+            environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
+        }
     }
 
     private fun getRandomMovement(): Movement {
