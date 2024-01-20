@@ -2,7 +2,6 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.SupportedIncarnations
-import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.linkingrules.NoLinks
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
@@ -46,9 +45,9 @@ class StressZoneTest : AbstractZoneTest() {
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(STRESS_ZONE_RADIUS)
 
-        stressZone1 = StressZone(stressZoneShape, node1, environment, movements, REPULSION_FACTOR)
-        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, movements, REPULSION_FACTOR)
-        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movements, REPULSION_FACTOR)
+        stressZone1 = StressZone(stressZoneShape, node1, environment, movementsProvider, REPULSION_FACTOR)
+        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, movementsProvider, REPULSION_FACTOR)
+        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movementsProvider, REPULSION_FACTOR)
     }
 
     @BeforeTest
@@ -74,10 +73,10 @@ class StressZoneTest : AbstractZoneTest() {
         addNode(node2, positionProvider.getNorthInZonePosition())
         assertTrue(stressZone1.areNodesInZone())
         val movement = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.FORWARD).lateralVelocity, movement.lateralVelocity)
+        assertEquals(movementsProvider.forward().x, movement.x)
         assertEquals(
-            movements.getValue(Direction.FORWARD).forwardVelocity,
-            movement.forwardVelocity + REPULSION_FACTOR * FORWARD_VELOCITY,
+            movementsProvider.forward().y,
+            movement.y + REPULSION_FACTOR * FORWARD_VELOCITY,
         )
     }
 
@@ -89,12 +88,12 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.RIGHT).lateralVelocity, movement1.lateralVelocity)
-        assertEquals(0.0, movement1.forwardVelocity)
+        assertEquals(movementsProvider.toRight().x, movement1.x)
+        assertEquals(0.0, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movements.getValue(Direction.LEFT).lateralVelocity, movement2.lateralVelocity)
-        assertEquals(0.0, movement2.forwardVelocity)
+        assertEquals(movementsProvider.toLeft().x, movement2.x)
+        assertEquals(0.0, movement2.y)
     }
 
     @Test
@@ -108,12 +107,12 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.LEFT).lateralVelocity, movement1.lateralVelocity)
-        assertEquals(0.0, movement1.forwardVelocity)
+        assertEquals(movementsProvider.toLeft().x, movement1.x)
+        assertEquals(0.0, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movements.getValue(Direction.RIGHT).lateralVelocity, movement2.lateralVelocity)
-        assertEquals(0.0, movement2.forwardVelocity)
+        assertEquals(movementsProvider.toRight().x, movement2.x)
+        assertEquals(0.0, movement2.y)
     }
 
     @Test
@@ -127,12 +126,12 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.RIGHT).lateralVelocity, movement1.lateralVelocity)
-        assertEquals(0.0, movement1.forwardVelocity)
+        assertEquals(movementsProvider.toRight().x, movement1.x)
+        assertEquals(0.0, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movements.getValue(Direction.LEFT).lateralVelocity, movement2.lateralVelocity)
-        assertEquals(0.0, movement2.forwardVelocity)
+        assertEquals(movementsProvider.toLeft().x, movement2.x)
+        assertEquals(0.0, movement2.y)
     }
 
     /**
@@ -146,8 +145,8 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone1.areNodesInZone())
 
         val movement = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.FORWARD).forwardVelocity, movement.forwardVelocity)
-        assertEquals(0.0, movement.lateralVelocity)
+        assertEquals(movementsProvider.forward().y, movement.y)
+        assertEquals(0.0, movement.x)
     }
 
     @Test

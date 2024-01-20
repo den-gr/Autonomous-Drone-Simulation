@@ -3,9 +3,8 @@ package it.unibo.alchemist.model.actions
 import it.unibo.alchemist.model.Context
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
-import it.unibo.alchemist.model.actions.utils.Direction
 import it.unibo.alchemist.model.actions.utils.GeometryUtils.Companion.rotateVector
-import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.actions.zones.AttractionZone
 import it.unibo.alchemist.model.actions.zones.NeutralZone
 import it.unibo.alchemist.model.actions.zones.RearZone
@@ -16,7 +15,6 @@ import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.protelis.lang.datatype.impl.ArrayTupleImpl
-import java.lang.IllegalStateException
 import java.lang.Math.random
 import java.lang.Math.toRadians
 import java.util.ArrayList
@@ -41,7 +39,7 @@ class HerdBehavior @JvmOverloads constructor(
     private val neutralZone: NeutralZone
     private val attractionZone: AttractionZone
     private val rearZone: RearZone
-    private val movements: Map<Direction, Movement>
+    private val movementProvider: MovementProvider
 
     companion object {
         const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
@@ -56,25 +54,27 @@ class HerdBehavior @JvmOverloads constructor(
         val attractionZoneRadius: Double = zones_radii[2]
         val rearZoneRadius: Double = zones_radii[3]
         val y = if (north) 1.0 else -1.0
-        environment.setHeading(node, Euclidean2DPosition(0.0, y))
-        movements = mapOf(
-            Direction.LEFT to Movement(-velocities[0], 0.0, movementProbabilities[0]),
-            Direction.FORWARD to Movement(0.0, velocities[1], movementProbabilities[1]),
-            Direction.RIGHT to Movement(velocities[0], 0.0, movementProbabilities[2]),
+        movementProvider = MovementProvider(
+            velocities[0],
+            velocities[1],
+            movementProbabilities[0],
+            movementProbabilities[1],
+            movementProbabilities[2],
         )
+        environment.setHeading(node, Euclidean2DPosition(0.0, y))
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
-        stressZone = StressZone(stressZoneShape, node, environment, movements, repulsionFactor)
+        stressZone = StressZone(stressZoneShape, node, environment, movementProvider, repulsionFactor)
 
         val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, ANGLE_OF_ZONE)
-        neutralZone = NeutralZone(neutralZoneShape, node, environment, movements)
+        neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider)
 
         val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, ANGLE_OF_ZONE)
-        attractionZone = AttractionZone(attractionZoneShape, node, environment, movements, speedUpFactor)
+        attractionZone = AttractionZone(attractionZoneShape, node, environment, movementProvider, speedUpFactor)
 
         val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, ANGLE_OF_ZONE, true)
-        rearZone = RearZone(rearZoneShape, node, environment, movements, slowDownFactor)
+        rearZone = RearZone(rearZoneShape, node, environment, movementProvider, slowDownFactor)
 
         zones = listOf(stressZone, neutralZone, attractionZone, rearZone)
     }
@@ -112,9 +112,9 @@ class HerdBehavior @JvmOverloads constructor(
         alignDirection()
         for (zone in zones) {
             if (zone.areNodesInZone()) {
-                var movement = zone.getNextMovement().addVelocityModifier(getNoiseModifier(), getNoiseModifier())
+                var movement = zone.getNextMovement() // .addVelocityModifier(getNoiseModifier(), getNoiseModifier())
                 if (!rearZone.areNodesInZone() && Random.nextDouble() <= 0.3) {
-                    movement = movement.multiplyVelocity(2.0)
+                    movement *= 2.0
                 }
 
                 if (zone is RearZone) {
@@ -123,12 +123,10 @@ class HerdBehavior @JvmOverloads constructor(
 
                 setMovementInConcentration(movement, zone::class.toString())
 
-                val relativeMovement = environment.makePosition(movement.lateralVelocity, movement.forwardVelocity)
-
-                val relativeRotatedMovement = rotateVector(relativeMovement, getAngle(environment.getHeading(node)))
+                val relativeRotatedMovement = rotateVector(movement, getAngle(environment.getHeading(node)))
                 if (zone !is StressZone && stressZone.areNodesInZone(relativeRotatedMovement.plus(environment.getPosition(node)))) {
-                    val randomMovement = getRandomMovement()
-                    return rotateVector(environment.makePosition(randomMovement.lateralVelocity, randomMovement.forwardVelocity), getAngle(environment.getHeading(node)))
+                    val randomMovement = movementProvider.getRandomMovement()
+                    return rotateVector(randomMovement, getAngle(environment.getHeading(node)))
                 }
                 return relativeRotatedMovement
             }
@@ -136,9 +134,9 @@ class HerdBehavior @JvmOverloads constructor(
         if (random() < 0.5) {
             turning()
         }
-        val movement = getRandomMovement()
+        val movement = movementProvider.getRandomMovement()
         setMovementInConcentration(movement, "Out of Zone")
-        return rotateVector(environment.makePosition(movement.lateralVelocity, movement.forwardVelocity), getAngle(environment.getHeading(node)))
+        return rotateVector(movement, getAngle(environment.getHeading(node)))
     }
 
     private fun alignDirection() {
@@ -151,9 +149,9 @@ class HerdBehavior @JvmOverloads constructor(
         environment.setHeading(node, newHeading)
     }
 
-    private fun setMovementInConcentration(movement: Movement, zoneName: String) {
-        node.setConcentration(SimpleMolecule("x"), movement.lateralVelocity)
-        node.setConcentration(SimpleMolecule("y"), movement.forwardVelocity)
+    private fun setMovementInConcentration(movement: Euclidean2DPosition, zoneName: String) {
+        node.setConcentration(SimpleMolecule("x"), movement.x)
+        node.setConcentration(SimpleMolecule("y"), movement.y)
         node.setConcentration(SimpleMolecule("zone"), zoneName)
     }
 
@@ -169,19 +167,6 @@ class HerdBehavior @JvmOverloads constructor(
             val headingAngle = environment.getHeading(node).asAngle + toRadians(2.0)
             environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
         }
-    }
-
-    private fun getRandomMovement(): Movement {
-        val randomNumber = Random.nextDouble()
-        var cumulativeProbability = 0.0
-
-        for (movement in movements.values) {
-            cumulativeProbability += movement.probability
-            if (randomNumber < cumulativeProbability) {
-                return movement.addVelocityModifier(getNoiseModifier(), getNoiseModifier())
-            }
-        }
-        throw IllegalStateException("The sum of movement probabilities is not equal to 1")
     }
 
     private fun getNoiseModifier(): Double {

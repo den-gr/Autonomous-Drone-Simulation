@@ -2,8 +2,7 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Molecule
 import it.unibo.alchemist.model.Node
-import it.unibo.alchemist.model.actions.utils.Direction
-import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
 import it.unibo.alchemist.model.molecules.SimpleMolecule
@@ -14,17 +13,17 @@ class StressZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
-    private val movements: Map<Direction, Movement>,
+    movementProvider: MovementProvider,
     private val repulsionFactor: Double,
-) : AbstractZone(node, environment, movements) {
+) : AbstractZone(node, environment, movementProvider) {
     override val visibleNodes: Molecule = SimpleMolecule("Stress zone")
 
-    override fun getNextMovement(): Movement {
+    override fun getNextMovement(): Euclidean2DPosition {
         val pos = environment.getPosition(owner)
         return getStressZoneMovement(pos, getNodesInZone(pos))
     }
 
-    private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Movement {
+    private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Euclidean2DPosition {
         val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
             val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
@@ -40,20 +39,22 @@ class StressZone(
             }
         }
         if (positions.contains(RelativePosition.FORWARD)) {
-            return movements.getValue(Direction.FORWARD).addVelocityModifier(0.0, -repulsionFactor)
+            return movementProvider.forward().addVelocityModifier(0.0, -repulsionFactor)
         } else if (positions.contains(RelativePosition.RIGHT) && positions.contains(RelativePosition.LEFT)) {
-            return movements.getValue(Direction.FORWARD)
+            return movementProvider.forward()
         } else if (positions.contains(RelativePosition.BEHIND_LEFT) && positions.contains(RelativePosition.BEHIND_RIGHT)) {
-            return movements.getValue(Direction.FORWARD).addVelocityModifier(0.0, repulsionFactor)
+            return movementProvider.forward().addVelocityModifier(0.0, repulsionFactor)
         } else if (positions.containsAll(listOf(RelativePosition.BEHIND_LEFT, RelativePosition.RIGHT))) {
-            return movements.getValue(Direction.FORWARD)
+            return movementProvider.forward()
         } else if (positions.containsAll(listOf(RelativePosition.BEHIND_RIGHT, RelativePosition.LEFT))) {
-            return movements.getValue(Direction.FORWARD)
+            return movementProvider.forward()
         } else if (positions.contains(RelativePosition.RIGHT) || positions.contains(RelativePosition.BEHIND_RIGHT)) {
-            return movements.getValue(Direction.LEFT)
+            return movementProvider.toLeft()
         } else if (positions.contains(RelativePosition.LEFT) || positions.contains(RelativePosition.BEHIND_LEFT)) {
-            return movements.getValue(Direction.RIGHT)
+            return movementProvider.toRight()
         }
-        return Movement(0.0, 0.0)
+        throw IllegalStateException("No nodes detected in zone")
     }
 }
+
+

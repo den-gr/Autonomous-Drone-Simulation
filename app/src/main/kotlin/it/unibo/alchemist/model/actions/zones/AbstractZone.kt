@@ -2,13 +2,10 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Molecule
 import it.unibo.alchemist.model.Node
-import it.unibo.alchemist.model.actions.utils.Direction
-import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import java.lang.IllegalStateException
 import kotlin.math.atan2
-import kotlin.random.Random
 
 enum class RelativeLateralZonePosition(val startAngle: Double, val endAngle: Double) {
     LEFT(0.0, Math.PI),
@@ -18,22 +15,9 @@ enum class RelativeLateralZonePosition(val startAngle: Double, val endAngle: Dou
 abstract class AbstractZone(
     protected val owner: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
-    private val movements: Map<Direction, Movement>,
+    protected val movementProvider: MovementProvider,
 ) : Zone {
     abstract val visibleNodes: Molecule
-
-    protected fun getRandomMovement(): Movement {
-        val randomNumber = Random.nextDouble()
-        var cumulativeProbability = 0.0
-
-        for (movement in movements.values) {
-            cumulativeProbability += movement.probability
-            if (randomNumber < cumulativeProbability) {
-                return movement
-            }
-        }
-        throw IllegalStateException("The sum of movement probabilities is not equal to 1")
-    }
 
     override fun areNodesInZone(): Boolean {
         val position = environment.getPosition(owner)
@@ -65,5 +49,12 @@ abstract class AbstractZone(
 
     open fun getHeading(): Euclidean2DPosition {
         return environment.getHeading(owner)
+    }
+
+    protected fun Euclidean2DPosition.addVelocityModifier(lateralModifier: Double, forwardModifier: Double): Euclidean2DPosition {
+        return Euclidean2DPosition(
+            x + x * lateralModifier,
+            y + y * forwardModifier,
+        )
     }
 }

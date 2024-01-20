@@ -46,8 +46,8 @@ class NeutralZoneTest : AbstractZoneTest() {
             NEUTRAL_ZONE_ANGLE,
         )
 
-        neutralZone1 = NeutralZone(neutralZoneShape, node1, environment, movements)
-        neutralZone2 = NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movements)
+        neutralZone1 = NeutralZone(neutralZoneShape, node1, environment, movementsProvider)
+        neutralZone2 = NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movementsProvider)
     }
 
     @BeforeEach
@@ -64,7 +64,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         assertTrue(neutralZone1.areNodesInZone())
 
         val movement = neutralZone1.getNextMovement()
-        assertTrue(movement.lateralVelocity < 0)
+        assertTrue(movement.x < 0)
     }
 
     @Test
@@ -73,7 +73,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         assertTrue(neutralZone1.areNodesInZone())
 
         val movement = neutralZone1.getNextMovement()
-        assertTrue(movement.lateralVelocity > 0)
+        assertTrue(movement.x > 0)
     }
 
     @Test

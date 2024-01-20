@@ -2,8 +2,7 @@ package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Incarnation
 import it.unibo.alchemist.model.Node
-import it.unibo.alchemist.model.actions.utils.Direction
-import it.unibo.alchemist.model.actions.utils.Movement
+import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.nodes.GenericNode
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.physics.properties.RectangularArea
@@ -22,10 +21,12 @@ abstract class AbstractZoneTest {
         const val LATERAL_VELOCITY = 1.0
     }
 
-    protected val movements = mapOf(
-        Direction.LEFT to Movement(-LATERAL_VELOCITY, 0.0, 0.25),
-        Direction.FORWARD to Movement(0.0, FORWARD_VELOCITY, 0.5),
-        Direction.RIGHT to Movement(LATERAL_VELOCITY, 0.0, 0.25),
+    protected val movementsProvider: MovementProvider = MovementProvider(
+        LATERAL_VELOCITY,
+        FORWARD_VELOCITY,
+        0.25,
+        0.5,
+        0.25,
     )
 
     protected fun createRectangleNode(

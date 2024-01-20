@@ -44,7 +44,7 @@ class RearZoneTest : AbstractZoneTest() {
             true,
         )
 
-        rearZone = RearZone(rearZoneShape, node1, environment, movements, SLOW_DOWN_FACTOR)
+        rearZone = RearZone(rearZoneShape, node1, environment, movementsProvider, SLOW_DOWN_FACTOR)
     }
 
     @BeforeEach

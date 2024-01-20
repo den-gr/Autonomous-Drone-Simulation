@@ -1,5 +1,9 @@
 module mytest
 
 public def bla(){
-    env.put("zebra", self.getCoordinates().get(0))
+    env.put("`blaaaaaaaaaaaa`", self.getCoordinates().get(0))
+}
+
+public def blo(){
+    env.put("blooooooooooooo", self.getCoordinates().get(1))
 }
