@@ -31,11 +31,11 @@ class AttractionZone(
         }
 
         if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toLeftForward().addVelocityModifier(speedUpFactor, speedUpFactor)
+            return movementProvider.toLeftForward() * speedUpFactor
         } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toRightForward().addVelocityModifier(speedUpFactor, speedUpFactor)
+            return movementProvider.toRightForward() * speedUpFactor
         } else if (positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.forward().addVelocityModifier(0.0, speedUpFactor)
+            return movementProvider.forward() * speedUpFactor
         }
 
         return movementProvider.forward() // TODO

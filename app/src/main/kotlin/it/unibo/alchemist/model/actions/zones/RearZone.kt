@@ -16,11 +16,17 @@ class RearZone(
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
     private val slowDownFactor: Double,
+    private val slowDownProbability: Double,
 ) : AbstractZone(node, environment, movementProvider) {
     override val visibleNodes: Molecule = SimpleMolecule("Rear zone")
 
+    init {
+        require(slowDownFactor in 0.0..1.0)
+        require(slowDownProbability in 0.0001..1.0)
+    }
+
     override fun getNextMovement(): Euclidean2DPosition {
-        val velocityModifier = if (Random.nextDouble() > 0.6) slowDownFactor else 1.0
+        val velocityModifier = if (Random.nextDouble() < slowDownProbability) slowDownFactor else 1.0
         return movementProvider.getRandomMovement() * velocityModifier
     }
 

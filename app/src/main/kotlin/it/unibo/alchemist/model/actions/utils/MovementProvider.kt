@@ -5,8 +5,8 @@ import java.lang.IllegalStateException
 import kotlin.random.Random
 
 class MovementProvider(
-    lateralVelocity: Double,
-    forwardVelocity: Double,
+    private val lateralVelocity: Double,
+    private val forwardVelocity: Double,
     leftMovementProbability: Double,
     forwardMovementProbability: Double,
     rightMovementProbability: Double,
@@ -39,10 +39,18 @@ class MovementProvider(
 
         for (probability in movementsProbabilities) {
             cumulativeProbability += probability.value
-            if (randomNumber < cumulativeProbability) {
+            if (randomNumber <= cumulativeProbability) {
                 return movements.getValue(probability.key) // .addVelocityModifier(getNoiseModifier(), getNoiseModifier())
             }
         }
         throw IllegalStateException("The sum of movement probabilities is not equal to 1")
+    }
+
+    override fun toString(): String {
+        return "Velocities: [forward=$forwardVelocity, lateral=$lateralVelocity] \n" +
+            "Movement probabilities: [" +
+            "left=${movementsProbabilities[Direction.LEFT]}, " +
+            "forward=${movementsProbabilities[Direction.FORWARD]}, " +
+            "right=${movementsProbabilities[Direction.RIGHT]}] \n"
     }
 }

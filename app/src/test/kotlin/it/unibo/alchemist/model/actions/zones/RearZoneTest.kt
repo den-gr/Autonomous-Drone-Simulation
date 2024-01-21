@@ -25,6 +25,7 @@ class RearZoneTest : AbstractZoneTest() {
         const val REAR_ZONE_RADIUS = 12 * BODY_LEN
         const val REAR_ZONE_ANGLE = 180.0
         const val SLOW_DOWN_FACTOR = 0.5
+        const val SLOW_DOWN_PROBABILITY = 0.6
     }
 
     @BeforeTest
@@ -44,7 +45,7 @@ class RearZoneTest : AbstractZoneTest() {
             true,
         )
 
-        rearZone = RearZone(rearZoneShape, node1, environment, movementsProvider, SLOW_DOWN_FACTOR)
+        rearZone = RearZone(rearZoneShape, node1, environment, movementsProvider, SLOW_DOWN_FACTOR, SLOW_DOWN_PROBABILITY)
     }
 
     @BeforeEach
