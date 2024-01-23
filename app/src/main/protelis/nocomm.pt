@@ -1,0 +1,11 @@
+/*
+ *  Avoids communications between cameras.
+ *  Follows closest target in sight if present, otherwise explores randomly.
+ */
+
+module nocomm
+import utils
+import exploration_strategies
+
+followOrExplore(closestTargetToFov(getLocalTargets()), zigZagExploration)
+

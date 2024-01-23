@@ -1,0 +1,184 @@
+incarnation: protelis
+environment:
+  type: ContinuousPhysics2DEnvironment
+variables:
+###### HERD
+  body_length: &body_len
+    formula: 2
+  body_width: &body_width
+    formula: body_length / 2
+  stress_zone_radius: &stress_zone_r
+    formula: 2 * body_length
+  neutral_zone_radius: &neutral_zone_r
+    formula: 10 * body_length
+  attraction_zone_radius: &attr_zone_r
+    formula: 20 * body_length
+  rear_zone_radius: &rear_zone_r
+    formula: attraction_zone_radius
+  stress_zone_repulsion_factor: &stress_repulsion_f
+    formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
+  attraction_speed_up: &attraction_speed_up_f
+    formula: 1.5 # [1; inf] if there are nodes in attraction zone multiply the speed-up factor to current velocity
+  leaders_slow_down: &leaders_slow_down_f
+    formula: 0.5 # [0; 1] if there are neighbors in rear zone slow down by this value
+  leaders_slow_down_probability: &leaders_p
+    formula: 0.6
+  trailers_speed_up: &trailers_speed_up_f
+    formula: 2.0
+  trailers_speed_up_probability: &trailers_p
+    formula: 0.4
+  intrinsic_forward_velocity: &forward_velocity
+    formula: 0.6 * body_length
+  intrinsic_lateral_velocity: &lateral_velocity
+    formula: 0.3 * body_length
+  ### Variable grouping
+  zones_radii: &zones_radii
+    type: ArbitraryVariable
+    parameters: [ [ *stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r] ]
+  velocities: &velocities
+    type: ArbitraryVariable
+    parameters: [[*lateral_velocity, *forward_velocity]]
+  movement_probabilities: &movement_probabilities
+    type: ArbitraryVariable
+    parameters: [[0.25, 0.5, 0.25]] # Probability to go [left, forward, right]
+  leader_seed_change: &leader_seed_change
+    type: ArbitraryVariable
+    parameters: [ [ *leaders_slow_down_f, *leaders_p ] ]
+  trailer_seed_change: &trailer_seed_change
+    type: ArbitraryVariable
+    parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
+###### DRONES
+  CameraSpeed: &CameraSpeed
+    formula: 3
+  EnvironmentSize: &EnvironmentSize
+    type: ArbitraryVariable
+    parameters: [ 6000 ]
+  FoVAngle: &FoVAngle
+    formula: 77
+  FoVDistance: &FoVDistance
+    formula: 200
+  RotationSpeed: &RotationSpeed
+    formula: 18
+  CommunicationRange: &CommunicationRange
+    type: ArbitraryVariable
+    parameters: [ 4000 ]
+  MaxCamerasPerTarget: &MaxCamerasPerTarget
+    formula: 2
+
+_drone: &drone
+  - time-distribution: 2
+    type: ChemicalReaction
+    actions:
+      - type: InitHeading
+        parameters: [ ]
+      - type: CameraSee
+        parameters: [ *FoVDistance, *FoVAngle, vision ]
+      - type: HeadTowardTarget
+        parameters: [ heading, *RotationSpeed ]
+      - type: MoveToTarget
+        parameters: [ destination, *CameraSpeed ]
+  - time-distribution: 2
+    type: ChemicalReaction
+    conditions:
+      - type: MoleculeHasConcentration
+        parameters: [ doZigZag, true ]
+    actions:
+      - type: ConstantDistanceRandomWalk
+        parameters: [ 999999, *CameraSpeed ]
+  - time-distribution: 2
+    type: ChemicalReaction
+    conditions:
+      - type: MoleculeHasConcentration
+        parameters: [ doSpin, true ]
+    actions:
+      - type: Spin
+        parameters: [ *RotationSpeed ]
+  - time-distribution: 1
+    program: "herdexperiment:ff_linpro_cluster"
+  - program: send
+
+
+_herd_parameters: &herd_parameters
+  - *zones_radii
+  - *velocities
+  - *movement_probabilities
+  - *stress_repulsion_f
+  - *attraction_speed_up_f
+  - *leader_seed_change
+  - *trailer_seed_change
+
+_herd_parameterss: &herd_parameterss
+  - *zones_radii
+  - *velocities
+  - *movement_probabilities
+  - *stress_repulsion_f
+  - *attraction_speed_up_f
+  - *leader_seed_change
+  - *trailer_seed_change
+  - false
+
+_herd: &herd
+  - time-distribution: 1
+    type: Event
+    actions:
+      type: HerdBehavior
+      parameters: *herd_parameters
+
+_herdd: &herdd
+  - time-distribution: 1
+    type: Event
+    actions:
+      type: HerdBehavior
+      parameters: *herd_parameterss
+
+_animal_area: &animal_area
+  - type: RectangularArea
+    parameters: [ *body_len, *body_width ] #inverted
+
+network-model:
+  type: ConnectToGroup
+  parameters: [*CommunicationRange, Drone_sign]
+
+deployments:
+  - type: Circle
+    parameters: [30, 0, 0, 100]
+    contents:
+      - molecule: zebra
+        concentration: true
+    programs: *herd
+    properties: *animal_area
+  - type: Circle
+    parameters: [ 30, 500, -500, 100]
+    contents:
+      - molecule: zebra
+        concentration: true
+    programs: *herdd
+    properties: *animal_area
+
+  - type: Circle
+    parameters: [ 7, -300, -500, 100 ]
+    contents:
+      - molecule: Drone_sign
+        concentration: true
+      - molecule: FoVDistance
+        concentration: *FoVDistance
+      - molecule: EnvironmentSize
+        concentration: *EnvironmentSize # TODO
+      - molecule: CommRange
+        concentration: *CommunicationRange
+      - molecule: Target
+        concentration: "\"zebra\""
+      - molecule: MaxCamerasPerTarget
+        concentration: *MaxCamerasPerTarget
+      - molecule: MaxMovementSpeed
+        concentration: *CameraSpeed
+      - molecule: MaxRotationSpeed
+        concentration: *RotationSpeed
+      - molecule: noAttractiveForces
+        concentration: true
+    programs: *drone
+  - type: SpecificPositions
+    parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
+    contents:
+      - molecule: landmark
+        concentration: true

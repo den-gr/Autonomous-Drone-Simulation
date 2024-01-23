@@ -13,7 +13,10 @@ repositories {
 dependencies {
     implementation(libs.bundles.alchemist)
     implementation(libs.slf4j)
+    implementation(fileTree("../libs"))
     testImplementation(kotlin("test"))
+    implementation("com.github.haifengl:smile-core:3.0.2")
+    implementation("com.github.haifengl:smile-kotlin:3.0.2")
 }
 
 multiJvm {

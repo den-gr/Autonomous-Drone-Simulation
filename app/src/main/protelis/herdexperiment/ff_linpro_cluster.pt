@@ -1,0 +1,51 @@
+module herdexperiment:ff_linpro_cluster
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.herdexperiment.MyUtils.getClusterSolver
+import it.unibo.experiment.herdexperiment.MyUtils.findNonCollidingPosition
+import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
+import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
+import utils
+import exploration_strategies
+
+public def myFollowOrExplore(target, explorationStrategy) {
+  if(target == noTarget()) {
+      explorationStrategy.apply()
+      noTarget()
+  } else {
+      env.put("TEST", target)
+      myfollow(target)
+  }
+}
+
+public def myfollow(target) {
+    envRemove("doSpin")
+    envRemove("doZigZag")
+    env.put("destination", closestPositionToTargetAtDistance(target, getFoVCenterDistance()));
+    env.put("heading", target);
+    target
+}
+
+
+public def myavoidCameraCollision(target, localTargets) {
+    if(target != noTarget() && localTargets.contains(target)) {
+        let assignedTs = nbr(target)
+        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), target, getFoVCenterDistance())
+        env.put("destination", pos)
+    } else { 0 }
+}
+
+rep(solver <- getClusterSolver()) {
+    let localTargets = getLocalTargets()
+    let targets = unionHood PlusSelf(nbr(localTargets))
+    let cameras = nbr(getCenterOfFov())
+    let solved = solver.solve(cameras, targets, getMaxCamerasPerTarget(), false)
+    let myTarget = solved.getOrDefault(getUID(), noTarget())
+    let allTarget = solved.values()
+    myFollowOrExplore(myTarget, fieldExploration)
+    myavoidCameraCollision(myTarget, allTarget)
+    solver
+}
+
+

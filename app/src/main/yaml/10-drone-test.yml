@@ -1,0 +1,123 @@
+incarnation: protelis
+
+variables:
+  CameraSpeed: &CameraSpeed
+    formula: 3
+  EnvironmentSize: &EnvironmentSize
+    type: ArbitraryVariable
+    parameters: [500]
+  FoVAngle: &FoVAngle
+    formula: 60
+  FoVDistance: &FoVDistance
+    formula: 30
+  RotationSpeed: &RotationSpeed
+    formula: 36
+  CommunicationRange: &CommunicationRange
+    type: ArbitraryVariable
+    parameters: [ 200]
+  MaxCamerasPerTarget: &MaxCamerasPerTarget
+    formula: 2
+
+  Drone: &Drone
+    - time-distribution: 2
+      type: ChemicalReaction
+      actions:
+        - type: InitHeading
+          parameters: [ ]
+        - type: CameraSee
+          parameters: [ *FoVDistance, *FoVAngle, vision ]
+        - type: HeadTowardTarget
+          parameters: [ heading, *RotationSpeed ]
+        - type: MoveToTarget
+          parameters: [ destination, *CameraSpeed ]
+    - time-distribution: 2
+      type: ChemicalReaction
+      conditions:
+        - type: MoleculeHasConcentration
+          parameters: [doZigZag, true]
+      actions:
+        - type: ConstantDistanceRandomWalk
+          parameters: [999999, *CameraSpeed]
+    - time-distribution: 2
+      type: ChemicalReaction
+      conditions:
+        - type: MoleculeHasConcentration
+          parameters: [ doSpin, true ]
+      actions:
+        - type: Spin
+          parameters: [ *RotationSpeed ]
+    - time-distribution: 1
+      program: "ff_linpro"
+    - program: send
+
+#  Seed: &Seed
+#    type: LinearVariable
+#    #default, min, max, step
+#    parameters: [1, 1, 1, 1]
+#  Algorithm: &Algorithm
+#    type: ListOf
+#    parameters: ["ff_linpro"]
+#  HumanSpeed: &HumanSpeed
+#    type: ArbitraryVariable
+#    parameters: [1.4]
+#  NumHumans: &NumHumans
+#    formula: 30
+#  NumCameras: &NumCameras
+#    formula: 15
+#  HalfEnvironmentSize: &HalfEnvironmentSize # needed for calculations
+#    formula: EnvironmentSize / 2
+#  NegHalfEnvironmentSize: &NegHalfEnvironmentSize # needed for calculations
+#    formula: -HalfEnvironmentSize
+#  NetworkConnectionMaxDistance: &NetworkConnectionMaxDistance
+#    formula: EnvironmentSize * EnvironmentSize
+#  WantedProbability: &WantedProbability
+#    type: ArbitraryVariable
+#    parameters: [0.05]
+#  WantedTimeDistribution: &WantedTimeDistribution # how many times per second the dice is rolled
+#    type: ArbitraryVariable
+#    parameters: [0.05]
+network-model:
+  type: ConnectToGroup
+  parameters: [*CommunicationRange, Drone_sign]
+environment:
+  type: ContinuousPhysics2DEnvironment
+#  type: Rectangular2DEnvironment
+#  parameters: [*EnvironmentSize, *EnvironmentSize]
+
+
+
+deployments:
+  - type: SpecificPositions
+    parameters: [[-20, 8], [50, 50], [-50, 50]]
+    contents:
+      - molecule: Drone_sign
+        concentration: true
+      - molecule: FoVDistance
+        concentration: *FoVDistance
+      - molecule: EnvironmentSize
+        concentration: *EnvironmentSize # TODO
+      - molecule: CommRange
+        concentration: *CommunicationRange
+      - molecule: Target
+        concentration: "\"wanted\""
+      - molecule: MaxCamerasPerTarget
+        concentration: *MaxCamerasPerTarget
+      - molecule: MaxMovementSpeed
+        concentration: *CameraSpeed
+      - molecule: MaxRotationSpeed
+        concentration: *RotationSpeed
+      - molecule: noAttractiveForces
+        concentration: true
+    programs:
+      - *Drone
+
+  - type: SpecificPositions
+    parameters: [ [ 0,0 ],[ 100, 0 ], [ -100, 0 ], [ 0,100 ], [ 0, -100 ] ]
+    contents:
+      - molecule: landmark
+        concentration: true
+      - molecule: wanted
+        concentration: true
+    properties:
+      - type: RectangularArea
+        parameters: [ 2, 2 ]

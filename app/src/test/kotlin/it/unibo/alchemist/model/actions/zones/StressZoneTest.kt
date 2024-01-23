@@ -1,10 +1,7 @@
-package it.unibo.alchemist.model.actions.zones.circular
+package it.unibo.alchemist.model.actions.zones
 
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.SupportedIncarnations
-import it.unibo.alchemist.model.actions.utils.Direction
-import it.unibo.alchemist.model.actions.zones.AbstractZoneTest
-import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
 import it.unibo.alchemist.model.linkingrules.NoLinks
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
@@ -12,7 +9,7 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
-class CircularStressZoneTest : AbstractZoneTest() {
+class StressZoneTest : AbstractZoneTest() {
     override lateinit var environment: Physics2DEnvironment<Any>
     private lateinit var node1: Node<Any>
     private lateinit var node2: Node<Any>
@@ -28,8 +25,7 @@ class CircularStressZoneTest : AbstractZoneTest() {
     companion object {
         const val STRESS_ZONE_RADIUS = 8.0 * BODY_LEN
         const val REPULSION_FACTOR = 0.5
-        const val FORWARD_VELOCITY = 2.0
-        const val LATERAL_VELOCITY = 1.0
+
         val LEFT_POSITION = Euclidean2DPosition(-2.0, 0.0)
         const val EPSILON = 0.0001
     }
@@ -49,9 +45,9 @@ class CircularStressZoneTest : AbstractZoneTest() {
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(STRESS_ZONE_RADIUS)
 
-        stressZone1 = StressZone(stressZoneShape, node1, environment, movements, REPULSION_FACTOR)
-        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, movements, REPULSION_FACTOR)
-        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movements, REPULSION_FACTOR)
+        stressZone1 = StressZone(stressZoneShape, node1, environment, movementsProvider, REPULSION_FACTOR)
+        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, movementsProvider, REPULSION_FACTOR)
+        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movementsProvider, REPULSION_FACTOR)
     }
 
     @BeforeTest
@@ -77,10 +73,10 @@ class CircularStressZoneTest : AbstractZoneTest() {
         addNode(node2, positionProvider.getNorthInZonePosition())
         assertTrue(stressZone1.areNodesInZone())
         val movement = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.FORWARD).lateralVelocity, movement.lateralVelocity)
+        assertEquals(movementsProvider.forward().x, movement.x)
         assertEquals(
-            movements.getValue(Direction.FORWARD).forwardVelocity,
-            movement.forwardVelocity + REPULSION_FACTOR * FORWARD_VELOCITY,
+            movementsProvider.forward().y,
+            movement.y + REPULSION_FACTOR * FORWARD_VELOCITY,
         )
     }
 
@@ -92,12 +88,12 @@ class CircularStressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.RIGHT).lateralVelocity, movement1.lateralVelocity)
-        assertEquals(0.0, movement1.forwardVelocity)
+        assertEquals(movementsProvider.toRight().x, movement1.x)
+        assertEquals(0.0, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movements.getValue(Direction.LEFT).lateralVelocity, movement2.lateralVelocity)
-        assertEquals(0.0, movement2.forwardVelocity)
+        assertEquals(movementsProvider.toLeft().x, movement2.x)
+        assertEquals(0.0, movement2.y)
     }
 
     @Test
@@ -111,12 +107,12 @@ class CircularStressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.LEFT).lateralVelocity, movement1.lateralVelocity)
-        assertEquals(0.0, movement1.forwardVelocity)
+        assertEquals(movementsProvider.toLeft().x, movement1.x)
+        assertEquals(0.0, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movements.getValue(Direction.RIGHT).lateralVelocity, movement2.lateralVelocity)
-        assertEquals(0.0, movement2.forwardVelocity)
+        assertEquals(movementsProvider.toRight().x, movement2.x)
+        assertEquals(0.0, movement2.y)
     }
 
     @Test
@@ -130,12 +126,12 @@ class CircularStressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.RIGHT).lateralVelocity, movement1.lateralVelocity)
-        assertEquals(0.0, movement1.forwardVelocity)
+        assertEquals(movementsProvider.toRight().x, movement1.x)
+        assertEquals(0.0, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movements.getValue(Direction.LEFT).lateralVelocity, movement2.lateralVelocity)
-        assertEquals(0.0, movement2.forwardVelocity)
+        assertEquals(movementsProvider.toLeft().x, movement2.x)
+        assertEquals(0.0, movement2.y)
     }
 
     /**
@@ -149,8 +145,8 @@ class CircularStressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone1.areNodesInZone())
 
         val movement = stressZone1.getNextMovement()
-        assertEquals(movements.getValue(Direction.FORWARD).forwardVelocity, movement.forwardVelocity)
-        assertEquals(0.0, movement.lateralVelocity)
+        assertEquals(movementsProvider.forward().y, movement.y)
+        assertEquals(0.0, movement.x)
     }
 
     @Test

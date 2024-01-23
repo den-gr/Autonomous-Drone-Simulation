@@ -1,0 +1,202 @@
+module utils
+import protelis:lang:utils
+import java.lang.Math.cos
+import java.lang.System.out
+import java.lang.Math.sin
+import java.lang.Math.sqrt
+import java.lang.Math.abs
+import java.lang.Math.atan2
+import it.unibo.experiment.ProtelisUtils.toTuple
+import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
+import it.unibo.experiment.ProtelisUtils.isTarget
+import it.unibo.experiment.ProtelisUtils.mapFieldValues
+import it.unibo.experiment.ProtelisUtils.elementsWithLeastSources
+import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
+import org.protelis.lang.datatype.Option.of
+import org.protelis.lang.datatype.Option.empty
+import exploration_strategies
+import it.unibo.experiment.ProtelisUtils.findNonCollidingPosition
+
+public def log(msg) {
+    out.print("[");
+    out.print(self.getDeviceUID());
+    out.print("]: ");
+    out.println(msg);
+    0
+}
+
+
+
+public def avoidCameraCollision(target, localTargets) {
+    if(target != noTarget() && localTargets.contains(target)) {
+        let assignedTs = nbr(target)
+        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), target, getFoVCenterDistance())
+        env.put("destination", pos)
+    } else { 0 }
+}
+
+public def optionalOf(value) {
+    of(value)
+}
+
+public def emptyOptional() {
+    empty()
+}
+
+public def forEach(tuple, fun) {
+    if (tuple.size() <= 0) {
+        0
+    } else {
+        fun.apply(tuple.get(0))
+        forEach(tuple.tail(), fun)
+    }
+}
+
+public def directionToAngle(direction) {
+    atan2(direction.get(1), direction.get(0))
+}
+
+public def angleToVersor(angle) {
+    [cos(angle), sin(angle)]
+}
+
+public def nbrVersor() {
+    mapFieldValues(self.nbrVector()) { unitVector(it) }
+}
+
+public def getVision() {
+    toTuple(env.get("vision"))
+}
+
+public def filterVision(vision, attribute) {
+    vision.filter((t) -> { isTarget(t, attribute) })
+}
+
+public def onlyTargets(vision) {
+    if(env.has("Target")) {
+        filterVision(vision, env.get("Target"))
+    } else {
+        vision
+    }
+}
+
+public def getLocalTargets() {
+    onlyTargets(getVision())
+}
+
+public def minBy(a, b, getValue) {
+    mux(getValue.apply(a) < getValue.apply(b)) {
+        a
+    } else {
+        b
+    }
+}
+
+public def distanceBetweenPos(pos1, pos2) {
+    let diff = pos1 - pos2;
+    sqrt(diff.get(0)^2 + diff.get(1)^2)
+}
+
+public def distanceFromPos(pos) {
+    distanceBetweenPos(self.getCoordinates(), pos)
+}
+
+public def posToTuple(pos) {
+    [pos.getX(), pos.getY()]
+}
+
+public def distanceFromTarget(target) {
+    distanceFromPos(posToTuple(target.getPosition()))
+}
+
+public def fovDistanceFromPos(pos) {
+    distanceBetweenPos(getCenterOfFov(), pos)
+}
+
+
+public def fovDistanceFromTarget(target) {
+    fovDistanceFromPos(posToTuple(target.getPosition()))
+}
+
+public def closestTarget(targets) {
+    targets.reduce(noTarget(), (t1, t2) -> { minBy(t1, t2, distanceFromTarget) })
+}
+
+public def closestTargetToFov(targets) {
+    targets.reduce(noTarget(), (t1, t2) -> { minBy(t1, t2, fovDistanceFromTarget) })
+}
+
+public def noTarget() {
+    0
+}
+
+public def getMaxCamerasPerTarget() {
+    env.get("MaxCamerasPerTarget")
+}
+
+public def getMaxMovementSpeed() {
+    env.get("MaxMovementSpeed")
+}
+
+public def getMaxRotationSpeed() {
+    env.get("MaxRotationSpeed")
+}
+
+public def getFoVDistance() {
+    env.get("FoVDistance")
+}
+
+public def getFoVCenterDistance() {
+    2 * getFoVDistance() / 3
+}
+
+public def getCenterOfFov() {
+    getCenterOfFovAtDistance(getFoVCenterDistance())
+}
+
+public def getEnvironmentSize() {
+    env.get("EnvironmentSize")
+}
+
+public def leastCoveredTarget(targetsField) {
+    let t = elementsWithLeastSources(targetsField)
+    if(t.size() <= 0) {
+        noTarget()
+    } else {
+        closestTargetToFov(t)
+    }
+}
+
+public def unitVector(vector) {
+    let norm = sqrt(vector.get(0) ^ 2 + vector.get(1) ^ 2)
+    if (norm > 0) {
+        [vector.get(0) / norm, vector.get(1) / norm]
+    } else {
+        vector
+    }
+}
+
+public def follow(target) {
+    envRemove("doSpin")
+    envRemove("doZigZag")
+    env.put("destination", closestPositionToTargetAtDistance(target.getPosition(), getFoVCenterDistance()));
+    env.put("heading", target.getPosition());
+    target
+}
+
+public def envRemove(mol) {
+    if(env.has(mol)){
+        env.remove(mol)
+    } else { 0 }
+}
+
+
+public def followOrExplore(target, explorationStrategy) {
+    if(target == noTarget()) {
+        explorationStrategy.apply()
+        noTarget()
+    } else {
+        env.put("TEST", target)
+        follow(target)
+    }
+}

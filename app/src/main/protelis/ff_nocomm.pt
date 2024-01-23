@@ -1,0 +1,11 @@
+/*
+ *  Avoids communications between cameras except during the exploration phase in which it uses the fieldExploration.
+ *  Follows closest target in sight if present.
+ */
+
+module ff_nocomm
+import utils
+import exploration_strategies
+
+followOrExplore(closestTargetToFov(getLocalTargets()), fieldExploration)
+

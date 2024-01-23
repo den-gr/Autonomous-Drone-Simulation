@@ -1,0 +1,30 @@
+/* Based on "Online Multi-object k-coverage with Mobile Smart Cameras" by Lukas Esterle and Peter Lewis.
+ * Replicates the BC-RE algorithm, aka Broadcast-Received calls.
+ * Each camera broadcasts requests for each target and provisions the one with the least requests in case it is not already
+ * following a target.
+ *
+ * In case there are multiple targets with the least requests number, then the closest one is chosen.
+ */
+
+module bc_re
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.ProtelisUtils.elementsWithLeastSources
+import utils
+import exploration_strategies
+
+
+
+rep(myTarget <- noTarget()) {
+    let localTargets = getLocalTargets()
+    let allTargets = nbr(localTargets)
+    let possibleTarget = closestTarget(elementsWithLeastSources(allTargets))
+    let newTarget = if(myTarget == noTarget() || !localTargets.contains(myTarget)) {
+        possibleTarget
+    } else {
+        localTargets.get(localTargets.indexof(myTarget)) // updated position
+    }
+    followOrExplore(newTarget, zigZagExploration)
+    avoidCameraCollision(newTarget, localTargets)
+}
