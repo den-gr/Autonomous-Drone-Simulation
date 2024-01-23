@@ -3,6 +3,7 @@ import protelis:lang:utils
 import protelis:coord:spreading
 import protelis:coord:accumulation
 import it.unibo.experiment.herdexperiment.MyUtils.getClusterSolver
+import it.unibo.experiment.herdexperiment.MyUtils.findNonCollidingPosition
 import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
 import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
 import utils
@@ -26,13 +27,25 @@ public def myfollow(target) {
     target
 }
 
+
+public def myavoidCameraCollision(target, localTargets) {
+    if(target != noTarget() && localTargets.contains(target)) {
+        let assignedTs = nbr(target)
+        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), target, getFoVCenterDistance())
+        env.put("destination", pos)
+    } else { 0 }
+}
+
 rep(solver <- getClusterSolver()) {
     let localTargets = getLocalTargets()
     let targets = unionHood PlusSelf(nbr(localTargets))
     let cameras = nbr(getCenterOfFov())
-    let myTarget = solver.solve(cameras, targets, getMaxCamerasPerTarget(), false).getOrDefault(getUID(), noTarget())
+    let solved = solver.solve(cameras, targets, getMaxCamerasPerTarget(), false)
+    let myTarget = solved.getOrDefault(getUID(), noTarget())
+    let allTarget = solved.values()
     myFollowOrExplore(myTarget, fieldExploration)
-    avoidCameraCollision(myTarget, localTargets)
+    myavoidCameraCollision(myTarget, allTarget)
     solver
 }
+
 

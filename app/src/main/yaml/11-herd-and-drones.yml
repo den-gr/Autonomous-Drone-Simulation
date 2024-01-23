@@ -52,18 +52,18 @@ variables:
     formula: 3
   EnvironmentSize: &EnvironmentSize
     type: ArbitraryVariable
-    parameters: [ 4000 ]
+    parameters: [ 6000 ]
   FoVAngle: &FoVAngle
-    formula: 60
+    formula: 77
   FoVDistance: &FoVDistance
     formula: 200
   RotationSpeed: &RotationSpeed
-    formula: 36
+    formula: 18
   CommunicationRange: &CommunicationRange
     type: ArbitraryVariable
-    parameters: [ 5000 ]
+    parameters: [ 4000 ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
-    formula: 1
+    formula: 2
 
 _drone: &drone
   - time-distribution: 2
@@ -141,14 +141,14 @@ network-model:
 
 deployments:
   - type: Circle
-    parameters: [30, 0, 0, 50]
+    parameters: [30, 0, 0, 100]
     contents:
       - molecule: zebra
         concentration: true
     programs: *herd
     properties: *animal_area
   - type: Circle
-    parameters: [ 30, 500, -500, 50]
+    parameters: [ 30, 500, -500, 100]
     contents:
       - molecule: zebra
         concentration: true
@@ -156,7 +156,7 @@ deployments:
     properties: *animal_area
 
   - type: Circle
-    parameters: [ 6, 0, -100, 200 ]
+    parameters: [ 7, -300, -500, 100 ]
     contents:
       - molecule: Drone_sign
         concentration: true

@@ -47,7 +47,7 @@ variables:
         - type: Spin
           parameters: [ *RotationSpeed ]
     - time-distribution: 1
-      program: "bc_re"
+      program: "ff_linpro"
     - program: send
 
 #  Seed: &Seed
