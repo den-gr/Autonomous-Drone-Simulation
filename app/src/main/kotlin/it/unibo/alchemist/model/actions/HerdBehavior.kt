@@ -11,6 +11,7 @@ import it.unibo.alchemist.model.actions.zones.RearZone
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
+import it.unibo.alchemist.model.actions.zones.test.StressZoneT
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
@@ -36,7 +37,7 @@ class HerdBehavior @JvmOverloads constructor(
     north: Boolean = true,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
-    private val stressZone: StressZone
+    private val stressZone: StressZoneT
     private val neutralZone: NeutralZone
     private val attractionZone: AttractionZone
     private val rearZone: RearZone
@@ -70,7 +71,7 @@ class HerdBehavior @JvmOverloads constructor(
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
-        stressZone = StressZone(stressZoneShape, node, environment, movementProvider, stressZoneRepulsionFactor)
+        stressZone = StressZoneT(stressZoneShape, node, environment, movementProvider, stressZoneRepulsionFactor)
 
         val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, ANGLE_OF_ZONE)
         neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider)
