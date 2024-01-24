@@ -60,7 +60,7 @@
     }
   },
   {
-    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawSmartcam",
+    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawSmartcamWithBlindSpot",
     "alreadyLogged": true
   }
 ]

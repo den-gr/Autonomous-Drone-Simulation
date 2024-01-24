@@ -8,7 +8,7 @@ variables:
   body_width: &body_width
     formula: body_length / 2
   stress_zone_radius: &stress_zone_r
-    formula: 2 * body_length
+    formula: 1.5 * body_length
   neutral_zone_radius: &neutral_zone_r
     formula: 10 * body_length
   attraction_zone_radius: &attr_zone_r
@@ -49,14 +49,16 @@ variables:
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
 ###### DRONES
   CameraSpeed: &CameraSpeed
-    formula: 3
+    formula: 4
   EnvironmentSize: &EnvironmentSize
     type: ArbitraryVariable
-    parameters: [ 6000 ]
+    parameters: [ 5000 ]
   FoVAngle: &FoVAngle
     formula: 77
   FoVDistance: &FoVDistance
-    formula: 200
+    formula: 100
+  FoVBlindSpotDistance: &FoVBlindSpotDistance
+    formula: 20
   RotationSpeed: &RotationSpeed
     formula: 18
   CommunicationRange: &CommunicationRange
@@ -71,8 +73,8 @@ _drone: &drone
     actions:
       - type: InitHeading
         parameters: [ ]
-      - type: CameraSee
-        parameters: [ *FoVDistance, *FoVAngle, vision ]
+      - type: CameraSeeWithBlindSpot
+        parameters: [ *FoVBlindSpotDistance, *FoVDistance, *FoVAngle, vision ]
       - type: HeadTowardTarget
         parameters: [ heading, *RotationSpeed ]
       - type: MoveToTarget
@@ -154,7 +156,6 @@ deployments:
         concentration: true
     programs: *herdd
     properties: *animal_area
-
   - type: Circle
     parameters: [ 7, -300, -500, 100 ]
     contents:

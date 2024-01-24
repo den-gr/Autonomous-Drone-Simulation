@@ -120,10 +120,6 @@
     }
   },
   {
-    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawSmartcam",
-    "alreadyLogged": true
-  },
-  {
     "type": "class it.unibo.alchemist.boundary.gui.effects.DrawShape",
     "curIncarnation": "protelis",
     "mode": "FILL_ELLIPSE",
@@ -182,5 +178,9 @@
     "colorCache": {
       "value": -38399
     }
+  },
+  {
+    "type": "class it.unibo.alchemist.boundary.gui.effects.DrawSmartcamWithBlindSpot",
+    "alreadyLogged": true
   }
 ]
