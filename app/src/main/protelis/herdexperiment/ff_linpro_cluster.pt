@@ -9,15 +9,15 @@ import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
 import utils
 import exploration_strategies
 
-public def myFollowOrExplore(target, explorationStrategy) {
+public def myFollowOrExplore(target, explorationStrategy) =
   if(target == noTarget()) {
-      explorationStrategy.apply()
+      explorationStrategy()
       noTarget()
   } else {
-      env.put("TEST", target)
+      env.put("Protelis target:", target)
       myfollow(target)
   }
-}
+
 
 public def myfollow(target) {
     envRemove("doSpin")
@@ -28,17 +28,16 @@ public def myfollow(target) {
 }
 
 
-public def myavoidCameraCollision(target, localTargets) {
+public def myavoidCameraCollision(target, localTargets) =
     if(target != noTarget() && localTargets.contains(target)) {
         let assignedTs = nbr(target)
         let pos = findNonCollidingPosition(assignedTs, env.get("destination"), target, getFoVCenterDistance())
         env.put("destination", pos)
     } else { 0 }
-}
 
 rep(solver <- getClusterSolver()) {
     let localTargets = getLocalTargets()
-    let targets = unionHood PlusSelf(nbr(localTargets))
+    let targets = foldUnion(nbr(localTargets))
     let cameras = nbr(getCenterOfFov())
     let solved = solver.solve(cameras, targets, getMaxCamerasPerTarget(), false)
     let myTarget = solved.getOrDefault(getUID(), noTarget())
