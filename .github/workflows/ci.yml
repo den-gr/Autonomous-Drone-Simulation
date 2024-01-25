@@ -8,6 +8,7 @@ on:
       - 'CHANGELOG.md'
       - 'LICENSE'
       - 'README.md'
+      - 'res/**'
   pull_request:
 
 concurrency:
