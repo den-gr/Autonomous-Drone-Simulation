@@ -66,6 +66,8 @@ variables:
     parameters: [ 4000 ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
+  DefaultCameraTargetClusteringLimit: &ClusteringLimit
+    formula: 200
 
 _drone: &drone
   - time-distribution: 2
@@ -177,6 +179,8 @@ deployments:
         concentration: *RotationSpeed
       - molecule: noAttractiveForces
         concentration: true
+      - molecule: ClusteringLimit
+        concentration: *ClusteringLimit
     programs: *drone
   - type: SpecificPositions
     parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]

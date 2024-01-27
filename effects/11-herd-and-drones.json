@@ -61,41 +61,8 @@
   },
   {
     "type": "class it.unibo.alchemist.boundary.gui.effects.DrawCluster",
-    "ks": 1.0,
-    "sizex": 12,
-    "listOfColors": [
-      {
-        "value": -256
-      },
-      {
-        "value": -16776961
-      },
-      {
-        "value": -16711936
-      },
-      {
-        "value": -16711681
-      },
-      {
-        "value": -65281
-      },
-      {
-        "value": -12566464
-      },
-      {
-        "value": -14336
-      },
-      {
-        "value": -4144960
-      },
-      {
-        "value": -20561
-      },
-      {
-        "value": -65536
-      }
-    ],
-    "alreadyLogged": true
+    "alreadyLogged": false,
+    "markerNodeID": 65
   },
   {
     "type": "class it.unibo.alchemist.boundary.gui.effects.DrawShape",

@@ -39,7 +39,9 @@ rep(solver <- getClusterSolver()) {
     let localTargets = getLocalTargets()
     let targets = foldUnion(nbr(localTargets))
     let cameras = nbr(getCenterOfFov())
-    let solved = solver.solve(cameras, targets, getMaxCamerasPerTarget(), false)
+    let clusters = solver.getClustersOfVisibleNodes(targets,  env.get("ClusteringLimit"))
+    env.put("Clusters", clusters) // Used by GUI cluster drawing
+    let solved = solver.solve(cameras, clusters, getMaxCamerasPerTarget(), false)
     let myTarget = solved.getOrDefault(getUID(), noTarget())
     let allTarget = solved.values()
     myFollowOrExplore(myTarget, fieldExploration)

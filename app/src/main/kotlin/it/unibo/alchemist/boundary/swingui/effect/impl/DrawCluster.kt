@@ -11,33 +11,30 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.jooq.lambda.function.Consumer2
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import smile.clustering.hclust
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Point
 import kotlin.math.ceil
 
-@Suppress("DEPRECATION")
-class DrawCluster : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
+class DrawCluster : AbstractDrawOnce() {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DrawCluster::class.java)
+        private val ks = 1.0
+        private val sizex = 12
+        private val listOfColors = listOf(
+            Color.YELLOW,
+            Color.BLUE,
+            Color.GREEN,
+            Color.CYAN,
+            Color.MAGENTA,
+            Color.DARK_GRAY,
+            Color.ORANGE,
+            Color.LIGHT_GRAY,
+            Color.PINK,
+            Color.RED,
+        )
     }
-
-    private val ks = 1.0
-    private val sizex = 12
-    private val listOfColors = listOf(
-        Color.YELLOW,
-        Color.BLUE,
-        Color.GREEN,
-        Color.CYAN,
-        Color.MAGENTA,
-        Color.DARK_GRAY,
-        Color.ORANGE,
-        Color.LIGHT_GRAY,
-        Color.PINK,
-        Color.RED,
-    )
 
     private var alreadyLogged: Boolean = false
 
@@ -46,14 +43,14 @@ class DrawCluster : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T, P : Position2D<P>?> apply(
-        graphics: Graphics2D,
-        node: Node<T>,
-        environment: Environment<T, P>,
-        wormhole: Wormhole2D<P>,
+    override fun <T : Any?, P : Position2D<P>?> draw(
+        graphics2D: Graphics2D,
+        node: Node<T>?,
+        environment: Environment<T, P>?,
+        wormhole: Wormhole2D<P>?,
     ) {
-        if (environment is Physics2DEnvironment && node.contains(SimpleMolecule("drone"))) {
-            draw(graphics, environment, wormhole as Wormhole2D<Euclidean2DPosition>)
+        if (environment is Physics2DEnvironment) {
+            draw(graphics2D, environment, wormhole as Wormhole2D<Euclidean2DPosition>)
         } else {
             logOnce("DrawZones only works with Physics2DEnvironment") { logger, message ->
                 logger.warn(message)
@@ -76,6 +73,7 @@ class DrawCluster : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                     .filterIsInstance<CameraSeeWithBlindSpot>()
                     .flatMap { it.seenTargets }
             }
+//            .filter { it.contains(SimpleMolecule("zebra")) }
             .toSet()
             .map { it as Node<T> }
             .map { environment.getPosition(it) }
@@ -86,24 +84,13 @@ class DrawCluster : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                 fillVisibleNodeWithColor(graphics, wormhole.getViewPoint(it), listOfColors[0])
             }
         } else {
-            val c = hclust(data, "ward")
-            val limit = 350.0
-            val labels = if (c.height().last() < limit) {
-                IntArray(data.size) { 0 }
-            } else {
-                c.partition(limit)
-            }
-            val groupedData = data.zip(labels.toTypedArray()).groupBy { it.second }
-
-            val result = mutableListOf<List<DoubleArray>>()
-
-            groupedData.forEach { (_, pairs) ->
-                result.add(pairs.map { it.first })
-            }
+            val result = environment.nodes
+                .first { it.contains(SimpleMolecule("drone")) }
+                .getConcentration(SimpleMolecule("Clusters")) as List<List<Euclidean2DPosition>>
 
             result.forEachIndexed { idx, cluster ->
                 cluster.forEach {
-                    val viewPoint: Point = wormhole.getViewPoint(environment.makePosition(it[0], it[1]))
+                    val viewPoint: Point = wormhole.getViewPoint(it)
                     fillVisibleNodeWithColor(graphics, viewPoint, listOfColors[idx % listOfColors.size])
                 }
             }
