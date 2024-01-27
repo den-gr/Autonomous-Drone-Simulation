@@ -114,7 +114,7 @@ inline fun <reified P : Position<P>> Tuple.toCentroids(): List<Position<P>> {
     }
 
     val centroids = mutableListOf<DoubleArray>()
-    val MPL = 3.0
+    val MPL = 4.0
     for (cluster in result) {
         val c = cluster.foldRight(doubleArrayOf(0.0, 0.0)) { v, acc ->
             doubleArrayOf(v[0] + acc[0], v[1] + acc[1])

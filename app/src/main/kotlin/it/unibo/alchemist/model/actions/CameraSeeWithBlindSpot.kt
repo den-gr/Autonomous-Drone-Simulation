@@ -44,6 +44,8 @@ class CameraSeeWithBlindSpot @JvmOverloads constructor(
             toRadians(angle),
         )
 
+    var seenTargets: List<Node<Any>> = emptyList()
+
     init {
         require(blindSpotDistance in 0.0..distance)
         node.setConcentration(outputMolecule, emptyList<Any>())
@@ -57,12 +59,13 @@ class CameraSeeWithBlindSpot @JvmOverloads constructor(
         filterByMolecule?.run {
             seen = seen.filter { it.contains(filterByMolecule) }
         }
+        seenTargets = seen
         node.setConcentration(outputMolecule, seen.map { VisibleNodeImpl(it, environment.getPosition(it)) })
     }
 
     override fun getContext() = Context.LOCAL
 
-    private class FieldOfView2DWithBlindSpot<T>(
+    class FieldOfView2DWithBlindSpot<T>(
         private val environment: Physics2DEnvironment<T>,
         private val owner: Node<T>,
         blindSpotDistance: Double,

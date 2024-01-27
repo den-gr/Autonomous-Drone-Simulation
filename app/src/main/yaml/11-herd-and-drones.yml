@@ -139,7 +139,7 @@ _animal_area: &animal_area
 
 network-model:
   type: ConnectToGroup
-  parameters: [*CommunicationRange, Drone_sign]
+  parameters: [*CommunicationRange, drone]
 
 deployments:
   - type: Circle
@@ -159,7 +159,7 @@ deployments:
   - type: Circle
     parameters: [ 7, -300, -500, 100 ]
     contents:
-      - molecule: Drone_sign
+      - molecule: drone
         concentration: true
       - molecule: FoVDistance
         concentration: *FoVDistance
