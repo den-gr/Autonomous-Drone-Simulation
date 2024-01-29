@@ -2,6 +2,8 @@ package it.unibo.experiment.herdexperiment
 
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.Position2D
+import it.unibo.alchemist.model.VisibleNode
+import it.unibo.alchemist.model.actions.CameraSeeWithBlindSpot
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.alchemist.model.protelis.AlchemistExecutionContext
@@ -17,6 +19,7 @@ import java.util.stream.Collectors
 import kotlin.math.cos
 import kotlin.math.round
 import kotlin.math.sin
+
 
 class MyUtils {
     companion object {
@@ -51,32 +54,67 @@ class MyUtils {
                 (targetPosition + env.makePosition(cos(targetAngle) * distance, sin(targetAngle) * distance)).toTuple()
             }
         }
+
+        @JvmStatic
+        fun isPointInFoV(context: AlchemistExecutionContext<Euclidean2DPosition>, point: Cluster): Boolean {
+            val env = context.environmentAccess
+            require(env is Physics2DEnvironment<Any>)
+            require(context.deviceUID is ProtelisDevice<*>)
+            val node = (context.deviceUID as ProtelisDevice<*>).node
+            return node.reactions
+                .flatMap { it.actions }
+                .filterIsInstance<CameraSeeWithBlindSpot>()
+                .first().isVisible(point.centroid)
+        }
+
+        @JvmStatic
+        fun getAssignedNodes(clusterAssignments: Map<String, Cluster>, clusters: Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>): Tuple {
+            val ids = clusterAssignments.values.stream().map { m -> m.id}
+            val list = mutableListOf<VisibleNode<*, Euclidean2DPosition>>()
+            for(id in ids){
+                list.addAll(clusters.getOrDefault(id, emptyList()))
+            }
+            return list.toTuple()
+        }
+
+        private fun Tuple.toPosition(): Euclidean2DPosition {
+            require(size() == 2)
+            val x = get(0)
+            val y = get(1)
+            require(x is Double && y is Double)
+            return Euclidean2DPosition(x, y)
+        }
     }
 }
+data class Cluster(
+    val id: Int,
+    val centroid: Euclidean2DPosition
+)
+
 class CameraClusterAssignmentProblemForProtelis {
-    private val problem = CameraTargetAssignmentProblem.getSolver<CameraAdapter, Position<Euclidean2DPosition>>()
+    private val problem = CameraTargetAssignmentProblem.getSolver<CameraAdapter, Cluster>()
 
     /**
      * Just an adapter for protelis which works for Euclidean2DPosition only.
      * See [CameraTargetAssignmentProblem.solve]
      */
-    fun solve(cameras: Field<*>, clusters: List<List<Euclidean2DPosition>>, maxCamerasPerDestination: Int, fair: Boolean): Map<String, Position<Euclidean2DPosition>> {
+    fun solve(cameras: Field<*>, clusters: Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>, maxCamerasPerDestination: Int, fair: Boolean): Map<String, Cluster> {
         return problem.solve(
             cameras.toCameras(),
             getCentroids(clusters),
             maxCamerasPerDestination,
             fair,
         ) { camera, target ->
-            camera.position.distanceTo(target as Euclidean2DPosition)
+            camera.position.distanceTo(target.centroid)
         }.mapKeys { it.key.uid }
     }
 
-    fun getClustersOfVisibleNodes(targets: Tuple, clusteringLimit: Double): List<List<Euclidean2DPosition>> {
+    fun getClustersOfVisibleNodes(targets: Tuple, clusteringLimit: Double): Map<Int, List<VisibleNode<*, Euclidean2DPosition>>> {
         val nodes = targets.toTargets<Euclidean2DPosition>()
         if (nodes.isEmpty()) {
-            return emptyList()
+            return emptyMap()
         } else if (nodes.size == 1) {
-            return listOf(nodes.map { Euclidean2DPosition(it.position.x, it.position.y) })
+            return mapOf(0 to nodes)
         }
         val data = nodes.map { it.position.coordinates }.toTypedArray()
         val c = hclust(data, "ward")
@@ -86,23 +124,24 @@ class CameraClusterAssignmentProblemForProtelis {
             c.partition(clusteringLimit)
         }
 
-        val groupedData = data.zip(labels.toTypedArray()).groupBy { it.second }
+        val groupedData = nodes.zip(labels.toTypedArray()).groupBy { it.second }
 
-        val result = mutableListOf<List<Euclidean2DPosition>>()
+        val result = mutableMapOf<Int, List<VisibleNode<*, Euclidean2DPosition>>>()
 
-        groupedData.forEach { (_, pairs) ->
-            result.add(pairs.map { Euclidean2DPosition(it.first[0], it.first[1]) })
+        groupedData.forEach { (key, pairs) ->
+            result[key] = pairs.map { it.first }
         }
         return result
     }
 
-    private fun getCentroids(clusters: List<List<Euclidean2DPosition>>): List<Position<Euclidean2DPosition>> {
-        val centroids = mutableListOf<Euclidean2DPosition>()
+    private fun getCentroids(clusters: Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>): List<Cluster> {
+        val centroids = mutableListOf<Cluster>()
         val MPL = 4.0
-        for (cluster in clusters) {
-            val c = cluster.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v + acc }
-            val size = cluster.size
-            centroids.add(Euclidean2DPosition(round((c[0] / size) / MPL) * MPL, round((c[1] / size) / MPL) * MPL))
+        for (cluster in clusters.entries) {
+            val c = cluster.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
+            val size = cluster.value.size
+            val centroid = Euclidean2DPosition(round((c.x / size) / MPL) * MPL, round((c.y / size) / MPL) * MPL)
+            centroids.add(Cluster(cluster.key, centroid))
         }
         return centroids
     }
@@ -116,3 +155,4 @@ private fun Field<*>.toCameras() = stream().map {
 }.collect(Collectors.toList())
 
 private fun <P : Position2D<P>> Position2D<P>.toTuple(): Tuple = ArrayTupleImpl(x, y)
+private fun Collection<*>.toTuple(): Tuple = with(iterator()) { ArrayTupleImpl(*Array(size) { next() }) }

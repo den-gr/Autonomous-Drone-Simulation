@@ -47,7 +47,9 @@ variables:
   trailer_seed_change: &trailer_seed_change
     type: ArbitraryVariable
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
-###### DRONES
+######
+  NumCameras: &NumCameras
+    formula: 3
   CameraSpeed: &CameraSpeed
     formula: 4
   EnvironmentSize: &EnvironmentSize
@@ -65,9 +67,9 @@ variables:
     type: ArbitraryVariable
     parameters: [ 4000 ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
-    formula: 2
+    formula: 1
   DefaultCameraTargetClusteringLimit: &ClusteringLimit
-    formula: 200
+    formula: 2
 
 _drone: &drone
   - time-distribution: 2
@@ -159,7 +161,7 @@ deployments:
     programs: *herdd
     properties: *animal_area
   - type: Circle
-    parameters: [ 7, -300, -500, 100 ]
+    parameters: [ *NumCameras, -300, -500, 100 ]
     contents:
       - molecule: drone
         concentration: true

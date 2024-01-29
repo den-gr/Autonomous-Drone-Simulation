@@ -4,6 +4,7 @@ import it.unibo.alchemist.boundary.ui.api.Wormhole2D
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position2D
+import it.unibo.alchemist.model.VisibleNode
 import it.unibo.alchemist.model.actions.CameraSeeWithBlindSpot
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
@@ -16,13 +17,15 @@ import java.awt.Graphics2D
 import java.awt.Point
 import kotlin.math.ceil
 
-class DrawCluster : AbstractDrawOnce() {
+open class DrawVisibleClusters : AbstractDrawOnce() {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DrawCluster::class.java)
-        private val ks = 1.0
-        private val sizex = 12
-        private val listOfColors = listOf(
+        private val LOGGER: Logger = LoggerFactory.getLogger(DrawVisibleClusters::class.java)
+        protected val ks = 1.0
+        protected val sizex = 12
+
+        @JvmStatic
+        protected val listOfColors = listOf(
             Color.YELLOW,
             Color.BLUE,
             Color.GREEN,
@@ -59,7 +62,7 @@ class DrawCluster : AbstractDrawOnce() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T> draw(
+    open fun <T> draw(
         graphics: Graphics2D,
         environment: Physics2DEnvironment<T>,
         wormhole: Wormhole2D<Euclidean2DPosition>,
@@ -73,7 +76,6 @@ class DrawCluster : AbstractDrawOnce() {
                     .filterIsInstance<CameraSeeWithBlindSpot>()
                     .flatMap { it.seenTargets }
             }
-//            .filter { it.contains(SimpleMolecule("zebra")) }
             .toSet()
             .map { it as Node<T> }
             .map { environment.getPosition(it) }
@@ -86,18 +88,18 @@ class DrawCluster : AbstractDrawOnce() {
         } else {
             val result = environment.nodes
                 .first { it.contains(SimpleMolecule("drone")) }
-                .getConcentration(SimpleMolecule("Clusters")) as List<List<Euclidean2DPosition>>
+                .getConcentration(SimpleMolecule("Clusters")) as Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>
 
-            result.forEachIndexed { idx, cluster ->
+            result.toSortedMap().values.forEachIndexed { idx, cluster ->
                 cluster.forEach {
-                    val viewPoint: Point = wormhole.getViewPoint(it)
+                    val viewPoint: Point = wormhole.getViewPoint(it.position)
                     fillVisibleNodeWithColor(graphics, viewPoint, listOfColors[idx % listOfColors.size])
                 }
             }
         }
     }
 
-    private fun fillVisibleNodeWithColor(graphics: Graphics2D, point: Point, color: Color) {
+    protected fun fillVisibleNodeWithColor(graphics: Graphics2D, point: Point, color: Color) {
         graphics.color = color
         val startx: Int = point.x - sizex / 2
         val sizey = ceil(sizex * ks).toInt()

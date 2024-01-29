@@ -7,6 +7,7 @@ import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.nodes.VisibleNodeImpl
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
+import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import java.lang.Math.toRadians
 
 /**
@@ -51,6 +52,10 @@ class CameraSeeWithBlindSpot @JvmOverloads constructor(
         node.setConcentration(outputMolecule, emptyList<Any>())
     }
 
+    fun isVisible(point: Euclidean2DPosition): Boolean {
+        return fieldOfView.contains(point)
+    }
+
     override fun cloneAction(node: Node<Any>, reaction: Reaction<Any>) =
         CameraSeeWithBlindSpot(node, environment, blindSpotDistance, distance, angle, outputMolecule, filterByMolecule)
 
@@ -82,11 +87,26 @@ class CameraSeeWithBlindSpot @JvmOverloads constructor(
             },
         ).minus(nodesInBlindSpot().toSet())
 
-        fun nodesInBlindSpot(): List<Node<T>> = environment.getNodesWithin(
+        private fun nodesInBlindSpot(): List<Node<T>> = environment.getNodesWithin(
             blindSpotShape.transformed {
                 origin(environment.getPosition(owner))
                 rotate(environment.getHeading(owner))
             },
         )
+
+        fun contains(point: Euclidean2DPosition): Boolean {
+            val pointShape = environment.shapeFactory.circle(1.0).transformed {
+                origin(point)
+            }
+            val intersectFoV = fovShape.transformed {
+                origin(environment.getPosition(owner))
+                rotate(environment.getHeading(owner))
+            }.intersects(pointShape)
+            val intersectBlindSpot = blindSpotShape.transformed {
+                origin(environment.getPosition(owner))
+                rotate(environment.getHeading(owner))
+            }.intersects(pointShape)
+            return intersectFoV && !intersectBlindSpot
+        }
     }
 }
