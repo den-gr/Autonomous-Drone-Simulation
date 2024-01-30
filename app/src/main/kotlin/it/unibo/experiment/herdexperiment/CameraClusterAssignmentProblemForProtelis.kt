@@ -117,8 +117,8 @@ class CameraClusterAssignmentProblemForProtelis {
             return mapOf(0 to nodes)
         }
         val data = nodes.map { it.position.coordinates }.toTypedArray()
-        val c = hclust(data, "ward")
-        val labels = if (c.height().last() < clusteringLimit) {
+        val c = hclust(data, "ward") // wpgma
+        val labels = if (c.height().last() <= clusteringLimit) {
             IntArray(data.size) { 0 }
         } else {
             c.partition(clusteringLimit)

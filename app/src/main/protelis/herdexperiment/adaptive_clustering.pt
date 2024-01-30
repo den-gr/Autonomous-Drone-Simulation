@@ -1,0 +1,59 @@
+module herdexperiment:adaptive_clustering
+import protelis:lang:utils
+import it.unibo.experiment.ProtelisUtils.toTuple
+import protelis:coord:spreading
+import protelis:coord:accumulation
+
+import it.unibo.experiment.herdexperiment.MyUtils.isPointInFoV
+
+public def getNewClusterLimit(clusters, myCluster, localTargets, assignedNodes, externalTargets){
+    let allLimits = foldUnion([env.get("ClusteringLimit")], nbr(env.get("ClusteringLimit")))
+    if(myCluster != noTarget()){
+        let nodesInMyCluster = clusters.get(myCluster.getId())
+        let unionSize = localTargets.union(toTuple(nodesInMyCluster)).size()
+        let intersectionSize = localTargets.intersection(toTuple(nodesInMyCluster)).size()
+
+        if(isPointInFoV(myCluster)) {
+            if(intersectionSize == nodesInMyCluster.size()){
+                if(unionSize > nodesInMyCluster.size()){
+                    let difference = localTargets.subtract(toTuple(nodesInMyCluster))
+                    if(assignedNodes.containsAll(difference) && (toTuple(nodesInMyCluster).subtract(externalTargets).size() / localTargets.size()) > 0.2){
+                        avg(allLimits)
+                    }else{
+                        max(increment(), allLimits.max(0))
+                    }
+                }else{
+                    avg(allLimits)
+                }
+            }else{
+                let coverage = intersectionSize / nodesInMyCluster.size()
+                if(intersectionSize == localTargets.size() && coverage < 0.9 ){
+                    min(decrement(), allLimits.min(0))
+                }else{
+                    avg(allLimits)
+                }
+            }
+        }else{
+            avg(allLimits)
+        }
+    }else{
+        avg(allLimits)
+    }
+}
+
+
+def avg(list) = list.reduce(0, (a, b) -> {a + b}) / list.size()
+
+def increment() {
+   let limit = env.get("ClusteringLimit")
+   limit + (limit * 0.01)
+}
+
+def decrement(){
+    let limit = env.get("ClusteringLimit")
+    limit - (limit * 0.01)
+}
+
+def noTarget() {
+    0
+}

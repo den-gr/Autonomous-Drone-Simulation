@@ -49,7 +49,7 @@ variables:
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
 ######
   NumCameras: &NumCameras
-    formula: 3
+    formula: 7
   CameraSpeed: &CameraSpeed
     formula: 4
   EnvironmentSize: &EnvironmentSize

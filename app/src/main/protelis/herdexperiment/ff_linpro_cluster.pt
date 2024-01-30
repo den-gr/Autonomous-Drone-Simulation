@@ -4,13 +4,13 @@ import protelis:coord:spreading
 import protelis:coord:accumulation
 import it.unibo.experiment.herdexperiment.MyUtils.getClusterSolver
 import it.unibo.experiment.herdexperiment.MyUtils.findNonCollidingPosition
-import it.unibo.experiment.herdexperiment.MyUtils.isPointInFoV
 import it.unibo.experiment.herdexperiment.MyUtils.getAssignedNodes
 import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
 import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
 import utils
 import exploration_strategies
 import it.unibo.experiment.ProtelisUtils.toTuple
+import herdexperiment:adaptive_clustering
 
 def arePositionsClose(a, b) {
     (normalize(a.get(0)) == normalize(b.get(0))) && (normalize(a.get(1)) == normalize(b.get(1)))
@@ -34,11 +34,15 @@ public def myFollowOrExplore(cluster, explorationStrategy) =
 public def myfollow(target) {
     envRemove("doSpin")
     envRemove("doZigZag")
-    env.put("destination", closestPositionToTargetAtDistance(target, getFoVCenterDistance()));
+    env.put("destination", closestPositionToTargetAtDistance(target, mygetFoVCenterDistance()));
     env.put("heading", target);
     target
 }
 
+public def mygetFoVCenterDistance() {
+    // 2 * getFoVDistance() / 3
+    getFoVDistance() / 2
+}
 
 public def myavoidCameraCollision(cluster, localTargets) =
     if(cluster != noTarget() && localTargets.contains(cluster)) {
@@ -46,68 +50,6 @@ public def myavoidCameraCollision(cluster, localTargets) =
         let pos = findNonCollidingPosition(assignedTs, env.get("destination"), cluster.getCentroid(), getFoVCenterDistance())
         env.put("destination", pos)
     } else { 0 }
-
-
-def getNewClusterLimit(clusters, myCluster, localTargets, externalTargets){
-    env.put("At destination", false)
-    let allLimits = foldUnion([env.get("ClusteringLimit")], nbr(env.get("ClusteringLimit")))
-    if(myCluster != noTarget()){
-        let nodesInMyCluster = clusters.get(myCluster.getId())
-        env.put("nodesInMyCluster --->", nodesInMyCluster)
-        let unionSize = localTargets.union(toTuple(nodesInMyCluster)).size()
-        let intersectionSize = localTargets.intersection(toTuple(nodesInMyCluster)).size()
-        env.put("~~~~~~~~~~~~~~~union size--->", unionSize)
-        env.put("~~~~~~~~~~~~~~~intersection size--->", intersectionSize)
-        env.put("~~~~~~~~~~~~~~vision size--->", localTargets.size())
-        env.put("~~~~~~~~~~~~~~my cluster size--->", nodesInMyCluster.size())
-
-        //let centroid = myCluster.getCentroid()
-        if(isPointInFoV(myCluster)) {
-            if(intersectionSize == nodesInMyCluster.size()){
-                if(unionSize > nodesInMyCluster.size()){
-                    let difference = localTargets.subtract(toTuple(nodesInMyCluster))
-                    if(externalTargets.containsAll(difference)){
-                        env.put("->>>>>>>>>>>>>>>>>>>>", "adapt 0001")
-                        avg(allLimits)
-                    }else{
-                        env.put("->>>>>>>>>>>>>>>>>>>>", 1)
-                        max(increment(), allLimits.max(0))
-                    }
-                }else{
-                    env.put("->>>>>>>>>>>>>>>>>>>>", "adapt 001")
-                    avg(allLimits)
-                }
-            }else{
-                if(intersectionSize == localTargets.size()){
-                    env.put("->>>>>>>>>>>>>>>>>>>>", "-1")
-                    min(decrement(), allLimits.min(0))
-                }else{
-                    env.put("->>>>>>>>>>>>>>>>>>>>", "adapt 002")
-                    avg(allLimits)
-                }
-            }
-        }else{
-            env.put("->>>>>>>>>>>>>>>>>>>>", "adapt 01")
-            avg(allLimits)
-        }
-    }else{
-        env.put("->>>>>>>>>>>>>>>>>>>>", "adapt 0")
-        avg(allLimits)
-    }
-}
-
-def avg(list) = list.reduce(0, (a, b) -> {a + b}) / list.size()
-
-def increment() {
-   let limit = env.get("ClusteringLimit")
-   limit + (limit * 0.01)
-}
-
-def decrement(){
-    let limit = env.get("ClusteringLimit")
-    limit - (limit * 0.01)
-}
-
 
 rep(solver <- getClusterSolver()) {
     let localTargets = getLocalTargets()
@@ -127,7 +69,7 @@ rep(solver <- getClusterSolver()) {
     let allTarget = solved.values()
     myFollowOrExplore(myCluster, fieldExploration)
     myavoidCameraCollision(myCluster, allTarget)
-    env.put("ClusteringLimit", getNewClusterLimit(clusters, myCluster, localTargets, externalTargets))
+    env.put("ClusteringLimit", getNewClusterLimit(clusters, myCluster, localTargets, assignedNodes, externalTargets))
     solver
 }
 
