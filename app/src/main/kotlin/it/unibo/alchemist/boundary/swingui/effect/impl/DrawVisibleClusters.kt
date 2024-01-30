@@ -90,8 +90,16 @@ open class DrawVisibleClusters : AbstractDrawOnce() {
                 .first { it.contains(SimpleMolecule("drone")) }
                 .getConcentration(SimpleMolecule("Clusters")) as Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>
 
-            result.toSortedMap().values.forEachIndexed { idx, cluster ->
-                cluster.forEach {
+            val pairs = result.values.map { cluster ->
+                val acc = cluster.fold(Euclidean2DPosition(0.0, 0.0)) { acc, node -> acc + node.position }
+                val centroid = Euclidean2DPosition(acc.x / cluster.size, acc.y / cluster.size)
+                Pair(centroid, cluster)
+            }
+            val sortedPairs = pairs.sortedBy { it.first.asAngle }
+
+            sortedPairs.forEachIndexed { idx, pair ->
+
+                pair.second.forEach {
                     val viewPoint: Point = wormhole.getViewPoint(it.position)
                     fillVisibleNodeWithColor(graphics, viewPoint, listOfColors[idx % listOfColors.size])
                 }
