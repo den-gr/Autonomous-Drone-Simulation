@@ -3,57 +3,71 @@ import protelis:lang:utils
 import it.unibo.experiment.ProtelisUtils.toTuple
 import protelis:coord:spreading
 import protelis:coord:accumulation
+import it.unibo.experiment.herdexperiment.MyUtils.getFakeCluster
+import it.unibo.experiment.herdexperiment.MyUtils.isClusterCentroidVisible
+import it.unibo.experiment.herdexperiment.MyUtils.getEmptyNodesList
 
-import it.unibo.experiment.herdexperiment.MyUtils.isPointInFoV
+public def mynoTarget() {
+    getFakeCluster()
+}
 
-public def getNewClusterLimit(clusters, myCluster, localTargets, assignedNodes, externalTargets){
-    let allLimits = foldUnion([env.get("ClusteringLimit")], nbr(env.get("ClusteringLimit")))
-    if(myCluster != noTarget()){
-        let nodesInMyCluster = clusters.get(myCluster.getId())
-        let unionSize = localTargets.union(toTuple(nodesInMyCluster)).size()
-        let intersectionSize = localTargets.intersection(toTuple(nodesInMyCluster)).size()
+public def getNewClusterLimit(cluster, localVisibleNodes, assignedNodes){
+    let allLimits = foldUnion([getClusteringLimit()], nbr(getClusteringLimit()))
+    let clusterNodes = toTuple(cluster.getPoints())
+    let excludedTargets = foldUnion(nbr(localVisibleNodes.subtract(clusterNodes))) // Nodes that are visible but are not part of target clusters
+    if(cluster != mynoTarget()){
+        let intersectionSize = localVisibleNodes.intersection(clusterNodes).size()
 
-        if(isPointInFoV(myCluster)) {
-            if(intersectionSize == nodesInMyCluster.size()){
-                if(unionSize > nodesInMyCluster.size()){
-                    let difference = localTargets.subtract(toTuple(nodesInMyCluster))
-                    if(assignedNodes.containsAll(difference) && (toTuple(nodesInMyCluster).subtract(externalTargets).size() / localTargets.size()) > 0.2){
-                        avg(allLimits)
-                    }else{
-                        max(increment(), allLimits.max(0))
-                    }
-                }else{
-                    avg(allLimits)
-                }
+        if(isClusterCentroidVisible(cluster)) {
+            let isClusterCovered = intersectionSize == clusterNodes.size()
+            if(isClusterCovered){
+                getLimitWithCoveredCluster(localVisibleNodes, assignedNodes, clusterNodes, excludedTargets, allLimits)
             }else{
-                let coverage = intersectionSize / nodesInMyCluster.size()
-                if(intersectionSize == localTargets.size() && coverage < 0.9 ){
-                    min(decrement(), allLimits.min(0))
-                }else{
-                    avg(allLimits)
-                }
+                getLimitWithNotCoveredCluster(localVisibleNodes, clusterNodes, intersectionSize, allLimits) 
             }
         }else{
-            avg(allLimits)
+            adapt(allLimits)
         }
     }else{
-        avg(allLimits)
+        adapt(allLimits)
+    }
+}  
+
+
+def getLimitWithCoveredCluster(localVisibleNodes, assignedNodes, clusterNodes, excludedTargets, allLimits){
+    let unionSize = localVisibleNodes.union(clusterNodes).size() 
+    if(unionSize > clusterNodes.size()){
+        let difference = localVisibleNodes.subtract(clusterNodes)
+        if(assignedNodes.containsAll(difference) && (clusterNodes.subtract(excludedTargets).size() / localVisibleNodes.size()) > 0.0){
+            adapt(allLimits)
+        }else{
+            max(increment(), allLimits.max(0))
+        }
+    }else{
+        adapt(allLimits)
+    }
+}
+
+def getLimitWithNotCoveredCluster(localVisibleNodes, clusterNodes, intersectionSize, allLimits) {
+    let coverage = intersectionSize / clusterNodes.size()
+    if(intersectionSize == localVisibleNodes.size() && coverage < 0.9 ){
+        min(decrement(), allLimits.min(0))
+    }else{
+        adapt(allLimits)
     }
 }
 
 
-def avg(list) = list.reduce(0, (a, b) -> {a + b}) / list.size()
+def adapt(list) = list.reduce(0, (a, b) -> {a + b}) / list.size()
 
 def increment() {
-   let limit = env.get("ClusteringLimit")
+   let limit = getClusteringLimit()
    limit + (limit * 0.01)
 }
 
 def decrement(){
-    let limit = env.get("ClusteringLimit")
+    let limit = getClusteringLimit()
     limit - (limit * 0.01)
 }
 
-def noTarget() {
-    0
-}
+def getClusteringLimit() = env.get("ClusteringLimit")

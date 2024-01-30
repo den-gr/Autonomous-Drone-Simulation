@@ -1,6 +1,5 @@
 package it.unibo.experiment.herdexperiment
 
-import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.Position2D
 import it.unibo.alchemist.model.VisibleNode
 import it.unibo.alchemist.model.actions.CameraSeeWithBlindSpot
@@ -55,8 +54,11 @@ class MyUtils {
             }
         }
 
+        /**
+         * Return true if [cluster] centroid is visible by node owner of [context]
+         */
         @JvmStatic
-        fun isPointInFoV(context: AlchemistExecutionContext<Euclidean2DPosition>, point: Cluster): Boolean {
+        fun isClusterCentroidVisible(context: AlchemistExecutionContext<Euclidean2DPosition>, cluster: Cluster): Boolean {
             val env = context.environmentAccess
             require(env is Physics2DEnvironment<Any>)
             require(context.deviceUID is ProtelisDevice<*>)
@@ -64,7 +66,7 @@ class MyUtils {
             return node.reactions
                 .flatMap { it.actions }
                 .filterIsInstance<CameraSeeWithBlindSpot>()
-                .first().isVisible(point.centroid)
+                .first().isVisible(cluster.centroid)
         }
 
         @JvmStatic
@@ -77,6 +79,12 @@ class MyUtils {
             return list.toTuple()
         }
 
+        @JvmStatic
+        fun getFakeCluster() = Cluster(-1, Euclidean2DPosition(0.0, 0.0), emptyList())
+
+        @JvmStatic
+        fun getEmptyNodesList() = emptyList<List<VisibleNode<*, Euclidean2DPosition>>>()
+
         private fun Tuple.toPosition(): Euclidean2DPosition {
             require(size() == 2)
             val x = get(0)
@@ -88,7 +96,8 @@ class MyUtils {
 }
 data class Cluster(
     val id: Int,
-    val centroid: Euclidean2DPosition
+    val centroid: Euclidean2DPosition,
+    val points: List<VisibleNode<*, Euclidean2DPosition>>
 )
 
 class CameraClusterAssignmentProblemForProtelis {
@@ -141,7 +150,7 @@ class CameraClusterAssignmentProblemForProtelis {
             val c = cluster.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
             val size = cluster.value.size
             val centroid = Euclidean2DPosition(round((c.x / size) / MPL) * MPL, round((c.y / size) / MPL) * MPL)
-            centroids.add(Cluster(cluster.key, centroid))
+            centroids.add(Cluster(cluster.key, centroid, cluster.value))
         }
         return centroids
     }

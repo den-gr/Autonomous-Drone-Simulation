@@ -22,7 +22,7 @@ def normalize(coordinate) {
 }
 
 public def myFollowOrExplore(cluster, explorationStrategy) =
-  if(cluster == noTarget()) {
+  if(cluster == mynoTarget()) {
       explorationStrategy()
       noTarget()
   } else {
@@ -45,7 +45,7 @@ public def mygetFoVCenterDistance() {
 }
 
 public def myavoidCameraCollision(cluster, localTargets) =
-    if(cluster != noTarget() && localTargets.contains(cluster)) {
+    if(cluster != mynoTarget() && localTargets.contains(cluster)) {
         let assignedTs = nbr(cluster.getCentroid())
         let pos = findNonCollidingPosition(assignedTs, env.get("destination"), cluster.getCentroid(), getFoVCenterDistance())
         env.put("destination", pos)
@@ -64,13 +64,14 @@ rep(solver <- getClusterSolver()) {
     env.put("solved", solved)
     let assignedNodes = getAssignedNodes(solved, clusters)
     env.put("solved nodes", assignedNodes)
-    let myCluster = solved.getOrDefault(getUID(), noTarget())
+    let myCluster = solved.getOrDefault(getUID(), mynoTarget())
+
+
+
 
     let allTarget = solved.values()
     myFollowOrExplore(myCluster, fieldExploration)
     myavoidCameraCollision(myCluster, allTarget)
-    env.put("ClusteringLimit", getNewClusterLimit(clusters, myCluster, localTargets, assignedNodes, externalTargets))
+    env.put("ClusteringLimit", getNewClusterLimit(myCluster, localTargets, assignedNodes))
     solver
 }
-
-
