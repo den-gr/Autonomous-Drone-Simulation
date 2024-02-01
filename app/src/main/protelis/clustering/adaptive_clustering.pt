@@ -1,10 +1,6 @@
 module clustering:adaptive_clustering
-import protelis:lang:utils
-import protelis:coord:spreading
-import protelis:coord:accumulation
 import it.unibo.experiment.ProtelisUtils.toTuple
 import it.unibo.experiment.clustering.HerdExperimentUtils.isClusterCentroidVisible
-import it.unibo.experiment.clustering.HerdExperimentUtils.getEmptyNodesList
 import clustering:utils_c
 
 
@@ -65,5 +61,3 @@ def decrement(){
     let limit = getClusteringLimit()
     limit - (limit * 0.01)
 }
-
-def getClusteringLimit() = env.get("ClusteringLimit")
