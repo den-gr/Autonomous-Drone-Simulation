@@ -1,4 +1,4 @@
-package it.unibo.experiment.herdexperiment
+package it.unibo.experiment.clustering
 
 import it.unibo.alchemist.model.Position2D
 import it.unibo.alchemist.model.VisibleNode
@@ -20,7 +20,7 @@ import kotlin.math.round
 import kotlin.math.sin
 
 
-class MyUtils {
+class HerdExperimentUtils {
     companion object {
         @JvmStatic
         fun getClusterSolver() = CameraClusterAssignmentProblemForProtelis()
@@ -70,11 +70,11 @@ class MyUtils {
         }
 
         @JvmStatic
-        fun getAssignedNodes(clusterAssignments: Map<String, Cluster>, clusters: Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>): Tuple {
+        fun getAssignedNodes(clusterAssignments: Map<String, Cluster>, clusters: List<Cluster>): Tuple {
             val ids = clusterAssignments.values.stream().map { m -> m.id}
             val list = mutableListOf<VisibleNode<*, Euclidean2DPosition>>()
             for(id in ids){
-                list.addAll(clusters.getOrDefault(id, emptyList()))
+                list.addAll(clusters.filter { it.id == id }.map { it.points }.first())
             }
             return list.toTuple()
         }
@@ -84,6 +84,46 @@ class MyUtils {
 
         @JvmStatic
         fun getEmptyNodesList() = emptyList<List<VisibleNode<*, Euclidean2DPosition>>>()
+
+        @JvmStatic
+        fun getClusters(targets: Tuple, clusteringLimit: Double): List<Cluster> {
+            val clusters = groupByClusters(targets, clusteringLimit)
+            val centroids = mutableListOf<Cluster>()
+            val MPL = 4.0
+            for (cluster in clusters.entries) {
+                val c = cluster.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
+                val size = cluster.value.size
+                val centroid = Euclidean2DPosition(round((c.x / size) / MPL) * MPL, round((c.y / size) / MPL) * MPL)
+                centroids.add(Cluster(cluster.key, centroid, cluster.value))
+            }
+            return centroids
+        }
+
+        @JvmStatic
+        private fun groupByClusters(targets: Tuple, clusteringLimit: Double): Map<Int, List<VisibleNode<*, Euclidean2DPosition>>> {
+            val nodes = targets.toTargets<Euclidean2DPosition>()
+            if (nodes.isEmpty()) {
+                return emptyMap()
+            } else if (nodes.size == 1) {
+                return mapOf(0 to nodes)
+            }
+            val data = nodes.map { it.position.coordinates }.toTypedArray()
+            val c = hclust(data, "ward") // wpgma
+            val labels = if (c.height().last() <= clusteringLimit) {
+                IntArray(data.size) { 0 }
+            } else {
+                c.partition(clusteringLimit)
+            }
+
+            val groupedData = nodes.zip(labels.toTypedArray()).groupBy { it.second }
+
+            val result = mutableMapOf<Int, List<VisibleNode<*, Euclidean2DPosition>>>()
+
+            groupedData.forEach { (key, pairs) ->
+                result[key] = pairs.map { it.first }
+            }
+            return result
+        }
 
         private fun Tuple.toPosition(): Euclidean2DPosition {
             require(size() == 2)
@@ -107,52 +147,15 @@ class CameraClusterAssignmentProblemForProtelis {
      * Just an adapter for protelis which works for Euclidean2DPosition only.
      * See [CameraTargetAssignmentProblem.solve]
      */
-    fun solve(cameras: Field<*>, clusters: Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>, maxCamerasPerDestination: Int, fair: Boolean): Map<String, Cluster> {
+    fun solve(cameras: Field<*>, clusters: List<Cluster>, maxCamerasPerDestination: Int, fair: Boolean): Map<String, Cluster> {
         return problem.solve(
             cameras.toCameras(),
-            getCentroids(clusters),
+            clusters,
             maxCamerasPerDestination,
             fair,
         ) { camera, target ->
             camera.position.distanceTo(target.centroid)
         }.mapKeys { it.key.uid }
-    }
-
-    fun getClustersOfVisibleNodes(targets: Tuple, clusteringLimit: Double): Map<Int, List<VisibleNode<*, Euclidean2DPosition>>> {
-        val nodes = targets.toTargets<Euclidean2DPosition>()
-        if (nodes.isEmpty()) {
-            return emptyMap()
-        } else if (nodes.size == 1) {
-            return mapOf(0 to nodes)
-        }
-        val data = nodes.map { it.position.coordinates }.toTypedArray()
-        val c = hclust(data, "ward") // wpgma
-        val labels = if (c.height().last() <= clusteringLimit) {
-            IntArray(data.size) { 0 }
-        } else {
-            c.partition(clusteringLimit)
-        }
-
-        val groupedData = nodes.zip(labels.toTypedArray()).groupBy { it.second }
-
-        val result = mutableMapOf<Int, List<VisibleNode<*, Euclidean2DPosition>>>()
-
-        groupedData.forEach { (key, pairs) ->
-            result[key] = pairs.map { it.first }
-        }
-        return result
-    }
-
-    private fun getCentroids(clusters: Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>): List<Cluster> {
-        val centroids = mutableListOf<Cluster>()
-        val MPL = 4.0
-        for (cluster in clusters.entries) {
-            val c = cluster.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
-            val size = cluster.value.size
-            val centroid = Euclidean2DPosition(round((c.x / size) / MPL) * MPL, round((c.y / size) / MPL) * MPL)
-            centroids.add(Cluster(cluster.key, centroid, cluster.value))
-        }
-        return centroids
     }
 }
 

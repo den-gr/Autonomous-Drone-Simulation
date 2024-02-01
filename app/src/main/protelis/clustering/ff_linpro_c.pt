@@ -1,0 +1,8 @@
+module clustering:ff_linpro_c
+import clustering:linpro
+import exploration_strategies
+
+let isFair = false
+let isClusteringAdaptive = true
+let explorationStrategy = fieldExploration
+linproo(isFair, isClusteringAdaptive, explorationStrategy)

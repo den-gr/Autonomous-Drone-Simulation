@@ -1,0 +1,9 @@
+module clustering:utils_c
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.clustering.HerdExperimentUtils.getFakeCluster
+
+public def emptyCluster() {
+    getFakeCluster()
+}

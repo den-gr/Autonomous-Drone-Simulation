@@ -47,6 +47,9 @@ variables:
   trailer_seed_change: &trailer_seed_change
     type: ArbitraryVariable
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
+  drone_program: &drone_program
+    type: ArbitraryVariable
+    parameters: [ "clustering:ff_linpro_c" ]
 ######
   NumCameras: &NumCameras
     formula: 7
@@ -69,7 +72,7 @@ variables:
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 1
   DefaultCameraTargetClusteringLimit: &ClusteringLimit
-    formula: 2
+    formula: 100
 
 _drone: &drone
   - time-distribution: 2
@@ -100,7 +103,7 @@ _drone: &drone
       - type: Spin
         parameters: [ *RotationSpeed ]
   - time-distribution: 1
-    program: "herdexperiment:ff_linpro_cluster"
+    program: *drone_program
   - program: send
 
 

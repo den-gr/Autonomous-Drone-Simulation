@@ -4,11 +4,11 @@ import it.unibo.alchemist.boundary.ui.api.Wormhole2D
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position2D
-import it.unibo.alchemist.model.VisibleNode
 import it.unibo.alchemist.model.actions.CameraSeeWithBlindSpot
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
+import it.unibo.experiment.clustering.Cluster
 import org.jooq.lambda.function.Consumer2
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -88,18 +88,13 @@ open class DrawVisibleClusters : AbstractDrawOnce() {
         } else {
             val result = environment.nodes
                 .first { it.contains(SimpleMolecule("drone")) }
-                .getConcentration(SimpleMolecule("Clusters")) as Map<Int, List<VisibleNode<*, Euclidean2DPosition>>>
+                .getConcentration(SimpleMolecule("Clusters")) as List<Cluster>
 
-            val pairs = result.values.map { cluster ->
-                val acc = cluster.fold(Euclidean2DPosition(0.0, 0.0)) { acc, node -> acc + node.position }
-                val centroid = Euclidean2DPosition(acc.x / cluster.size, acc.y / cluster.size)
-                Pair(centroid, cluster)
-            }
-            val sortedPairs = pairs.sortedBy { it.first.asAngle }
+            val sortedPairs = result.sortedBy { it.centroid.asAngle }
 
-            sortedPairs.forEachIndexed { idx, pair ->
+            sortedPairs.forEachIndexed { idx, cluster ->
 
-                pair.second.forEach {
+                cluster.points.forEach {
                     val viewPoint: Point = wormhole.getViewPoint(it.position)
                     fillVisibleNodeWithColor(graphics, viewPoint, listOfColors[idx % listOfColors.size])
                 }

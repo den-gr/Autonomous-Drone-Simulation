@@ -1,0 +1,61 @@
+module clustering:linpro
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusterSolver
+import it.unibo.experiment.clustering.HerdExperimentUtils.findNonCollidingPosition
+import it.unibo.experiment.clustering.HerdExperimentUtils.getAssignedNodes
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
+import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
+import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
+import utils
+import clustering:utils_c
+//import clustering:adaptive_clustering
+
+public def followOrExploreCluster(cluster, explorationStrategy) =
+  if(cluster == emptyCluster()) {
+      explorationStrategy()
+      emptyCluster()
+  } else {
+      followCluster(cluster.getCentroid())
+  }
+
+public def followCluster(target) {
+    envRemove("doSpin")
+    envRemove("doZigZag")
+    env.put("destination", closestPositionToTargetAtDistance(target, mygetFoVCenterDistance()));
+    env.put("heading", target);
+    target
+}
+
+public def mygetFoVCenterDistance() = getFoVDistance() / 2
+
+public def myavoidCameraCollision(cluster) =
+    if(cluster != emptyCluster()) {
+        let assignedTs = nbr(cluster.getCentroid())
+        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), cluster.getCentroid(), mygetFoVCenterDistance())
+        env.put("destination", pos)
+    } else { 0 }
+
+public def linproo(isFair, isClusteringAdaptive, explorationStrategy) =
+    rep(solver <- getClusterSolver()) {
+
+        let localTargets = getLocalTargets()
+        let externalTargets = foldUnion([], nbr(localTargets))
+        let targets = localTargets.union(externalTargets)
+        let cameras = nbr(getCenterOfFov())
+
+        let clusters = getClusters(targets, env.get("ClusteringLimit"))
+        env.put("Clusters", clusters) // Used by GUI for drawing the clusters
+        let assignedClusters = solver.solve(cameras, clusters, getMaxCamerasPerTarget(), isFair)
+        let myCluster = assignedClusters.getOrDefault(getUID(), emptyCluster())
+
+        followOrExploreCluster(myCluster, explorationStrategy)
+        myavoidCameraCollision(myCluster)
+
+        if(isClusteringAdaptive){
+            let assignedNodes = getAssignedNodes(assignedClusters, clusters)
+           //env.put("ClusteringLimit", getNewClusterLimit(myCluster, localTargets, assignedNodes))
+        }
+        solver
+    }
