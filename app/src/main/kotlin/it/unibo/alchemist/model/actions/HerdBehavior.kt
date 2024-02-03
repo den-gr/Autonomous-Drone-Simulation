@@ -15,7 +15,7 @@ import it.unibo.alchemist.model.actions.zones.test.StressZoneT
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import org.protelis.lang.datatype.impl.ArrayTupleImpl
+import org.apache.commons.math3.util.FastMath
 import java.lang.Math.random
 import java.lang.Math.toRadians
 import kotlin.collections.ArrayList
@@ -34,7 +34,7 @@ class HerdBehavior @JvmOverloads constructor(
     private val attractionZoneSpeedUpFactor: Double,
     private val leaderSlowDown: ArrayList<Double>,
     private val trailerSpeedUp: ArrayList<Double>,
-    north: Boolean = true,
+    numberOfHerds: Int = 1,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
     private val stressZone: StressZoneT
@@ -46,6 +46,8 @@ class HerdBehavior @JvmOverloads constructor(
     private val trailersSpeedUpFactor: Double = trailerSpeedUp[0]
     private val trailersSpeedUpProbability: Double = trailerSpeedUp[0]
 
+    private val turningDirection: Int
+    private val additionalTurningForce: Double // degrees
     companion object {
         const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
         const val ANGLE_OF_ZONE = 180.0 // degrees
@@ -53,13 +55,17 @@ class HerdBehavior @JvmOverloads constructor(
     }
 
     init {
+        val seed = if (numberOfHerds == 1) node.id else node.id % numberOfHerds
+        val r = Random(seed)
+        turningDirection = if (r.nextDouble() > 0.5) 1 else -1
+        additionalTurningForce = r.nextDouble()
+        val angle = r.nextDouble(0.0, 2 * FastMath.PI)
 
         node.properties[0].node
         val stressZoneRadius: Double = zones_radii[0]
         val neutralZoneRadius: Double = zones_radii[1]
         val attractionZoneRadius: Double = zones_radii[2]
         val rearZoneRadius: Double = zones_radii[3]
-        val y = if (north) 1.0 else -1.0
         movementProvider = MovementProvider(
             velocities[0],
             velocities[1],
@@ -67,28 +73,24 @@ class HerdBehavior @JvmOverloads constructor(
             movementProbabilities[1],
             movementProbabilities[2],
         )
-        environment.setHeading(node, Euclidean2DPosition(0.0, y))
+        environment.setHeading(node, Euclidean2DPosition(cos(angle), sin(angle)))
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
         stressZone = StressZoneT(stressZoneShape, node, environment, movementProvider, stressZoneRepulsionFactor)
 
         val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, ANGLE_OF_ZONE)
-        neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider)
+        neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider, numberOfHerds)
 
         val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, ANGLE_OF_ZONE)
-        attractionZone = AttractionZone(attractionZoneShape, node, environment, movementProvider, attractionZoneSpeedUpFactor)
+        attractionZone = AttractionZone(attractionZoneShape, node, environment, movementProvider, attractionZoneSpeedUpFactor, numberOfHerds)
 
         val leaderSlowDownFactor = leaderSlowDown[0]
         val leaderSlowDownProbability = leaderSlowDown[1]
         val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, ANGLE_OF_ZONE, true)
-        rearZone = RearZone(rearZoneShape, node, environment, movementProvider, leaderSlowDownFactor, leaderSlowDownProbability)
+        rearZone = RearZone(rearZoneShape, node, environment, movementProvider, leaderSlowDownFactor, leaderSlowDownProbability, numberOfHerds)
 
         zones = listOf(stressZone, neutralZone, attractionZone, rearZone)
-    }
-
-    private fun getMoleculeDoubleTupleValues(moleculeName: String): List<Double> {
-        return (getMoleculeValue(moleculeName) as ArrayTupleImpl).toList().map { it.toString().toDouble() }
     }
 
     override fun cloneAction(node: Node<Any>, reaction: Reaction<Any>) =
@@ -113,9 +115,6 @@ class HerdBehavior @JvmOverloads constructor(
     private fun getAngle(position: Euclidean2DPosition): Double {
         return position.asAngle - Math.PI / 2
     }
-
-    private fun getMoleculeValue(moleculeName: String) =
-        node.contents.getValue(SimpleMolecule(moleculeName))
 
     private fun getNextPosition(): Euclidean2DPosition {
         alignDirection()
@@ -169,7 +168,7 @@ class HerdBehavior @JvmOverloads constructor(
         val prob = (coef * (angle / Math.PI)) / 10
         node.setConcentration(SimpleMolecule("turn prob"), prob)
         if (Random.nextDouble() < prob) {
-            val headingAngle = environment.getHeading(node).asAngle + toRadians(2.0)
+            val headingAngle = environment.getHeading(node).asAngle + (toRadians(2.0) * turningDirection)
             environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
         }
     }

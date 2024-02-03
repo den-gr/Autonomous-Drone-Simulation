@@ -70,9 +70,12 @@ variables:
     type: ArbitraryVariable
     parameters: [ 4000 ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
-    formula: 1
+    formula: 2
   DefaultCameraTargetClusteringLimit: &ClusteringLimit
     formula: 100
+##### Other
+  NumberOfStartingHerds: &HerdNumber
+    formula: 20
 
 _drone: &drone
   - time-distribution: 2
@@ -115,16 +118,7 @@ _herd_parameters: &herd_parameters
   - *attraction_speed_up_f
   - *leader_seed_change
   - *trailer_seed_change
-
-_herd_parameterss: &herd_parameterss
-  - *zones_radii
-  - *velocities
-  - *movement_probabilities
-  - *stress_repulsion_f
-  - *attraction_speed_up_f
-  - *leader_seed_change
-  - *trailer_seed_change
-  - false
+  - *HerdNumber
 
 _herd: &herd
   - time-distribution: 1
@@ -132,13 +126,6 @@ _herd: &herd
     actions:
       type: HerdBehavior
       parameters: *herd_parameters
-
-_herdd: &herdd
-  - time-distribution: 1
-    type: Event
-    actions:
-      type: HerdBehavior
-      parameters: *herd_parameterss
 
 _animal_area: &animal_area
   - type: RectangularArea
@@ -149,20 +136,20 @@ network-model:
   parameters: [*CommunicationRange, drone]
 
 deployments:
-  - type: Circle
-    parameters: [30, 0, 0, 100]
+  - type: GroupsDeployment
+    parameters: [60, 0, 0, 500, *HerdNumber, 20]
     contents:
       - molecule: zebra
         concentration: true
     programs: *herd
     properties: *animal_area
-  - type: Circle
-    parameters: [ 30, 500, -500, 100]
-    contents:
-      - molecule: zebra
-        concentration: true
-    programs: *herdd
-    properties: *animal_area
+#  - type: GroupsDeployment
+#    parameters: [ 30, 500, -500, 100, 5]
+#    contents:
+#      - molecule: zebra
+#        concentration: true
+#    programs: *herdd
+#    properties: *animal_area
   - type: Circle
     parameters: [ *NumCameras, -300, -500, 100 ]
     contents:

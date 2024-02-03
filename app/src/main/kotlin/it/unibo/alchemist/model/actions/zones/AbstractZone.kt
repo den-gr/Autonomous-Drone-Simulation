@@ -16,6 +16,7 @@ abstract class AbstractZone(
     protected val owner: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     protected val movementProvider: MovementProvider,
+    private val numberOfHerds: Int = 1,
 ) : Zone {
     abstract val visibleNodes: Molecule
 
@@ -35,9 +36,13 @@ abstract class AbstractZone(
             origin(position)
             rotate(getHeading())
         }
-        return environment.getNodesWithin(transformedShape)
-            .minusElement(owner)
+        return filterOtherGroups(
+            environment.getNodesWithin(transformedShape)
+                .minusElement(owner),
+        )
     }
+
+    protected open fun filterOtherGroups(nodes: List<Node<Any>>): List<Node<Any>> = nodes.filter { it.id % numberOfHerds == owner.id % numberOfHerds }
 
     protected fun getAngleFromHeadingToNeighbour(nodePosition: Euclidean2DPosition, neighbourPosition: Euclidean2DPosition): Double {
         val neighbourDirectionAngle = atan2(neighbourPosition.y - nodePosition.y, neighbourPosition.x - nodePosition.x)

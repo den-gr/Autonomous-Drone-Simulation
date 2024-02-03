@@ -15,7 +15,8 @@ class AttractionZone(
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
     private val speedUpFactor: Double,
-) : AbstractZone(node, environment, movementProvider) {
+    numberOfHerds: Int,
+) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
     override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
 
     override fun getNextMovement(): Euclidean2DPosition {

@@ -14,7 +14,8 @@ class NeutralZone(
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
-) : AbstractZone(node, environment, movementProvider) {
+    numberOfHerds: Int,
+) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
 
     override val visibleNodes: Molecule = SimpleMolecule("Neutral zone")
 

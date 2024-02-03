@@ -23,6 +23,8 @@ class StressZone(
         return getStressZoneMovement(pos, getNodesInZone(pos))
     }
 
+    override fun filterOtherGroups(nodes: List<Node<Any>>): List<Node<Any>> = nodes
+
     private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Euclidean2DPosition {
         val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
