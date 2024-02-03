@@ -48,8 +48,8 @@ variables:
     type: ArbitraryVariable
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
   drone_program: &drone_program
-    type: ArbitraryVariable
-    parameters: [ "clustering:ff_linpro_c" ]
+    type: ListOf
+    parameters: [ "clustering:ff_linpro_c", "clustering:ff_nocomm_c", "clustering:bc_re_c"]
 ######
   NumCameras: &NumCameras
     formula: 7
@@ -93,7 +93,7 @@ _drone: &drone
         parameters: [ doZigZag, true ]
     actions:
       - type: ConstantDistanceRandomWalk
-        parameters: [ 999999, *CameraSpeed ]
+        parameters: [ 500, *CameraSpeed ]
   - time-distribution: 2
     type: ChemicalReaction
     conditions:
