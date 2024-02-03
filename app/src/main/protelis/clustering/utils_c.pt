@@ -1,8 +1,69 @@
 module clustering:utils_c
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
 import it.unibo.experiment.clustering.HerdExperimentUtils.getFakeCluster
+import it.unibo.experiment.clustering.HerdExperimentUtils.findNonCollidingPosition
+import it.unibo.experiment.ProtelisUtils.toTuple
+import utils
+
+public def followOrExplorePoint(point, explorationStrategy) =
+  if(point == noTarget()) {
+      explorationStrategy()
+      emptyCluster()
+  } else {
+      followCentroid(point)
+  }
+
+public def followOrExploreCluster(cluster, explorationStrategy) =
+  if(cluster == emptyCluster()) {
+      followOrExplorePoint(noTarget(), explorationStrategy)
+  } else {
+			followOrExplorePoint(cluster.getCentroid(), explorationStrategy)
+  }
+
+public def followCentroid(cluster_centroid) {
+    envRemove("doSpin")
+    envRemove("doZigZag")
+    env.put("destination", closestPositionToTargetAtDistance(cluster_centroid, getFoVCenterDistanceForClusters()));
+    env.put("heading", cluster_centroid);
+    cluster_centroid
+}
+
+def getFoVCenterDistanceForClusters() = getFoVDistance() / 2
+
+public def avoidCameraCollisionForClusters(cluster) =
+    if(cluster != emptyCluster()) {
+        let assignedTs = nbr(cluster.getCentroid())
+        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), cluster.getCentroid(), getFoVCenterDistanceForClusters())
+        env.put("destination", pos)
+    } else { 0 }
 
 public def emptyCluster() {
     getFakeCluster()
 }
 
 public def getClusteringLimit() = env.get("ClusteringLimit")
+
+
+public def tupleOf(jvmList) = toTuple(jvmList)
+
+//// No communication   
+public def closestCoordinateToFov(centroids) {
+    centroids.reduce(noTarget(), (t1, t2) -> { minBy(t1, t2, fovDistanceFromCoordinate) })
+}
+
+public def fovDistanceFromCoordinate(centroid) {
+    fovDistanceFromPos(posToTuple(centroid))
+}
+
+//// bc_re
+
+public def closestPoint(centroids) {
+    centroids.reduce(noTarget(), (t1, t2) -> { minBy(t1, t2, distanceFromTarget) })
+}
+
+public def distanceFromTarget(centroid) {
+    distanceFromPos(posToTuple(centroid))
+}

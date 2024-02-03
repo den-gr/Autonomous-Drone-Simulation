@@ -1,12 +1,11 @@
 module clustering:adaptive_clustering
-import it.unibo.experiment.ProtelisUtils.toTuple
 import it.unibo.experiment.clustering.HerdExperimentUtils.isClusterCentroidVisible
 import clustering:utils_c
 
 
 public def getNewClusterLimit(cluster, localVisibleNodes, assignedNodes){
     let allLimits = foldUnion([getClusteringLimit()], nbr(getClusteringLimit()))
-    let clusterNodes = toTuple(cluster.getPoints())
+    let clusterNodes = tupleOf(cluster.getNodes())
     let excludedTargets = foldUnion(nbr(localVisibleNodes.subtract(clusterNodes))) // Nodes that are visible but are not part of target clusters
     if(cluster != emptyCluster()){
         let intersectionSize = localVisibleNodes.intersection(clusterNodes).size()

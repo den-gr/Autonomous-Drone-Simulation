@@ -3,39 +3,13 @@ import protelis:lang:utils
 import protelis:coord:spreading
 import protelis:coord:accumulation
 import it.unibo.experiment.clustering.HerdExperimentUtils.getClusterSolver
-import it.unibo.experiment.clustering.HerdExperimentUtils.findNonCollidingPosition
 import it.unibo.experiment.clustering.HerdExperimentUtils.getAssignedNodes
 import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
-import it.unibo.experiment.ProtelisUtils.getCenterOfFovAtDistance
-import it.unibo.experiment.ProtelisUtils.closestPositionToTargetAtDistance
+
 import utils
 import clustering:utils_c
 import clustering:adaptive_clustering
 
-public def followOrExploreCluster(cluster, explorationStrategy) =
-  if(cluster == emptyCluster()) {
-      explorationStrategy()
-      emptyCluster()
-  } else {
-      followCluster(cluster.getCentroid())
-  }
-
-public def followCluster(cluster_centroid) {
-    envRemove("doSpin")
-    envRemove("doZigZag")
-    env.put("destination", closestPositionToTargetAtDistance(cluster_centroid, getFoVCenterDistanceForClusters()));
-    env.put("heading", cluster_centroid);
-    cluster_centroid
-}
-
-public def getFoVCenterDistanceForClusters() = getFoVDistance() / 2
-
-public def avoidCameraCollisionForClusters(cluster) =
-    if(cluster != emptyCluster()) {
-        let assignedTs = nbr(cluster.getCentroid())
-        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), cluster.getCentroid(), getFoVCenterDistanceForClusters())
-        env.put("destination", pos)
-    } else { 0 }
 
 public def linproo(is_fair, is_clustering_adaptive, explorationStrategy) =
     rep(solver <- getClusterSolver()) {

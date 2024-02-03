@@ -1,0 +1,40 @@
+/* Based on "Online Multi-object k-coverage with Mobile Smart Cameras" by Lukas Esterle and Peter Lewis.
+ * Replicates the BC-RE algorithm, aka Broadcast-Received calls.
+ * Each camera broadcasts requests for each target and provisions the one with the least requests in case it is not already
+ * following a target.
+ *
+ * In case there are multiple targets with the least requests number, then the closest one is chosen.
+ */
+
+module clustering:bc_re_c
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.clustering.HerdExperimentUtils.clustersWithLeastSources
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
+import it.unibo.experiment.clustering.HerdExperimentUtils.getVisibleCentroids
+import it.unibo.experiment.clustering.HerdExperimentUtils.isPointVisible
+import utils
+import clustering:utils_c
+import exploration_strategies
+
+
+rep(myTarget <- noTarget()) {
+    let localTargets = getLocalTargets()
+    let allTargets = foldUnion(nbr(localTargets))
+
+    let clusters = getClusters(allTargets, getClusteringLimit())
+    env.put("Clusters", clusters) // Used by GUI to draw the clusters
+    let visibleCentroids = tupleOf(getVisibleCentroids(clusters))
+    let allVisibleClusters = nbr(visibleCentroids)
+
+    let possibleTarget = closestPoint( clustersWithLeastSources(allVisibleClusters))
+    env.put("whaaaaaaaaaaaaaaaaaaaaaaaaaata", possibleTarget)
+    let newTarget = if(myTarget == noTarget()|| !isPointVisible(myTarget)) {
+        possibleTarget
+    } else {
+        closestCoordinateToFov(visibleCentroids) // updated position
+    }
+    followOrExplorePoint(newTarget, zigZagExploration)
+    avoidCameraCollision(newTarget, localTargets)
+}

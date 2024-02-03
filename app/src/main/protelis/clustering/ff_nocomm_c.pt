@@ -4,7 +4,18 @@
  */
 
 module clustering:ff_nocomm_c
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
 import utils
+import clustering:utils_c
 import exploration_strategies
 
-followOrExplore(closestTargetToFov(getLocalTargets()), fieldExploration)
+
+let c = getClusters(getLocalTargets(), getClusteringLimit())
+env.put("Clusters", c)
+let clusters = tupleOf(c)
+if(!clusters.isEmpty()){
+    let centroids = clusters.map(m -> {m.getCentroid()})
+    followCentroid(closestCoordinateToFov(centroids))
+}else{
+    fieldExploration()
+}
