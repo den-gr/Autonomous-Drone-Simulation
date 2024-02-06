@@ -8,7 +8,7 @@ variables:
   body_width: &body_width
     formula: body_length / 2
   stress_zone_radius: &stress_zone_r
-    formula: 2 * body_length
+    formula: 1 * body_length
   neutral_zone_radius: &neutral_zone_r
     formula: 10 * body_length
   attraction_zone_radius: &attr_zone_r
@@ -47,6 +47,9 @@ variables:
   trailer_seed_change: &trailer_seed_change
     type: ArbitraryVariable
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
+#### other
+  NumberOfHerds: &NumberOfHerds
+    formula: 1
 
 
 _herd_parameters: &herd_parameters
@@ -57,6 +60,7 @@ _herd_parameters: &herd_parameters
   - *attraction_speed_up_f
   - *leader_seed_change
   - *trailer_seed_change
+  - *NumberOfHerds
 
 _herd: &herd
   - time-distribution: 1
@@ -68,9 +72,13 @@ _animal_area: &animal_area
   - type: RectangularArea
     parameters: [ *body_len, *body_width ] #inverted
 
+seeds:
+  scenario: 1
+  simulation: 1
+
 deployments:
-  - type: Circle
-    parameters: [40, 0, 0, 80]
+  - type: GroupsDeployment
+    parameters: [50, 0, 0, 400, *NumberOfHerds, 25]
     contents:
       - molecule: zebra
         concentration: true

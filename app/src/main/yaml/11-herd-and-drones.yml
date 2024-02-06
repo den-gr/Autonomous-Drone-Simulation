@@ -20,9 +20,9 @@ variables:
   attraction_speed_up: &attraction_speed_up_f
     formula: 1.5 # [1; inf] if there are nodes in attraction zone multiply the speed-up factor to current velocity
   leaders_slow_down: &leaders_slow_down_f
-    formula: 0.5 # [0; 1] if there are neighbors in rear zone slow down by this value
+    formula: 0.7 # [0; 1] if there are neighbors in rear zone slow down by this value
   leaders_slow_down_probability: &leaders_p
-    formula: 0.6
+    formula: 0.8
   trailers_speed_up: &trailers_speed_up_f
     formula: 2.0
   trailers_speed_up_probability: &trailers_p
@@ -47,17 +47,14 @@ variables:
   trailer_seed_change: &trailer_seed_change
     type: ArbitraryVariable
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
-  drone_program: &drone_program
-    type: ListOf
-    parameters: [ "clustering:ff_linpro_c", "clustering:ff_nocomm_c", "clustering:bc_re_c"]
-######
+###### Drones
   NumCameras: &NumCameras
     formula: 7
   CameraSpeed: &CameraSpeed
     formula: 4
   EnvironmentSize: &EnvironmentSize
     type: ArbitraryVariable
-    parameters: [ 5000 ]
+    parameters: [ 2000 ]
   FoVAngle: &FoVAngle
     formula: 77
   FoVDistance: &FoVDistance
@@ -65,17 +62,31 @@ variables:
   FoVBlindSpotDistance: &FoVBlindSpotDistance
     formula: 20
   RotationSpeed: &RotationSpeed
-    formula: 18
+    formula: 24
   CommunicationRange: &CommunicationRange
     type: ArbitraryVariable
-    parameters: [ 4000 ]
+    parameters: [ 2000 ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
   DefaultCameraTargetClusteringLimit: &ClusteringLimit
-    formula: 100
+    formula: 10
+  drone_program: &drone_program
+    type: ListOf
+    parameters: [ "clustering:ff_linpro_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
 ##### Other
+  NumberOfAnimals: &NumberOfAnimals
+    formula: 60
   NumberOfStartingHerds: &HerdNumber
-    formula: 20
+    formula: 8
+  EnvironmentRadius: &EnvironmentRadius
+    formula: EnvironmentSize / 2
+
+
+
+
+seeds:
+  scenario: 1
+  simulation: 1
 
 _drone: &drone
   - time-distribution: 2
@@ -119,6 +130,7 @@ _herd_parameters: &herd_parameters
   - *leader_seed_change
   - *trailer_seed_change
   - *HerdNumber
+  - *EnvironmentRadius
 
 _herd: &herd
   - time-distribution: 1
@@ -137,28 +149,21 @@ network-model:
 
 deployments:
   - type: GroupsDeployment
-    parameters: [60, 0, 0, 500, *HerdNumber, 20]
+    parameters: [*NumberOfAnimals, 0, 0, *EnvironmentRadius, *HerdNumber, 25]
     contents:
       - molecule: zebra
         concentration: true
     programs: *herd
     properties: *animal_area
-#  - type: GroupsDeployment
-#    parameters: [ 30, 500, -500, 100, 5]
-#    contents:
-#      - molecule: zebra
-#        concentration: true
-#    programs: *herdd
-#    properties: *animal_area
   - type: Circle
-    parameters: [ *NumCameras, -300, -500, 100 ]
+    parameters: [ *NumCameras, 0, 0, 50]
     contents:
       - molecule: drone
         concentration: true
       - molecule: FoVDistance
         concentration: *FoVDistance
       - molecule: EnvironmentSize
-        concentration: *EnvironmentSize # TODO
+        concentration: *EnvironmentSize
       - molecule: CommRange
         concentration: *CommunicationRange
       - molecule: Target

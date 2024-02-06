@@ -31,7 +31,7 @@ public def followCentroid(cluster_centroid) {
     cluster_centroid
 }
 
-def getFoVCenterDistanceForClusters() = getFoVDistance() / 2
+def getFoVCenterDistanceForClusters() = (getFoVDistance() * 2) / 3
 
 public def avoidCameraCollisionForClusters(cluster) =
     if(cluster != emptyCluster()) {

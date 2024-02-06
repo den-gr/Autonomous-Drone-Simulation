@@ -9,6 +9,7 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.junit.jupiter.api.BeforeEach
 import kotlin.math.PI
+import kotlin.random.Random
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
 class RearZoneTest : AbstractZoneTest() {
@@ -45,7 +46,16 @@ class RearZoneTest : AbstractZoneTest() {
             true,
         )
 
-        rearZone = RearZone(rearZoneShape, node1, environment, movementsProvider, SLOW_DOWN_FACTOR, SLOW_DOWN_PROBABILITY)
+        rearZone = RearZone(
+            rearZoneShape,
+            node1,
+            environment,
+            movementsProvider,
+            SLOW_DOWN_FACTOR,
+            SLOW_DOWN_PROBABILITY,
+            1,
+            Random(1),
+        )
     }
 
     @BeforeEach

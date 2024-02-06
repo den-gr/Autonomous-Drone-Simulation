@@ -32,12 +32,12 @@ class NeutralZone(
             }
         }
 
+        val movement = movementProvider.getRandomMovement()
         if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toLeft() + movementProvider.forward()
+            return movement + movementProvider.toLeft()
         } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toRight() + movementProvider.forward()
+            return movement + movementProvider.toRight()
         }
-
-        return movementProvider.getRandomMovement()
+        return movement
     }
 }

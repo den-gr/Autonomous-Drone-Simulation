@@ -7,6 +7,7 @@ import it.unibo.alchemist.model.nodes.GenericNode
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.physics.properties.RectangularArea
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
+import kotlin.random.Random
 import kotlin.test.* // ktlint-disable no-wildcard-imports
 
 abstract class AbstractZoneTest {
@@ -21,12 +22,15 @@ abstract class AbstractZoneTest {
         const val LATERAL_VELOCITY = 1.0
     }
 
-    protected val movementsProvider: MovementProvider = MovementProvider(
+    protected val movementsProvider: MovementProvider = getNewMovementProvider(3)
+
+    protected fun getNewMovementProvider(seed: Int): MovementProvider = MovementProvider(
         LATERAL_VELOCITY,
         FORWARD_VELOCITY,
         0.25,
         0.5,
         0.25,
+        Random(seed),
     )
 
     protected fun createRectangleNode(
@@ -54,5 +58,12 @@ abstract class AbstractZoneTest {
     protected fun addNode(node: Node<Any>, position: Euclidean2DPosition) {
         environment.addNode(node, position)
         setDefaultHeading(node)
+    }
+
+    protected fun Euclidean2DPosition.addVelocityModifier(lateralModifier: Double, forwardModifier: Double): Euclidean2DPosition {
+        return Euclidean2DPosition(
+            x + x * lateralModifier,
+            y + y * forwardModifier,
+        )
     }
 }

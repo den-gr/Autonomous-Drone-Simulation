@@ -53,7 +53,7 @@ def adapt(list) = list.reduce(0, (a, b) -> {a + b}) / list.size()
 
 def increment() {
    let limit = getClusteringLimit()
-   limit + (limit * 0.01)
+   limit + (limit * 0.02)
 }
 
 def decrement(){

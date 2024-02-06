@@ -10,6 +10,7 @@ class MovementProvider(
     leftMovementProbability: Double,
     forwardMovementProbability: Double,
     rightMovementProbability: Double,
+    private val randomizer: Random,
 ) {
     private val movementsProbabilities = mapOf(
         Direction.LEFT to leftMovementProbability,
@@ -34,7 +35,7 @@ class MovementProvider(
     fun toRightForward(): Euclidean2DPosition = movements.getValue(Direction.RIGHT) + movements.getValue(Direction.FORWARD)
 
     fun getRandomMovement(): Euclidean2DPosition {
-        val randomNumber = Random.nextDouble()
+        val randomNumber = randomizer.nextDouble()
         var cumulativeProbability = 0.0
 
         for (probability in movementsProbabilities) {
