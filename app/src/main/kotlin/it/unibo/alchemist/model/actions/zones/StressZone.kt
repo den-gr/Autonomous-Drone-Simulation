@@ -16,7 +16,7 @@ class StressZone(
     movementProvider: MovementProvider,
     private val repulsionFactor: Double,
 ) : AbstractZone(node, environment, movementProvider) {
-    override val visibleNodes: Molecule = SimpleMolecule("Stress zone")
+    override val visibleNodes: Molecule = SimpleMolecule("Stress zone T")
 
     override fun getNextMovement(): Euclidean2DPosition {
         val pos = environment.getPosition(owner)
@@ -38,23 +38,25 @@ class StressZone(
                 }
             }
         }
-        if (positions.contains(RelativePosition.FORWARD)) {
-            return movementProvider.forward().addVelocityModifier(0.0, -repulsionFactor)
-        } else if (positions.contains(RelativePosition.RIGHT) && positions.contains(RelativePosition.LEFT)) {
-            return movementProvider.forward()
-        } else if (positions.contains(RelativePosition.BEHIND_LEFT) && positions.contains(RelativePosition.BEHIND_RIGHT)) {
-            return movementProvider.forward().addVelocityModifier(0.0, repulsionFactor)
-        } else if (positions.containsAll(listOf(RelativePosition.BEHIND_LEFT, RelativePosition.RIGHT))) {
-            return movementProvider.forward()
-        } else if (positions.containsAll(listOf(RelativePosition.BEHIND_RIGHT, RelativePosition.LEFT))) {
-            return movementProvider.forward()
-        } else if (positions.contains(RelativePosition.RIGHT) || positions.contains(RelativePosition.BEHIND_RIGHT)) {
-            return movementProvider.toLeft()
-        } else if (positions.contains(RelativePosition.LEFT) || positions.contains(RelativePosition.BEHIND_LEFT)) {
-            return movementProvider.toRight()
+        var movement = movementProvider.getRandomMovement()
+        if (positions.contains(RelativePosition.RIGHT) && !positions.contains(RelativePosition.LEFT)) {
+            movement += movementProvider.toLeft() // add force lateral force
         }
-        throw IllegalStateException("No nodes detected in zone")
+        if (positions.contains(RelativePosition.LEFT) && !positions.contains(RelativePosition.RIGHT)) {
+            movement += movementProvider.toRight() // add force lateral force
+        }
+
+        // lateral forces are already added, so add only forward force
+        if (positions.contains(RelativePosition.BEHIND_RIGHT) && positions.contains(RelativePosition.BEHIND_LEFT)) {
+            movement = (movementProvider.forward() + movement).addVelocityModifier(0.0, repulsionFactor)
+        } else if (positions.contains(RelativePosition.BEHIND_RIGHT) || positions.contains(RelativePosition.BEHIND_LEFT)) {
+            movement += movementProvider.forward()
+        }
+
+        // reduce forward velocity only if movement have forward velocity
+        if (positions.contains(RelativePosition.FORWARD) && movement.y > repulsionFactor) {
+            movement = movement.addVelocityModifier(0.0, -repulsionFactor)
+        }
+        return movement
     }
 }
-
-

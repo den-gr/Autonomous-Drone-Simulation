@@ -1,9 +1,8 @@
-package it.unibo.alchemist.model.implementations.actions
+package it.unibo.alchemist.model.actions
 
 import it.unibo.alchemist.model.Context
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
-import it.unibo.alchemist.model.actions.AbstractAction
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.experiment.randomAngle
 import org.apache.commons.math3.random.RandomGenerator

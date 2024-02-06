@@ -1,0 +1,35 @@
+module clustering:linpro
+import protelis:lang:utils
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusterSolver
+import it.unibo.experiment.clustering.HerdExperimentUtils.getAssignedNodes
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
+
+import utils
+import clustering:utils_c
+import clustering:adaptive_clustering
+
+
+public def linproo(is_fair, is_clustering_adaptive, explorationStrategy) =
+    rep(solver <- getClusterSolver()) {
+
+        let localTargets = getLocalTargets()
+        let externalTargets = foldUnion([], nbr(localTargets))
+        let targets = localTargets.union(externalTargets)
+        let cameras = nbr(getCenterOfFov())
+
+        let clusters = getClusters(targets, getClusteringLimit())
+        env.put("Clusters", clusters) // Used by GUI to draw the clusters
+        let assignedClusters = solver.solve(cameras, clusters, getMaxCamerasPerTarget(), is_fair)
+        let myCluster = assignedClusters.getOrDefault(getUID(), emptyCluster())
+
+        followOrExploreCluster(myCluster, explorationStrategy)
+        avoidCameraCollisionForClusters(myCluster)
+
+        if(is_clustering_adaptive){
+            let assignedNodes = getAssignedNodes(assignedClusters, clusters)
+            env.put("ClusteringLimit", getNewClusterLimit(myCluster, localTargets, assignedNodes))
+        }else{ 0 } //safe domain branching
+        solver
+    }

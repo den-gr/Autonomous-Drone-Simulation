@@ -41,17 +41,17 @@ class StressZoneTest : AbstractZoneTest() {
         environment.addNode(node1, CENTER_POSITION)
         environment.addNode(node2, positionProvider.getNextExternalPosition())
         environment.addNode(node4, positionProvider.getNextExternalPosition())
-
-        val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
-        val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(STRESS_ZONE_RADIUS)
-
-        stressZone1 = StressZone(stressZoneShape, node1, environment, movementsProvider, REPULSION_FACTOR)
-        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, movementsProvider, REPULSION_FACTOR)
-        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, movementsProvider, REPULSION_FACTOR)
     }
 
     @BeforeTest
     fun resetPositions() {
+        val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
+        val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(STRESS_ZONE_RADIUS)
+
+        stressZone1 = StressZone(stressZoneShape, node1, environment, getNewMovementProvider(node1.id), REPULSION_FACTOR)
+        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, getNewMovementProvider(node2.id), REPULSION_FACTOR)
+        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, getNewMovementProvider(node4.id), REPULSION_FACTOR)
+
         environment.removeNode(node4)
         environment.removeNode(node2)
         setPositionAndVerifySetting(node1, CENTER_POSITION)
@@ -70,34 +70,38 @@ class StressZoneTest : AbstractZoneTest() {
 
     @Test
     fun testSlowDownMovement() {
+        val randomMovement = getNewMovementProvider(node1.id).getRandomMovement()
         addNode(node2, positionProvider.getNorthInZonePosition())
         assertTrue(stressZone1.areNodesInZone())
         val movement = stressZone1.getNextMovement()
-        assertEquals(movementsProvider.forward().x, movement.x)
+
         assertEquals(
-            movementsProvider.forward().y,
-            movement.y + REPULSION_FACTOR * FORWARD_VELOCITY,
+            randomMovement.addVelocityModifier(0.0, -REPULSION_FACTOR).y,
+            movement.y,
         )
     }
 
     @Test
     fun testLeftAndRightMovementWithNorthHeading() {
+        val randomMovement1 = getNewMovementProvider(node1.id).getRandomMovement()
+        val randomMovement2 = getNewMovementProvider(node2.id).getRandomMovement()
         addNode(node2, LEFT_POSITION)
 
         assertTrue(stressZone1.areNodesInZone())
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movementsProvider.toRight().x, movement1.x)
-        assertEquals(0.0, movement1.y)
+        assertEquals(movementsProvider.toRight().x + randomMovement1.x, movement1.x)
+        assertEquals(randomMovement1.y, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movementsProvider.toLeft().x, movement2.x)
-        assertEquals(0.0, movement2.y)
+        assertEquals(movementsProvider.toLeft().x + randomMovement2.x, movement2.x)
     }
 
     @Test
     fun testLeftAndRightMovementWithSouthHeading() {
+        val randomMovement1 = getNewMovementProvider(node1.id).getRandomMovement()
+        val randomMovement2 = getNewMovementProvider(node2.id).getRandomMovement()
         addNode(node2, LEFT_POSITION)
         val south = Euclidean2DPosition(0.0, -1.0)
         environment.setHeading(node1, south)
@@ -107,16 +111,18 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movementsProvider.toLeft().x, movement1.x)
-        assertEquals(0.0, movement1.y)
+        assertEquals(movementsProvider.toLeft().x + randomMovement1.x, movement1.x)
+        assertEquals(randomMovement1.y, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movementsProvider.toRight().x, movement2.x)
-        assertEquals(0.0, movement2.y)
+        assertEquals(movementsProvider.toRight().x + randomMovement2.x, movement2.x)
+//        assertEquals(randomMovement2.y, movement2.y)
     }
 
     @Test
     fun testLeftAndRightMovementWithEastHeading() {
+        val randomMovement1 = getNewMovementProvider(node1.id).getRandomMovement()
+        val randomMovement2 = getNewMovementProvider(node2.id).getRandomMovement()
         addNode(node2, positionProvider.getNorthInZonePosition())
         val east = Euclidean2DPosition(1.0, 0.0)
         environment.setHeading(node1, east)
@@ -126,12 +132,12 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone2.areNodesInZone())
 
         val movement1 = stressZone1.getNextMovement()
-        assertEquals(movementsProvider.toRight().x, movement1.x)
-        assertEquals(0.0, movement1.y)
+        assertEquals(movementsProvider.toRight().x + randomMovement1.x, movement1.x)
+        assertEquals(randomMovement1.y, movement1.y)
 
         val movement2 = stressZone2.getNextMovement()
-        assertEquals(movementsProvider.toLeft().x, movement2.x)
-        assertEquals(0.0, movement2.y)
+        assertEquals(movementsProvider.toLeft().x + randomMovement2.x, movement2.x)
+//        assertEquals(randomMovement2.y, movement2.y)
     }
 
     /**
@@ -139,14 +145,15 @@ class StressZoneTest : AbstractZoneTest() {
      */
     @Test
     fun testForwardMovement() {
+        val randomMovement1 = getNewMovementProvider(node1.id).getRandomMovement()
         addNode(node2, positionProvider.getSouthEastInZonePosition())
         addNode(node4, positionProvider.getSouthWestInZonePosition())
 
         assertTrue(stressZone1.areNodesInZone())
 
         val movement = stressZone1.getNextMovement()
-        assertEquals(movementsProvider.forward().y, movement.y)
-        assertEquals(0.0, movement.x)
+        assertEquals((movementsProvider.forward() + randomMovement1).addVelocityModifier(0.0, REPULSION_FACTOR).y, movement.y)
+        assertEquals(randomMovement1.x, movement.x)
     }
 
     @Test

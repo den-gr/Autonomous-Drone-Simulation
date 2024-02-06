@@ -11,12 +11,10 @@ import it.unibo.alchemist.model.actions.zones.RearZone
 import it.unibo.alchemist.model.actions.zones.StressZone
 import it.unibo.alchemist.model.actions.zones.Zone
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShapeFactoryImpl
-import it.unibo.alchemist.model.actions.zones.test.StressZoneT
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.ContinuousPhysics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import org.protelis.lang.datatype.impl.ArrayTupleImpl
-import java.lang.Math.random
+import org.apache.commons.math3.util.FastMath
 import java.lang.Math.toRadians
 import kotlin.collections.ArrayList
 import kotlin.math.cos
@@ -34,10 +32,12 @@ class HerdBehavior @JvmOverloads constructor(
     private val attractionZoneSpeedUpFactor: Double,
     private val leaderSlowDown: ArrayList<Double>,
     private val trailerSpeedUp: ArrayList<Double>,
-    north: Boolean = true,
+    numberOfHerds: Int = 1,
+    private val radiusPreference: Int = 1000,
+    seed: Int = 1,
 ) : AbstractAction<Any>(node) {
     val zones: List<Zone>
-    private val stressZone: StressZoneT
+    private val stressZone: StressZone
     private val neutralZone: NeutralZone
     private val attractionZone: AttractionZone
     private val rearZone: RearZone
@@ -46,6 +46,12 @@ class HerdBehavior @JvmOverloads constructor(
     private val trailersSpeedUpFactor: Double = trailerSpeedUp[0]
     private val trailersSpeedUpProbability: Double = trailerSpeedUp[0]
 
+    private val turningDirection: Int
+    private val additionalTurningForce: Double // degrees
+
+    private val herdRandomizer: Random
+    private val nodeRandomizer: Random
+
     companion object {
         const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
         const val ANGLE_OF_ZONE = 180.0 // degrees
@@ -53,42 +59,44 @@ class HerdBehavior @JvmOverloads constructor(
     }
 
     init {
+        val nodeSeed = (node.id % numberOfHerds) + seed
+        herdRandomizer = Random(nodeSeed)
+        nodeRandomizer = Random(node.id + seed)
+        additionalTurningForce = herdRandomizer.nextDouble(0.0, 2.0)
+        val angle = herdRandomizer.nextDouble(0.0, 4 * FastMath.PI)
 
-        node.properties[0].node
+        turningDirection = if (nodeRandomizer.nextDouble() > 0.5) 1 else -1
+
         val stressZoneRadius: Double = zones_radii[0]
         val neutralZoneRadius: Double = zones_radii[1]
         val attractionZoneRadius: Double = zones_radii[2]
         val rearZoneRadius: Double = zones_radii[3]
-        val y = if (north) 1.0 else -1.0
         movementProvider = MovementProvider(
             velocities[0],
             velocities[1],
             movementProbabilities[0],
             movementProbabilities[1],
             movementProbabilities[2],
+            nodeRandomizer,
         )
-        environment.setHeading(node, Euclidean2DPosition(0.0, y))
+        environment.setHeading(node, Euclidean2DPosition(cos(angle), sin(angle)))
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
-        stressZone = StressZoneT(stressZoneShape, node, environment, movementProvider, stressZoneRepulsionFactor)
+        stressZone = StressZone(stressZoneShape, node, environment, movementProvider, stressZoneRepulsionFactor)
 
         val neutralZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(neutralZoneRadius, ANGLE_OF_ZONE)
-        neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider)
+        neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider, numberOfHerds)
 
         val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, ANGLE_OF_ZONE)
-        attractionZone = AttractionZone(attractionZoneShape, node, environment, movementProvider, attractionZoneSpeedUpFactor)
+        attractionZone = AttractionZone(attractionZoneShape, node, environment, movementProvider, attractionZoneSpeedUpFactor, numberOfHerds)
 
         val leaderSlowDownFactor = leaderSlowDown[0]
         val leaderSlowDownProbability = leaderSlowDown[1]
         val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, ANGLE_OF_ZONE, true)
-        rearZone = RearZone(rearZoneShape, node, environment, movementProvider, leaderSlowDownFactor, leaderSlowDownProbability)
+        rearZone = RearZone(rearZoneShape, node, environment, movementProvider, leaderSlowDownFactor, leaderSlowDownProbability, numberOfHerds, nodeRandomizer)
 
         zones = listOf(stressZone, neutralZone, attractionZone, rearZone)
-    }
-
-    private fun getMoleculeDoubleTupleValues(moleculeName: String): List<Double> {
-        return (getMoleculeValue(moleculeName) as ArrayTupleImpl).toList().map { it.toString().toDouble() }
     }
 
     override fun cloneAction(node: Node<Any>, reaction: Reaction<Any>) =
@@ -114,15 +122,12 @@ class HerdBehavior @JvmOverloads constructor(
         return position.asAngle - Math.PI / 2
     }
 
-    private fun getMoleculeValue(moleculeName: String) =
-        node.contents.getValue(SimpleMolecule(moleculeName))
-
     private fun getNextPosition(): Euclidean2DPosition {
         alignDirection()
         for (zone in zones) {
             if (zone.areNodesInZone()) {
-                var movement = zone.getNextMovement() // .addVelocityModifier(getNoiseModifier(), getNoiseModifier())
-                if (!rearZone.areNodesInZone() && Random.nextDouble() <= trailersSpeedUpProbability) {
+                var movement = zone.getNextMovement()
+                if (!rearZone.areNodesInZone() && nodeRandomizer.nextDouble() <= trailersSpeedUpProbability) {
                     movement *= trailersSpeedUpFactor
                 }
 
@@ -138,7 +143,7 @@ class HerdBehavior @JvmOverloads constructor(
                 return relativeRotatedMovement
             }
         }
-        if (random() < 0.5) turning()
+        if (nodeRandomizer.nextDouble() < 0.5) turning()
         val movement = movementProvider.getRandomMovement()
         setMovementInConcentration(movement, "Out of Zone")
         return rotateVector(movement, getAngle(environment.getHeading(node)))
@@ -162,20 +167,34 @@ class HerdBehavior @JvmOverloads constructor(
 
     private fun turning() {
         val position = environment.getPosition(node)
-        val angleToOrigin = environment.makePosition(-position.x, -position.y)
-        val angle = environment.getHeading(node).angleBetween(angleToOrigin)
+        val headingToOrigin = environment.makePosition(-position.x, -position.y)
+        val angle = environment.getHeading(node).angleBetween(headingToOrigin)
         val distanceFromOrigin = hypot(position.x, position.y)
-        val coef = distanceFromOrigin / 1000
-        val prob = (coef * (angle / Math.PI)) / 10
-        node.setConcentration(SimpleMolecule("turn prob"), prob)
-        if (Random.nextDouble() < prob) {
-            val headingAngle = environment.getHeading(node).asAngle + toRadians(2.0)
-            environment.setHeading(node, environment.makePosition(cos(headingAngle), sin(headingAngle)))
+
+        if (distanceFromOrigin > radiusPreference) {
+            val coef = distanceFromOrigin / (radiusPreference * 10)
+            val prob = (coef * (angle / Math.PI))
+            if (nodeRandomizer.nextDouble() < prob) {
+                val additionalTurnBoost = 10.0
+                val turningAngle = getTurningAngle(additionalTurnBoost)
+                val newHeading = getHeadingAfterTurning(turningAngle)
+                val newAngleBetween = newHeading.angleBetween(headingToOrigin)
+                val finalHeading = if (newAngleBetween < angle || (angle / Math.PI) > 0.9) {
+                    newHeading
+                } else {
+                    getHeadingAfterTurning(turningAngle * -1)
+                }
+                environment.setHeading(node, finalHeading)
+            }
+        } else if (nodeRandomizer.nextDouble() < 0.1) {
+            environment.setHeading(node, getHeadingAfterTurning(getTurningAngle()))
         }
     }
 
-    private fun getNoiseModifier(): Double {
-        val sign = if (Random.nextBoolean()) 1 else -1
-        return (Random.nextDouble() / 10.0) * sign
+    private fun getHeadingAfterTurning(turningAngle: Double): Euclidean2DPosition {
+        val headingAngle = environment.getHeading(node).asAngle + turningAngle
+        return environment.makePosition(cos(headingAngle), sin(headingAngle))
     }
+
+    private fun getTurningAngle(additionalAngles: Double = 0.0): Double = toRadians(1.0 + additionalTurningForce + additionalAngles) * turningDirection
 }

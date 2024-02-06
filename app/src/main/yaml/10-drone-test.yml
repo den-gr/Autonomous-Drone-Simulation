@@ -9,14 +9,14 @@ variables:
   FoVAngle: &FoVAngle
     formula: 60
   FoVDistance: &FoVDistance
-    formula: 30
+    formula: 40
   RotationSpeed: &RotationSpeed
-    formula: 36
+    formula: 32
   CommunicationRange: &CommunicationRange
     type: ArbitraryVariable
     parameters: [ 200]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
-    formula: 2
+    formula: 1
 
   Drone: &Drone
     - time-distribution: 2
@@ -24,8 +24,8 @@ variables:
       actions:
         - type: InitHeading
           parameters: [ ]
-        - type: CameraSee
-          parameters: [ *FoVDistance, *FoVAngle, vision ]
+        - type: CameraSeeWithBlindSpot
+          parameters: [ 20, *FoVDistance, *FoVAngle, vision ]
         - type: HeadTowardTarget
           parameters: [ heading, *RotationSpeed ]
         - type: MoveToTarget

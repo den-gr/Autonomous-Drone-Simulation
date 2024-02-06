@@ -15,7 +15,8 @@ class AttractionZone(
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
     private val speedUpFactor: Double,
-) : AbstractZone(node, environment, movementProvider) {
+    numberOfHerds: Int,
+) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
     override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
 
     override fun getNextMovement(): Euclidean2DPosition {
@@ -30,14 +31,14 @@ class AttractionZone(
             }
         }
 
+        val movement = movementProvider.getRandomMovement()
         if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toLeftForward() * speedUpFactor
+            return movement + (movementProvider.toLeft() * speedUpFactor)
         } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toRightForward() * speedUpFactor
+            return movement + (movementProvider.toRight() * speedUpFactor)
         } else if (positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.forward() * speedUpFactor
+            return movement + (movementProvider.forward() * speedUpFactor)
         }
-
-        return movementProvider.forward() // TODO
+        throw IllegalStateException("Nodes not found in attraction zone")
     }
 }

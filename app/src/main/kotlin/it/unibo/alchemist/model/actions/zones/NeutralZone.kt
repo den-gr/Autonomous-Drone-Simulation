@@ -14,7 +14,8 @@ class NeutralZone(
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
-) : AbstractZone(node, environment, movementProvider) {
+    numberOfHerds: Int,
+) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
 
     override val visibleNodes: Molecule = SimpleMolecule("Neutral zone")
 
@@ -31,12 +32,12 @@ class NeutralZone(
             }
         }
 
+        val movement = movementProvider.getRandomMovement()
         if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toLeft() + movementProvider.forward()
+            return movement + movementProvider.toLeft()
         } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
-            return movementProvider.toRight() + movementProvider.forward()
+            return movement + movementProvider.toRight()
         }
-
-        return movementProvider.getRandomMovement()
+        return movement
     }
 }
