@@ -7,6 +7,8 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.alchemist.model.protelis.AlchemistExecutionContext
 import it.unibo.alchemist.protelis.properties.ProtelisDevice
+import it.unibo.experiment.OverlapRelationsGraph
+import it.unibo.experiment.OverlapRelationsGraphForProtelis
 import it.unibo.experiment.toTargets
 import org.protelis.lang.datatype.Field
 import org.protelis.lang.datatype.Tuple
@@ -159,11 +161,30 @@ class HerdExperimentUtils {
             val min = if (counts.values.isEmpty()) Int.MAX_VALUE else counts.values.min()
             return counts.filterValues { it <= min }.keys.toTuple()
         }
+
+        //-----------------------------------------------------------------------------------
+        /**
+         * See [OverlapRelationsGraph].
+         */
+        @JvmStatic
+        fun buildOverlapRelationsClusterGraph(
+            context: AlchemistExecutionContext<Euclidean2DPosition>,
+            strengthenValue: Double,
+            evaporationBaseFactor: Double,
+            evaporationMovementFactor: Double,
+        ) =
+            OverlapRelationsGraphForProtelisClusters(
+                context.deviceUID,
+                strengthenValue,
+                evaporationBaseFactor,
+                evaporationMovementFactor,
+            )
+
     }
 }
 
 private fun <P : Position2D<P>> Position2D<P>.toTuple(): Tuple = ArrayTupleImpl(x, y)
-private fun Collection<*>.toTuple(): Tuple = with(iterator()) { ArrayTupleImpl(*Array(size) { next() }) }
+fun Collection<*>.toTuple(): Tuple = with(iterator()) { ArrayTupleImpl(*Array(size) { next() }) }
 private fun Tuple.toPosition(): Euclidean2DPosition {
     require(size() == 2)
     val x = get(0)
