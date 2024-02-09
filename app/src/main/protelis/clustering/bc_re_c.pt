@@ -26,9 +26,9 @@ rep(myTarget <- noTarget()) {
     let clusters = getClusters(allTargets, getClusteringLimit())
     env.put("Clusters", clusters) // Used by GUI to draw the clusters
     let visibleCentroids = tupleOf(getVisibleCentroids(clusters))
-    let allVisibleClusters = nbr(visibleCentroids)
+    let allVisibleCentroids = nbr(visibleCentroids)
 
-    let possibleTarget = closestPoint( clustersWithLeastSources(allVisibleClusters))
+    let possibleTarget = closestPoint( clustersWithLeastSources(allVisibleCentroids))
     env.put("whaaaaaaaaaaaaaaaaaaaaaaaaaata", possibleTarget)
     let newTarget = if(myTarget == noTarget()|| !isPointVisible(myTarget)) {
         possibleTarget
