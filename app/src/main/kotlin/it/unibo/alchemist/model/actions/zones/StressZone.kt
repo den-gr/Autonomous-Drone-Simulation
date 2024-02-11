@@ -19,14 +19,15 @@ class StressZone(
     override val visibleNodes: Molecule = SimpleMolecule("Stress zone T")
 
     override fun getNextMovement(): Euclidean2DPosition {
-        val pos = environment.getPosition(owner)
-        return getStressZoneMovement(pos, getNodesInZone(pos))
+        return getStressZoneMovement(getNodesInZone())
     }
 
-    private fun getStressZoneMovement(nodePosition: Euclidean2DPosition, neighbourNodes: List<Node<Any>>): Euclidean2DPosition {
+    override fun filterOtherHerds(nodes: List<Node<Any>>): List<Node<Any>> = nodes
+
+    private fun getStressZoneMovement(neighbourNodes: List<Node<Any>>): Euclidean2DPosition {
         val positions = mutableSetOf<RelativePosition>()
         for (neighbourNode in neighbourNodes) {
-            val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
+            val angle = getAngleFromHeadingToNeighbour(environment.getPosition(neighbourNode))
 
             for (relativePos in RelativePosition.values()) {
                 val startAngle = relativePos.startAngle

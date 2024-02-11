@@ -25,26 +25,32 @@ abstract class AbstractZone(
         return areNodesInZone(position)
     }
 
-    override fun areNodesInZone(position: Euclidean2DPosition): Boolean {
+    private fun areNodesInZone(position: Euclidean2DPosition): Boolean {
         val nodesInZone = getNodesInZone(position)
         owner.setConcentration(visibleNodes, nodesInZone.map { it.id })
         return nodesInZone.isNotEmpty()
     }
 
-    override fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>> {
+    override fun getNodesInZone(): List<Node<Any>> {
+        val position = environment.getPosition(owner)
+        return getNodesInZone(position)
+    }
+
+    private fun getNodesInZone(position: Euclidean2DPosition): List<Node<Any>> {
         val transformedShape = zoneShape.shape.transformed {
             origin(position)
             rotate(getHeading())
         }
-        return filterOtherGroups(
+        return filterOtherHerds(
             environment.getNodesWithin(transformedShape)
                 .minusElement(owner),
         )
     }
 
-    protected open fun filterOtherGroups(nodes: List<Node<Any>>): List<Node<Any>> = nodes.filter { it.id % numberOfHerds == owner.id % numberOfHerds }
+    protected open fun filterOtherHerds(nodes: List<Node<Any>>): List<Node<Any>> = nodes.filter { it.id % numberOfHerds == owner.id % numberOfHerds }
 
-    protected fun getAngleFromHeadingToNeighbour(nodePosition: Euclidean2DPosition, neighbourPosition: Euclidean2DPosition): Double {
+    protected fun getAngleFromHeadingToNeighbour(neighbourPosition: Euclidean2DPosition): Double {
+        val nodePosition = environment.getPosition(owner)
         val neighbourDirectionAngle = atan2(neighbourPosition.y - nodePosition.y, neighbourPosition.x - nodePosition.x)
         val headingAngle = environment.getHeading(owner).asAngle
         val offset = if (neighbourDirectionAngle < headingAngle) 2 * Math.PI else 0.0
@@ -52,7 +58,7 @@ abstract class AbstractZone(
         return angle + offset
     }
 
-    open fun getHeading(): Euclidean2DPosition {
+    protected open fun getHeading(): Euclidean2DPosition {
         return environment.getHeading(owner)
     }
 

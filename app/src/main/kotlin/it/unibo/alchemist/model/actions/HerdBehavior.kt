@@ -126,31 +126,24 @@ class HerdBehavior @JvmOverloads constructor(
         alignDirection()
         for (zone in zones) {
             if (zone.areNodesInZone()) {
+                if (zone == rearZone) turning() // Leader
                 var movement = zone.getNextMovement()
                 if (!rearZone.areNodesInZone() && nodeRandomizer.nextDouble() <= trailersSpeedUpProbability) {
                     movement *= trailersSpeedUpFactor
                 }
-
-                if (zone is RearZone) turning()
-
                 setMovementInConcentration(movement, zone::class.toString())
-
-                val relativeRotatedMovement = rotateVector(movement, getAngle(environment.getHeading(node)))
-                if (zone !is StressZone && stressZone.areNodesInZone(relativeRotatedMovement.plus(environment.getPosition(node)))) {
-                    val randomMovement = movementProvider.getRandomMovement()
-                    return rotateVector(randomMovement, getAngle(environment.getHeading(node)))
-                }
-                return relativeRotatedMovement
+                return rotateVector(movement, getAngle(environment.getHeading(node)))
             }
         }
-        if (nodeRandomizer.nextDouble() < 0.5) turning()
-        val movement = movementProvider.getRandomMovement()
+        // Trailer
+        turning()
+        val movement = movementProvider.getRandomMovement() * trailersSpeedUpFactor
         setMovementInConcentration(movement, "Out of Zone")
         return rotateVector(movement, getAngle(environment.getHeading(node)))
     }
 
     private fun alignDirection() {
-        val nodes = neutralZone.getNodesInZone(environment.getPosition(node))
+        val nodes = neutralZone.getNodesInZone()
         val ownerHeading = environment.getHeading(node)
         val avgGroupHeading = nodes.map { environment.getHeading(it) }
             .foldRight(environment.makePosition(0, 0)) { elem, acc -> acc + elem }
@@ -175,7 +168,7 @@ class HerdBehavior @JvmOverloads constructor(
             val coef = distanceFromOrigin / (radiusPreference * 10)
             val prob = (coef * (angle / Math.PI))
             if (nodeRandomizer.nextDouble() < prob) {
-                val additionalTurnBoost = 10.0
+                val additionalTurnBoost = 5.0
                 val turningAngle = getTurningAngle(additionalTurnBoost)
                 val newHeading = getHeadingAfterTurning(turningAngle)
                 val newAngleBetween = newHeading.angleBetween(headingToOrigin)

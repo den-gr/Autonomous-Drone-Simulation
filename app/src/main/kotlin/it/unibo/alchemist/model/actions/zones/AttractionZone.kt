@@ -21,9 +21,8 @@ class AttractionZone(
 
     override fun getNextMovement(): Euclidean2DPosition {
         val positions = mutableSetOf<RelativeLateralZonePosition>()
-        val nodePosition = environment.getPosition(owner)
-        for (neighbourNode in getNodesInZone(nodePosition)) {
-            val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
+        for (neighbourNode in getNodesInZone()) {
+            val angle = getAngleFromHeadingToNeighbour(environment.getPosition(neighbourNode))
             for (relativePos in RelativeLateralZonePosition.values()) {
                 if (angle in relativePos.startAngle..relativePos.endAngle) {
                     positions.add(relativePos)

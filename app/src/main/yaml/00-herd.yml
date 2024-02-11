@@ -49,7 +49,7 @@ variables:
     parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
 #### other
   NumberOfHerds: &NumberOfHerds
-    formula: 1
+    formula: 6
 
 
 _herd_parameters: &herd_parameters
@@ -78,7 +78,7 @@ seeds:
 
 deployments:
   - type: GroupsDeployment
-    parameters: [50, 0, 0, 400, *NumberOfHerds, 25]
+    parameters: [80, 0, 0, 400, *NumberOfHerds, 25]
     contents:
       - molecule: zebra
         concentration: true
