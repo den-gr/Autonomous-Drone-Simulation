@@ -56,6 +56,7 @@ class HerdBehavior @JvmOverloads constructor(
         const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
         const val ANGLE_OF_ZONE = 180.0 // degrees
         const val MAINTAIN_DIRECTION_WEIGHT = 0.8
+        const val TURNING_PROBABILITY_INSIDE_WORLD = 0.1
     }
 
     init {
@@ -113,17 +114,13 @@ class HerdBehavior @JvmOverloads constructor(
         )
 
     override fun execute() {
+        alignDirection()
         environment.moveNode(node, getNextPosition())
     }
 
     override fun getContext(): Context = Context.LOCAL
 
-    private fun getAngle(position: Euclidean2DPosition): Double {
-        return position.asAngle - Math.PI / 2
-    }
-
     private fun getNextPosition(): Euclidean2DPosition {
-        alignDirection()
         for (zone in zones) {
             if (zone.areNodesInZone()) {
                 if (zone == rearZone) turning() // Leader
@@ -135,11 +132,15 @@ class HerdBehavior @JvmOverloads constructor(
                 return rotateVector(movement, getAngle(environment.getHeading(node)))
             }
         }
-        // Trailer
+        // Single trailer
         turning()
-        val movement = movementProvider.getRandomMovement() * trailersSpeedUpFactor
+        val movement = movementProvider.getRandomMovement()
         setMovementInConcentration(movement, "Out of Zone")
         return rotateVector(movement, getAngle(environment.getHeading(node)))
+    }
+
+    private fun getAngle(position: Euclidean2DPosition): Double {
+        return position.asAngle - Math.PI / 2
     }
 
     private fun alignDirection() {
@@ -179,7 +180,7 @@ class HerdBehavior @JvmOverloads constructor(
                 }
                 environment.setHeading(node, finalHeading)
             }
-        } else if (nodeRandomizer.nextDouble() < 0.1) {
+        } else if (nodeRandomizer.nextDouble() < TURNING_PROBABILITY_INSIDE_WORLD) {
             environment.setHeading(node, getHeadingAfterTurning(getTurningAngle()))
         }
     }
