@@ -2,59 +2,59 @@ incarnation: protelis
 environment:
   type: ContinuousPhysics2DEnvironment
 variables:
-###### HERD
-  body_length: &body_len
+  ###### HERD
+  bodyLength: &bodyLen
     formula: 2
-  body_width: &body_width
-    formula: body_length / 2
-  stress_zone_radius: &stress_zone_r
-    formula: 1.5 * body_length
-  neutral_zone_radius: &neutral_zone_r
-    formula: 10 * body_length
-  attraction_zone_radius: &attr_zone_r
-    formula: 20 * body_length
-  rear_zone_radius: &rear_zone_r
-    formula: attraction_zone_radius
-  stress_zone_repulsion_factor: &stress_repulsion_f
+  bodyWidth: &bodyWidth
+    formula: bodyLength / 2
+  stressZoneRadius:
+    formula: 1.5 * bodyLength
+  neutralZoneRadius:
+    formula: 10 * bodyLength
+  attractionZoneRadius:
+    formula: 20 * bodyLength
+  rearZoneRadius:
+    formula: attractionZoneRadius
+  stressZoneRepulsionFactor: &stressRepulsionFactor
     formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
-  attraction_speed_up: &attraction_speed_up_f
+  attractionSpeedUp: &attractionSpeedUpFactor
     formula: 1.5 # [1; inf] if there are nodes in attraction zone multiply the speed-up factor to current velocity
-  leaders_slow_down: &leaders_slow_down_f
+  leadersSlowDown:
     formula: 0.7 # [0; 1] if there are neighbors in rear zone slow down by this value
-  leaders_slow_down_probability: &leaders_p
+  leadersSlowDownProbability:
     formula: 0.8
-  trailers_speed_up: &trailers_speed_up_f
+  trailersSpeedUp:
     formula: 2.0
-  trailers_speed_up_probability: &trailers_p
+  trailersSpeedUpProbability:
     formula: 0.4
-  intrinsic_forward_velocity: &forward_velocity
-    formula: 0.6 * body_length
-  intrinsic_lateral_velocity: &lateral_velocity
-    formula: 0.3 * body_length
+  intrinsicForwardVelocity: 
+    formula: 0.6 * bodyLength
+  intrinsicLateralVelocity: 
+    formula: 0.3 * bodyLength
   ### Variable grouping
-  zones_radii: &zones_radii
-    type: ArbitraryVariable
-    parameters: [ [ *stress_zone_r, *neutral_zone_r, *attr_zone_r, *rear_zone_r] ]
+  zonesRadii: &zonesRadii
+    formula: listOf(stressZoneRadius, neutralZoneRadius, attractionZoneRadius, rearZoneRadius)
+    language: kotlin
   velocities: &velocities
-    type: ArbitraryVariable
-    parameters: [[*lateral_velocity, *forward_velocity]]
-  movement_probabilities: &movement_probabilities
-    type: ArbitraryVariable
-    parameters: [[0.25, 0.5, 0.25]] # Probability to go [left, forward, right]
-  leader_seed_change: &leader_seed_change
-    type: ArbitraryVariable
-    parameters: [ [ *leaders_slow_down_f, *leaders_p ] ]
-  trailer_seed_change: &trailer_seed_change
-    type: ArbitraryVariable
-    parameters: [ [ *trailers_speed_up_f, *trailers_p ] ]
+    formula: listOf(intrinsicLateralVelocity, intrinsicForwardVelocity)
+    language: kotlin
+  movementProbabilities: &movementProbabilities
+    formula: listOf(0.25, 0.5, 0.25) # Probability to go [left, forward, right]
+    language: kotlin
+  leaderSeedChange: &leaderSeedChange
+    formula: listOf(leadersSlowDown, leadersSlowDownProbability)
+    language: kotlin
+  trailerSeedChange: &trailerSeedChange
+    formula: listOf(trailersSpeedUp, trailersSpeedUpProbability)
+    language: kotlin
 ###### Drones
   NumCameras: &NumCameras
     formula: 7
   CameraSpeed: &CameraSpeed
     formula: 4
   EnvironmentSize: &EnvironmentSize
-    type: ArbitraryVariable
-    parameters: [ 2000 ]
+    type: ListOf
+    parameters:  [2000, 3000]
   FoVAngle: &FoVAngle
     formula: 77
   FoVDistance: &FoVDistance
@@ -64,15 +64,16 @@ variables:
   RotationSpeed: &RotationSpeed
     formula: 24
   CommunicationRange: &CommunicationRange
-    type: ArbitraryVariable
-    parameters: [ 2000 ]
+    type: ListOf
+    parameters: [2000]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
   DefaultCameraTargetClusteringLimit: &ClusteringLimit
     formula: 10
-  drone_program: &drone_program
+  droneProgram: &droneProgram
     type: ListOf
-    parameters: [ "clustering:ff_linpro_c", "clustering:sm_av_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
+    parameters: [ "clustering:ff_linpro_c"]
+    #["clustering:ff_linpro_c", "clustering:sm_av_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
 ##### Other
   NumberOfAnimals: &NumberOfAnimals
     formula: 60
@@ -114,35 +115,49 @@ _drone: &drone
       - type: Spin
         parameters: [ *RotationSpeed ]
   - time-distribution: 1
-    program: *drone_program
+    program: *droneProgram
   - program: send
 
 
-_herd_parameters: &herd_parameters
-  - *zones_radii
+_herdParameters: &herdParameters
+  - *zonesRadii
   - *velocities
-  - *movement_probabilities
-  - *stress_repulsion_f
-  - *attraction_speed_up_f
-  - *leader_seed_change
-  - *trailer_seed_change
+  - *movementProbabilities
+  - *stressRepulsionFactor
+  - *attractionSpeedUpFactor
+  - *leaderSeedChange
+  - *trailerSeedChange
   - *HerdNumber
   - *EnvironmentRadius
+
 
 _herd: &herd
   - time-distribution: 1
     type: Event
     actions:
       type: HerdBehavior
-      parameters: *herd_parameters
+      parameters: *herdParameters
 
-_animal_area: &animal_area
+_animal_area: &animalArea
   - type: RectangularArea
-    parameters: [ *body_len, *body_width ] #inverted
+    parameters: [ *bodyLen, *bodyWidth ] #inverted
 
 network-model:
   type: ConnectToGroup
   parameters: [*CommunicationRange, drone]
+
+
+export:
+  - type: CustomCSVExporter
+    parameters:
+      fileNameRoot: "test_drone_export"
+      interval: 10.0
+      exportPath: "build/export"
+    data:
+      - time
+      - type: CamerasKCoverage
+        parameters: ["vision", "zebra", *MaxCamerasPerTarget]
+
 
 deployments:
   - type: GroupsDeployment
@@ -151,7 +166,7 @@ deployments:
       - molecule: zebra
         concentration: true
     programs: *herd
-    properties: *animal_area
+    properties: *animalArea
   - type: Circle
     parameters: [ *NumCameras, 0, 0, 200]
     contents:

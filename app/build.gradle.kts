@@ -36,6 +36,7 @@ sourceSets {
 }
 
 val alchemistGroup = "Run Alchemist"
+val alchemistBatchGroup = "Run Alchemist in Batch"
 /*
  * This task is used to run all experiments in sequence
  */
@@ -91,6 +92,30 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                     """,
                 )
             }
+        }
+        tasks.register<JavaExec>("runBatch${it.nameWithoutExtension.uppercase()}") {
+            group = alchemistBatchGroup // This is for better organization when running ./gradlew tasks
+            description = "Launches simulation ${it.nameWithoutExtension}" // Just documentation
+            mainClass.set("it.unibo.alchemist.Alchemist") // The class to launch
+            classpath = sourceSets["main"].runtimeClasspath // The classpath to use
+            // Uses the latest version of java
+            javaLauncher.set(
+                javaToolchains.launcherFor {
+                    languageVersion.set(JavaLanguageVersion.of(multiJvm.latestJava))
+                },
+            )
+            // These are the program arguments
+            args("run", it.absolutePath, "--override")
+            args(
+                """
+                    launcher:
+                        type: HeadlessSimulationLauncher
+                        parameters: [["EnvironmentSize", "CommunicationRange", "droneProgram"]]
+                    terminate:
+                      - type: AfterTime
+                        parameters: 100
+                """,
+            )
         }
         runAll.dependsOn(task)
     }
