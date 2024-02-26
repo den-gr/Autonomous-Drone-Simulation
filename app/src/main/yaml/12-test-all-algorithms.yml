@@ -1,0 +1,187 @@
+incarnation: protelis
+environment:
+  type: ContinuousPhysics2DEnvironment
+variables:
+  ###### HERD
+  bodyLength: &bodyLen
+    formula: 2
+  bodyWidth: &bodyWidth
+    formula: bodyLength / 2
+  stressZoneRadius:
+    formula: 1.5 * bodyLength
+  neutralZoneRadius:
+    formula: 10 * bodyLength
+  attractionZoneRadius:
+    formula: 20 * bodyLength
+  rearZoneRadius:
+    formula: attractionZoneRadius
+  stressZoneRepulsionFactor: &stressRepulsionFactor
+    formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
+  attractionSpeedUp: &attractionSpeedUpFactor
+    formula: 1.5 # [1; inf] if there are nodes in attraction zone multiply the speed-up factor to current velocity
+  leadersSlowDown:
+    formula: 0.7 # [0; 1] if there are neighbors in rear zone slow down by this value
+  leadersSlowDownProbability:
+    formula: 0.8
+  trailersSpeedUp:
+    formula: 2.0
+  trailersSpeedUpProbability:
+    formula: 0.4
+  intrinsicForwardVelocity:
+    formula: 0.6 * bodyLength
+  intrinsicLateralVelocity:
+    formula: 0.3 * bodyLength
+  ### Variable grouping
+  zonesRadii: &zonesRadii
+    formula: listOf(stressZoneRadius, neutralZoneRadius, attractionZoneRadius, rearZoneRadius)
+    language: kotlin
+  velocities: &velocities
+    formula: listOf(intrinsicLateralVelocity, intrinsicForwardVelocity)
+    language: kotlin
+  movementProbabilities: &movementProbabilities
+    formula: listOf(0.25, 0.5, 0.25) # Probability to go [left, forward, right]
+    language: kotlin
+  leaderSeedChange: &leaderSeedChange
+    formula: listOf(leadersSlowDown, leadersSlowDownProbability)
+    language: kotlin
+  trailerSeedChange: &trailerSeedChange
+    formula: listOf(trailersSpeedUp, trailersSpeedUpProbability)
+    language: kotlin
+###### Drones
+  CameraSpeed: &CameraSpeed
+    formula: 4
+  EnvironmentSize: &EnvironmentSize
+    formula: 2000
+  FoVAngle: &FoVAngle
+    formula: 77
+  FoVDistance: &FoVDistance
+    formula: 100
+  FoVBlindSpotDistance: &FoVBlindSpotDistance
+    formula: 20
+  RotationSpeed: &RotationSpeed
+    formula: 24
+  CommunicationRange: &CommunicationRange
+    formula: EnvironmentSize
+  DefaultClusteringDistance: &ClusteringDistance
+    formula: 40
+  Algorithm: &Algorithm
+    type: ListOf
+    parameters: [ "ff_linpro", "clustering:bc_re_c", "bc_re", "clustering:sm_av_c", "sm_av",  "ff_linpro_c",  "ff_linproF_c", "ff_linpro", "ff_linproF", "ff_nocomm_c", "ff_nocomm"]
+  MaxCamerasPerTarget: &MaxCamerasPerTarget
+    formula: 2
+##### Other
+  CamHerdRatio:
+    type: ArbitraryVariable
+    parameters: [1.0, 1.0]
+  NumberOfHerds: &HerdNumber
+    type: ArbitraryVariable
+    parameters: [5, 5]
+  NumCameras: &NumCameras
+    formula: Math.ceil(CamHerdRatio*NumberOfHerds)
+    language: kotlin
+  NumberOfAnimals: &NumberOfAnimals
+    formula:  50
+  EnvironmentRadius: &EnvironmentRadius
+    formula: EnvironmentSize / 2
+  Seed: &Seed
+    type: ListOf
+    parameters: [1, 2]
+
+
+seeds:
+  scenario: *Seed
+  simulation: 1
+
+_drone: &drone
+  - time-distribution: 2
+    type: ChemicalReaction
+    actions:
+      - type: InitHeading
+        parameters: [ ]
+      - type: CameraSeeWithBlindSpot
+        parameters: [ *FoVBlindSpotDistance, *FoVDistance, *FoVAngle, vision ]
+      - type: HeadTowardTarget
+        parameters: [ heading, *RotationSpeed ]
+      - type: MoveToTarget
+        parameters: [ destination, *CameraSpeed ]
+  - time-distribution: 2
+    type: ChemicalReaction
+    conditions:
+      - type: MoleculeHasConcentration
+        parameters: [ doZigZag, true ]
+    actions:
+      - type: ConstantDistanceRandomWalk
+        parameters: [ 500, *CameraSpeed ]
+  - time-distribution: 2
+    type: ChemicalReaction
+    conditions:
+      - type: MoleculeHasConcentration
+        parameters: [ doSpin, true ]
+    actions:
+      - type: Spin
+        parameters: [ *RotationSpeed ]
+  - time-distribution: 1
+    program: *Algorithm
+  - program: send
+
+
+_herdParameters: &herdParameters
+  - *zonesRadii
+  - *velocities
+  - *movementProbabilities
+  - *stressRepulsionFactor
+  - *attractionSpeedUpFactor
+  - *leaderSeedChange
+  - *trailerSeedChange
+  - *HerdNumber
+  - *EnvironmentRadius
+
+
+_herd: &herd
+  - time-distribution: 1
+    type: Event
+    actions:
+      type: HerdBehavior
+      parameters: *herdParameters
+
+_animal_area: &animalArea
+  - type: RectangularArea
+    parameters: [ *bodyLen, *bodyWidth ] #inverted
+
+network-model:
+  type: ConnectToGroup
+  parameters: [*CommunicationRange, drone]
+
+
+deployments:
+  - type: GroupsDeployment
+    parameters: [*NumberOfAnimals, 0, 0, *EnvironmentRadius, *HerdNumber, 25]
+    contents:
+      - molecule: zebra
+        concentration: true
+    programs: *herd
+    properties: *animalArea
+  - type: Circle
+    parameters: [ *NumCameras, 0, 0, 200]
+    contents:
+      - molecule: drone
+        concentration: true
+      - molecule: FoVDistance
+        concentration: *FoVDistance
+      - molecule: EnvironmentSize
+        concentration: *EnvironmentSize
+      - molecule: CommRange
+        concentration: *CommunicationRange
+      - molecule: Target
+        concentration: "\"zebra\""
+      - molecule: MaxCamerasPerTarget
+        concentration: *MaxCamerasPerTarget
+      - molecule: MaxMovementSpeed
+        concentration: *CameraSpeed
+      - molecule: MaxRotationSpeed
+        concentration: *RotationSpeed
+      - molecule: noAttractiveForces
+        concentration: true
+      - molecule: ClusteringDistance
+        concentration: *ClusteringDistance
+    programs: *drone
