@@ -110,10 +110,10 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                 """
                     launcher:
                         type: HeadlessSimulationLauncher
-                        parameters: [["EnvironmentSize", "CommunicationRange", "droneProgram"]]
+                        parameters: [["Seed", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
                     terminate:
                       - type: AfterTime
-                        parameters: 100
+                        parameters: 2000
                 """,
             )
         }

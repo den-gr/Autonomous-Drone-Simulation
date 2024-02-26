@@ -1,6 +1,7 @@
 incarnation: protelis
 environment:
-  type: ContinuousPhysics2DEnvironment
+  type: MovementTrackerPhysics2DEnvironment
+  parameters: ["drone"]
 variables:
   ###### HERD
   bodyLength: &bodyLen
@@ -48,13 +49,10 @@ variables:
     formula: listOf(trailersSpeedUp, trailersSpeedUpProbability)
     language: kotlin
 ###### Drones
-  NumCameras: &NumCameras
-    formula: 7
   CameraSpeed: &CameraSpeed
     formula: 4
   EnvironmentSize: &EnvironmentSize
-    type: ListOf
-    parameters:  [2000, 3000]
+    formula: 2000
   FoVAngle: &FoVAngle
     formula: 77
   FoVDistance: &FoVDistance
@@ -64,26 +62,36 @@ variables:
   RotationSpeed: &RotationSpeed
     formula: 24
   CommunicationRange: &CommunicationRange
+    formula: EnvironmentSize
+  DefaultClusteringDistance: &ClusteringDistance
+    formula: 40
+  Algorithm: &Algorithm
     type: ListOf
-    parameters: [2000]
+    parameters: [ "clustering:bc_re_c", "ff_linpro_c", "ff_nocomm_c", "ff_linpro", "ff_nocomm"]
+    #["clustering:ff_linpro_c", "clustering:sm_av_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
-  DefaultCameraTargetClusteringLimit: &ClusteringLimit
-    formula: 10
-  droneProgram: &droneProgram
-    type: ListOf
-    parameters: [ "clustering:ff_linpro_c"]
-    #["clustering:ff_linpro_c", "clustering:sm_av_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
 ##### Other
+  CamHerdRatio:
+    type: ArbitraryVariable
+    parameters: [2.0, 0.5, 1.0, 1.5, 2.0]
+  NumberOfHerds: &HerdNumber
+    type: ArbitraryVariable
+    parameters: [3, 2, 4, 6, 8]
+  NumCameras: &NumCameras
+    formula: Math.ceil(CamHerdRatio*NumberOfHerds)
+    language: kotlin
   NumberOfAnimals: &NumberOfAnimals
-    formula: 60
-  NumberOfStartingHerds: &HerdNumber
-    formula: 8
+    formula:  100
   EnvironmentRadius: &EnvironmentRadius
     formula: EnvironmentSize / 2
+  Seed: &Seed
+    type: ListOf
+    parameters: [1, 2, 3, 4]
+
 
 seeds:
-  scenario: 1
+  scenario: *Seed
   simulation: 1
 
 _drone: &drone
@@ -115,7 +123,7 @@ _drone: &drone
       - type: Spin
         parameters: [ *RotationSpeed ]
   - time-distribution: 1
-    program: *droneProgram
+    program: *Algorithm
   - program: send
 
 
@@ -150,13 +158,14 @@ network-model:
 export:
   - type: CustomCSVExporter
     parameters:
-      fileNameRoot: "test_drone_export"
+      fileNameRoot: "drone_herd_export2"
       interval: 10.0
       exportPath: "build/export"
     data:
       - time
       - type: CamerasKCoverage
         parameters: ["vision", "zebra", *MaxCamerasPerTarget]
+      - type: DistanceTraveled
 
 
 deployments:
@@ -188,8 +197,8 @@ deployments:
         concentration: *RotationSpeed
       - molecule: noAttractiveForces
         concentration: true
-      - molecule: ClusteringLimit
-        concentration: *ClusteringLimit
+      - molecule: ClusteringDistance
+        concentration: *ClusteringDistance
     programs: *drone
   - type: SpecificPositions
     parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]

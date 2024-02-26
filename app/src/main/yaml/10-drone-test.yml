@@ -5,16 +5,16 @@ variables:
     formula: 3
   EnvironmentSize: &EnvironmentSize
     type: ArbitraryVariable
-    parameters: [500]
+    parameters: [2000]
   FoVAngle: &FoVAngle
     formula: 60
   FoVDistance: &FoVDistance
-    formula: 40
+    formula: 100
   RotationSpeed: &RotationSpeed
     formula: 32
   CommunicationRange: &CommunicationRange
     type: ArbitraryVariable
-    parameters: [ 200]
+    parameters: [ 2000]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 1
 
@@ -88,7 +88,7 @@ environment:
 
 deployments:
   - type: SpecificPositions
-    parameters: [[-20, 8], [50, 50], [-50, 50]]
+    parameters: [[-20, 8], [50, 50], [-50, 50], [0, 1]]
     contents:
       - molecule: Drone_sign
         concentration: true
@@ -112,12 +112,12 @@ deployments:
       - *Drone
 
   - type: SpecificPositions
-    parameters: [ [ 0,0 ],[ 100, 0 ], [ -100, 0 ], [ 0,100 ], [ 0, -100 ] ]
+    parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
     contents:
       - molecule: landmark
         concentration: true
       - molecule: wanted
         concentration: true
-    properties:
-      - type: RectangularArea
-        parameters: [ 2, 2 ]
+#    properties:
+#      - type: RectangularArea
+#        parameters: [ 2, 2 ]
