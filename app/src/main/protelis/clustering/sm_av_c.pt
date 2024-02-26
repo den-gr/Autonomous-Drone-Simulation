@@ -25,7 +25,7 @@ rep(info <- [noTarget(), buildOverlapRelationsClusterGraph(1, 0.995, 0.95)]) {
     let localObjects = getVision()
 
     let allObjects = foldUnion(nbr(localObjects))
-    let clusters = getClusters(allObjects, getClusteringLimit())
+    let clusters = getClusters(allObjects, getClusteringDistance())
     env.put("Clusters", clusters) // Used by GUI to draw the clusters
     let visibleCentroids = tupleOf(getVisibleCentroids(clusters))
 
@@ -53,9 +53,9 @@ rep(info <- [noTarget(), buildOverlapRelationsClusterGraph(1, 0.995, 0.95)]) {
     } else {
         allTargets.get(allTargets.indexof(myTarget)) // updated position
     };
-    //env.put("myTarget", newTarget)
-    followOrExplorePoint(newTarget, zigZagExploration)
-    avoidCameraCollision(newTarget, localObjects)
+    env.put("myTarget", newTarget)
+    followOrExplorePoint(newTarget, fieldExploration)
+    avoidCameraCollisionForCentroid(newTarget)
 
     [newTarget, graph]
 }

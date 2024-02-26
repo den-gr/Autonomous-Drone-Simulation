@@ -18,9 +18,9 @@ public def followOrExplorePoint(point, explorationStrategy) =
 
 public def followOrExploreCluster(cluster, explorationStrategy) =
   if(cluster == emptyCluster()) {
-      followOrExplorePoint(noTarget(), explorationStrategy)
+        followOrExplorePoint(noTarget(), explorationStrategy)
   } else {
-			followOrExplorePoint(cluster.getCentroid(), explorationStrategy)
+        followOrExplorePoint(cluster.getCentroid(), explorationStrategy)
   }
 
 public def followCentroid(cluster_centroid) {
@@ -40,16 +40,25 @@ public def avoidCameraCollisionForClusters(cluster) =
         env.put("destination", pos)
     } else { 0 }
 
+public def avoidCameraCollisionForCentroid(centroid) =
+    if(centroid != noTarget()) {
+        let assignedTs = nbr(centroid)
+        let pos = findNonCollidingPosition(assignedTs, env.get("destination"), centroid, getFoVCenterDistanceForClusters())
+        env.put("destination", pos)
+    } else { 0 }
+
+
+
 public def emptyCluster() {
     getFakeCluster()
 }
 
-public def getClusteringLimit() = env.get("ClusteringLimit")
+public def getClusteringDistance() = env.get("ClusteringDistance")
 
 
 public def tupleOf(jvmList) = toTuple(jvmList)
 
-//// No communication   
+//// No communication
 public def closestCoordinateToFov(centroids) {
     centroids.reduce(noTarget(), (t1, t2) -> { minBy(t1, t2, fovDistanceFromCoordinate) })
 }
@@ -60,10 +69,19 @@ public def fovDistanceFromCoordinate(centroid) {
 
 //// bc_re
 
+public def closestCluster(clusters) {
+    clusters.reduce(emptyCluster(), (t1, t2) -> { minBy(t1, t2, distanceFromCluster) })
+}
+
+
 public def closestPoint(centroids) {
     centroids.reduce(noTarget(), (t1, t2) -> { minBy(t1, t2, distanceFromTarget) })
 }
 
 public def distanceFromTarget(centroid) {
     distanceFromPos(posToTuple(centroid))
+}
+
+public def distanceFromCluster(cluster) {
+    distanceFromPos(posToTuple(cluster.getCentroid()))
 }

@@ -3,60 +3,67 @@ import it.unibo.experiment.clustering.HerdExperimentUtils.isClusterCentroidVisib
 import clustering:utils_c
 
 
-public def getNewClusterLimit(cluster, localVisibleNodes, assignedNodes){
-    let allLimits = foldUnion([getClusteringLimit()], nbr(getClusteringLimit()))
-    let clusterNodes = tupleOf(cluster.getNodes())
-    let excludedTargets = foldUnion(nbr(localVisibleNodes.subtract(clusterNodes))) // Nodes that are visible but are not part of target clusters
-    if(cluster != emptyCluster()){
-        let intersectionSize = localVisibleNodes.intersection(clusterNodes).size()
+public def getNewClusteringDistance(myCluster, localVisibleNodes, allAssignedNodes){
+    let allClusteringDistances = foldUnion([getClusteringDistance()], nbr(getClusteringDistance()))
+    let myClusterNodes = tupleOf(myCluster.getNodes())
+    let allVisibleNotTargetNodes = foldUnion(nbr(localVisibleNodes.subtract(myClusterNodes))) // Nodes that are visible but are not part of target clusters
+    if(myCluster != emptyCluster()){
+        let myClusterVisibleNodesSize = localVisibleNodes.intersection(myClusterNodes).size()
 
-        if(isClusterCentroidVisible(cluster)) {
-            let isClusterCovered = intersectionSize == clusterNodes.size()
-            if(isClusterCovered){
-                getLimitWithCoveredCluster(localVisibleNodes, assignedNodes, clusterNodes, excludedTargets, allLimits)
+        if(isClusterCentroidVisible(myCluster)) { // the device already arrived at his destination
+            let isClusterCovered = myClusterVisibleNodesSize == myClusterNodes.size()
+            if(isClusterCovered){ // device cover all nodes of its cluster
+                getClusteringDistanceWithCoveredCluster(localVisibleNodes, allAssignedNodes, myClusterNodes, allVisibleNotTargetNodes, allClusteringDistances)
             }else{
-                getLimitWithNotCoveredCluster(localVisibleNodes, clusterNodes, intersectionSize, allLimits) 
+                getClusteringDistanceWithNotCoveredCluster(localVisibleNodes, myClusterNodes, myClusterVisibleNodesSize, allClusteringDistances) 
             }
         }else{
-            adapt(allLimits)
+            env.put("->>>>>>>>>>>>>>>>>>>>", "a2")
+            adapt(allClusteringDistances)
         }
     }else{
-        adapt(allLimits)
+        env.put("->>>>>>>>>>>>>>>>>>>>", "a1")
+        adapt(allClusteringDistances)
     }
 }  
 
 
-def getLimitWithCoveredCluster(localVisibleNodes, assignedNodes, clusterNodes, excludedTargets, allLimits){
-    let unionSize = localVisibleNodes.union(clusterNodes).size() 
-    if(unionSize > clusterNodes.size()){
-        let difference = localVisibleNodes.subtract(clusterNodes)
-        if(assignedNodes.containsAll(difference) && (clusterNodes.subtract(excludedTargets).size() / localVisibleNodes.size()) > 0.0){
-            adapt(allLimits)
+def getClusteringDistanceWithCoveredCluster(localVisibleNodes, allAssignedNodes, myClusterNodes, allVisibleNotTargetNodes, allClusteringDistances){
+    let unionSize = localVisibleNodes.union(myClusterNodes).size() 
+    if(unionSize > myClusterNodes.size()){ // device cover nodes from other clusters
+        let extraneous = localVisibleNodes.subtract(myClusterNodes)
+        let extraneousCoverage = extraneous.size() / localVisibleNodes.size()
+        if(!allAssignedNodes.containsAll(extraneous) || extraneousCoverage > 0.5){
+            env.put("->>>>>>>>>>>>>>>>>>>>", "i")
+            max(increment(), allClusteringDistances.max(0))
         }else{
-            max(increment(), allLimits.max(0))
+            env.put("->>>>>>>>>>>>>>>>>>>>", "a3")
+            adapt(allClusteringDistances)
         }
     }else{
-        adapt(allLimits)
+        adapt(allClusteringDistances)
     }
 }
 
-def getLimitWithNotCoveredCluster(localVisibleNodes, clusterNodes, intersectionSize, allLimits) {
-    let coverage = intersectionSize / clusterNodes.size()
-    if(intersectionSize == localVisibleNodes.size() && coverage < 0.9 ){
-        min(decrement(), allLimits.min(0))
+def getClusteringDistanceWithNotCoveredCluster(localVisibleNodes, myClusterNodes, myClusterVisibleNodesSize, allClusteringDistances) {
+    let myClusterCoverage = myClusterVisibleNodesSize / myClusterNodes.size()
+    if(myClusterVisibleNodesSize == localVisibleNodes.size() && myClusterCoverage < 0.7 ){
+        env.put("->>>>>>>>>>>>>>>>>>>>", "d")
+        min(decrement(), allClusteringDistances.min(0))
     }else{
-        adapt(allLimits)
+        env.put("->>>>>>>>>>>>>>>>>>>>", "a4")
+        adapt(allClusteringDistances)
     }
 }
 
 def adapt(list) = list.reduce(0, (a, b) -> {a + b}) / list.size()
 
 def increment() {
-   let limit = getClusteringLimit()
-   limit + (limit * 0.02)
+   let clusteringDistance = getClusteringDistance()
+   clusteringDistance + (clusteringDistance * 0.02)
 }
 
 def decrement(){
-    let limit = getClusteringLimit()
-    limit - (limit * 0.01)
+    let clusteringDistance = getClusteringDistance()
+    clusteringDistance - (clusteringDistance * 0.02)
 }

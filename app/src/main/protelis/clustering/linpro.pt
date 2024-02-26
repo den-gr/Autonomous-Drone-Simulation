@@ -19,7 +19,7 @@ public def linproo(is_fair, is_clustering_adaptive, explorationStrategy) =
         let targets = localTargets.union(externalTargets)
         let cameras = nbr(getCenterOfFov())
 
-        let clusters = getClusters(targets, getClusteringLimit())
+        let clusters = getClusters(targets, getClusteringDistance())
         env.put("Clusters", clusters) // Used by GUI to draw the clusters
         let assignedClusters = solver.solve(cameras, clusters, getMaxCamerasPerTarget(), is_fair)
         let myCluster = assignedClusters.getOrDefault(getUID(), emptyCluster())
@@ -29,7 +29,7 @@ public def linproo(is_fair, is_clustering_adaptive, explorationStrategy) =
 
         if(is_clustering_adaptive){
             let assignedNodes = getAssignedNodes(assignedClusters, clusters)
-            env.put("ClusteringLimit", getNewClusterLimit(myCluster, localTargets, assignedNodes))
+            env.put("ClusteringDistance", getNewClusteringDistance(myCluster, localTargets, assignedNodes))
         }else{ 0 } //safe domain branching
         solver
     }

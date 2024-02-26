@@ -90,6 +90,17 @@ class HerdExperimentUtils {
             return clusters.filter { isClusterCentroidVisible(context, it) }.map { it.centroid }
         }
 
+        /**
+         * A cluster is considered visible if its centroid is visible
+         */
+        @JvmStatic
+        fun getVisibleClusters(context: AlchemistExecutionContext<Euclidean2DPosition>, clusters: List<Cluster>): List<Cluster>{
+            return clusters.filter { isClusterCentroidVisible(context, it) }
+        }
+
+        /**
+         * Given a map from device to assigned cluster (target) returns all elements of this clusters.
+         */
         @JvmStatic
         fun getAssignedNodes(clusterAssignments: Map<String, Cluster>, clusters: List<Cluster>): Tuple {
             val ids = clusterAssignments.values.stream().map { m -> m.id}
@@ -129,7 +140,7 @@ class HerdExperimentUtils {
                 return mapOf(0 to nodes)
             }
             val data = nodes.map { it.position.coordinates }.toTypedArray()
-            val c = hclust(data, "ward") // wpgma
+            val c = hclust(data, "upgma") // upgma = average, wpgma = weighted avarege
             val labels = if (c.height().last() <= clusteringLimit) {
                 IntArray(data.size) { 0 }
             } else {
@@ -152,10 +163,10 @@ class HerdExperimentUtils {
          */
         @JvmStatic
         fun clustersWithLeastSources(field: Field<Tuple>): Tuple {
-            val counts = mutableMapOf<Any, Int>()
+            val counts = mutableMapOf<Cluster, Int>()
             field.values().forEach { tuple ->
                 tuple.forEach {
-                    counts.merge(it, 1) { v1, v2 -> v1 + v2 }
+                    counts.merge((it as Cluster), 1) { v1, v2 -> v1 + v2 }
                 }
             }
             val min = if (counts.values.isEmpty()) Int.MAX_VALUE else counts.values.min()
