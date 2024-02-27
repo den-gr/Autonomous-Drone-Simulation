@@ -64,10 +64,10 @@ variables:
   CommunicationRange: &CommunicationRange
     formula: EnvironmentSize
   DefaultClusteringDistance: &ClusteringDistance
-    formula: 40
+    formula: 30
   Algorithm: &Algorithm
     type: ListOf
-    parameters: [ "clustering:bc_re_c", "ff_linpro_c", "ff_nocomm_c", "ff_linpro", "ff_nocomm"]
+    parameters: [ "ff_linpro_c", "ff_linpro", "ff_nocomm_c", "bc_re"]
     #["clustering:ff_linpro_c", "clustering:sm_av_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
@@ -77,17 +77,17 @@ variables:
     parameters: [2.0, 0.5, 1.0, 1.5, 2.0]
   NumberOfHerds: &HerdNumber
     type: ArbitraryVariable
-    parameters: [3, 2, 4, 6, 8]
+    parameters: [6, 2, 4, 6]
   NumCameras: &NumCameras
     formula: Math.ceil(CamHerdRatio*NumberOfHerds)
     language: kotlin
   NumberOfAnimals: &NumberOfAnimals
-    formula:  100
+    formula:  60
   EnvironmentRadius: &EnvironmentRadius
     formula: EnvironmentSize / 2
   Seed: &Seed
     type: ListOf
-    parameters: [1, 2, 3, 4]
+    parameters: [1, 2]
 
 
 seeds:
@@ -158,7 +158,7 @@ network-model:
 export:
   - type: CustomCSVExporter
     parameters:
-      fileNameRoot: "drone_herd_export2"
+      fileNameRoot: "drone_herd_export"
       interval: 10.0
       exportPath: "build/export"
     data:

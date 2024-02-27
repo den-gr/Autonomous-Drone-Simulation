@@ -137,7 +137,7 @@ def openCsv(path):
         return [[float(x) for x in line.split()] for line in lines]
 
 if __name__ == '__main__':
-    main_experiment = "drone_herd_export2"
+    main_experiment = "drone_herd_export"
     # CONFIGURE SCRIPT
     directory = 'app/build/export/'
     charts_dir = 'app/build/charts/'
