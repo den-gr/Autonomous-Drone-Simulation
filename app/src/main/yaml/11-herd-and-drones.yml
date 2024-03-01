@@ -29,9 +29,9 @@ variables:
   trailersSpeedUpProbability:
     formula: 0.4
   intrinsicForwardVelocity: 
-    formula: 0.6 * bodyLength
+    formula: 1.0 * bodyLength
   intrinsicLateralVelocity: 
-    formula: 0.3 * bodyLength
+    formula: 0.5 * bodyLength
   ### Variable grouping
   zonesRadii: &zonesRadii
     formula: listOf(stressZoneRadius, neutralZoneRadius, attractionZoneRadius, rearZoneRadius)
@@ -82,7 +82,7 @@ variables:
     parameters: [2.5, 0.5, 1.0, 1.5, 2.0]
   NumberOfHerds: &HerdNumber
     type: ArbitraryVariable
-    parameters: [10, 2, 4, 6, 8]
+    parameters: [2, 2, 4, 6, 8]
   NumCameras: &NumCameras
     formula: Math.ceil((CamHerdRatio)*NumberOfHerds)
     language: kotlin
@@ -92,7 +92,7 @@ variables:
     formula: EnvironmentSize / 2
   Seed: &Seed
     type: ListOf
-    parameters: [1, 2]
+    parameters: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 seeds:
