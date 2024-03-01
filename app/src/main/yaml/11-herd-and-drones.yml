@@ -65,7 +65,7 @@ variables:
     formula: EnvironmentSize
   ClusteringDistance: &ClusteringDistance
     type: ArbitraryVariable
-    parameters: [ 50, 30, 40, 50, 60, 70]
+    parameters: [ 50, 10, 90]
 #    formula: 30
   Algorithm: &Algorithm
     type: ListOf
