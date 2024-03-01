@@ -1,143 +1,24 @@
+# %%
 import numpy as np
 import xarray as xr
-import re
+
 from math import ceil, sqrt
 
-def distance(val, ref):
-    return abs(ref - val)
-vectDistance = np.vectorize(distance)
+# Prepare the charting system
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.cm as cmx
+from mpl_toolkits.mplot3d import Axes3D # needed for 3d projection
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-def getClosest(sortedMatrix, column, val):
-    while len(sortedMatrix) > 3:
-        half = int(len(sortedMatrix) / 2)
-        sortedMatrix = sortedMatrix[-half - 1:] if sortedMatrix[half, column] < val else sortedMatrix[: half + 1]
-    if len(sortedMatrix) == 1:
-        result = sortedMatrix[0].copy()
-        result[column] = val
-        return result
-    else:
-        safecopy = sortedMatrix.copy()
-        safecopy[:, column] = vectDistance(safecopy[:, column], val)
-        minidx = np.argmin(safecopy[:, column])
-        safecopy = safecopy[minidx, :].A1
-        safecopy[column] = val
-        return safecopy
+import chartsrc.kcov_comparison as kcovlib
+from chartsrc.utils import *
 
-def convert(column, samples, matrix):
-    return np.matrix([getClosest(matrix, column, t) for t in samples])
-
-def valueOrEmptySet(k, d):
-    return (d[k] if isinstance(d[k], set) else {d[k]}) if k in d else set()
-
-def mergeDicts(d1, d2):
-    """
-    Creates a new dictionary whose keys are the union of the keys of two
-    dictionaries, and whose values are the union of values.
-
-    Parameters
-    ----------
-    d1: dict
-        dictionary whose values are sets
-    d2: dict
-        dictionary whose values are sets
-
-    Returns
-    -------
-    dict
-        A dict whose keys are the union of the keys of two dictionaries,
-    and whose values are the union of values
-
-    """
-    res = {}
-    for k in d1.keys() | d2.keys():
-        res[k] = valueOrEmptySet(k, d1) | valueOrEmptySet(k, d2)
-    return res
-
-def is_float(string):
-    try:
-        float(string)
-        return True
-    except ValueError:
-        return False
-
-def extractCoordinates(filename):
-    """
-    Scans the header of an Alchemist file in search of the variables.
-
-    Parameters
-    ----------
-    filename : str
-        path to the target file
-    mergewith : dict
-        a dictionary whose dimensions will be merged with the returned one
-
-    Returns
-    -------
-    dict
-        A dictionary whose keys are strings (coordinate name) and values are
-        lists (set of variable values)
-
-    """
-    with open(filename, 'r') as file:
-        regex = re.compile(' (?P<varName>[a-zA-Z]+) = (?P<varValue>(?:[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)|[a-zA-Z-_]*)?')
-        dataBegin = re.compile('\d')
-        for line in file:
-            match = regex.findall(line)
-            if match:
-                return {var : (float(value) if is_float(value) else value) for var, value in match}
-            elif dataBegin.match(line[0]):
-                return {}
-
-def extractVariableNames(filename):
-    """
-    Gets the variable names from the Alchemist data files header.
-
-    Parameters
-    ----------
-    filename : str
-        path to the target file
-
-    Returns
-    -------
-    list of list
-        A matrix with the values of the csv file
-
-    """
-    with open(filename, 'r') as file:
-        dataBegin = re.compile('\d')
-        lastHeaderLine = ''
-        for line in file:
-            if dataBegin.match(line[0]):
-                break
-            else:
-                lastHeaderLine = line
-        if lastHeaderLine:
-            regex = re.compile(' (?P<varName>\S+)')
-            return regex.findall(lastHeaderLine)
-        return []
-
-def openCsv(path):
-    """
-    Converts an Alchemist export file into a list of lists representing the matrix of values.
-
-    Parameters
-    ----------
-    path : str
-        path to the target file
-
-    Returns
-    -------
-    list of list
-        A matrix with the values of the csv file
-
-    """
-    regex = re.compile('\d')
-    with open(path, 'r') as file:
-        lines = filter(lambda x: regex.match(x[0]), file.readlines())
-        return [[float(x) for x in line.split()] for line in lines]
-
+# %%
 if __name__ == '__main__':
-    main_experiment = "drone_herd_export"
+    generateAll = False
+
+    main_experiment = "experiment_export"
     # CONFIGURE SCRIPT
     directory = 'app/build/export/'
     charts_dir = 'app/build/charts/'
@@ -145,11 +26,12 @@ if __name__ == '__main__':
     experiments = [main_experiment]
     floatPrecision = '{: 0.2f}'
     seedVars = ['Seed']
-    timeSamples = 180
+    timeSamples = 360
     minTime = 0
     maxTime = 1800
     timeColumnName = 'time'
     logarithmicTime = False
+
     
     # Setup libraries
     np.set_printoptions(formatter={'float': floatPrecision.format})
@@ -239,12 +121,7 @@ if __name__ == '__main__':
         pickle.dump(datasets, open(pickleOutput + '_datasets', 'wb'), protocol=-1)
         pickle.dump(newestFileTime, open('timeprocessed', 'wb'))
 
-    # Prepare the charting system
-    import matplotlib
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cmx
-    from mpl_toolkits.mplot3d import Axes3D # needed for 3d projection
-    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
     figure_size=(6, 6)
     matplotlib.rcParams.update({'axes.titlesize': 13})
     matplotlib.rcParams.update({'axes.labelsize': 12})
@@ -253,6 +130,9 @@ if __name__ == '__main__':
     kcovEcolors =  ['#0300ebFF', '#8cff9dFF'] # ['#0300ebFF', '#8cff9dFF', '#f5b342FF'] # error bars
     kcovVariables = ['1-coverage','2-coverage']
     kcovTrans = ['1-cov','2-cov']
+
+    kcovLabels = Labels(kcovColors, kcovEcolors, kcovVariables, kcovTrans)
+
     data = datasets[main_experiment]
     algos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
 #     algos = data.coords['Algorithm'].data.tolist()
@@ -278,6 +158,10 @@ if __name__ == '__main__':
     simRatios.reverse()
     herdNumbers = data.coords['NumberOfHerds'].data.tolist()
     herdNumbers.reverse()
+
+
+    kcovChartBuilder = kcovlib.KcovChartBuilder(charts_dir, dataKcovsMean, dataKcovsStd, algos, kcovLabels)
+
     
     def noOdds(lst): # replaces odds numbers in lst with empty strings
         return list(map(lambda x: x if round(x * 10, 0) % 2 == 0 else '', lst))
@@ -358,32 +242,18 @@ if __name__ == '__main__':
     selRatios = [ '0.5', '1.0', '1.5', '2.0']
     selKcov = ['1-coverage', "2-coverage"]
     selHerdNumber = 6.0
-    dataInTime = data.mean('Seed')
-    dataInTime = dataInTime.mean('ClusteringDistance') ## TODO
-    for whichKCov in selKcov:
-        rows = 2
-        cols = 2
-        fig, axes = plt.subplots(rows, cols, figsize=(8,5), sharex='col', sharey='row')
-        for idx, whichRatio in enumerate(selRatios):
-            r = int(idx / cols)
-            c = int(idx % cols)
-            xdata = dataInTime.sel(CamHerdRatio=whichRatio, NumberOfHerds=selHerdNumber, Algorithm=selAlgos)['time']
-            ydata = dataInTime.sel(CamHerdRatio=whichRatio, NumberOfHerds=selHerdNumber, Algorithm=selAlgos)[whichKCov].transpose()
-            timeLimitIdx = next((i for i,x in enumerate(xdata) if x >= timeLimit)) # first idx of time > timeLimit
-            xdata = xdata[:timeLimitIdx]
-            ydata = ydata[:timeLimitIdx]
-  
-            axes[r][c].plot(xdata, ydata)
-            axes[r][c].set_title('n/m = ' + whichRatio)
-            axes[r][c].set_ylim([0,1])
-            if c == 0:
-                axes[r][c].set_ylabel(whichKCov + ' (%)')
-            if r == rows-1:
-                axes[r][c].set_xlabel('t')
-            if r == 0 and c == cols -1:
-                axes[r][c].legend(ydata.coords['Algorithm'].data.tolist())
-        fig.savefig(charts_dir + whichKCov + '_InTime.pdf')
-        plt.close(fig)
+    dataInTime = data.mean('Seed').mean('ClusteringDistance')
+
+
+    columns = ['Algorithm', "NumberOfHerds", "CamHerdRatio"]
+    kcovChartBuilder.inTime(columns, selKcov, dataInTime, selHerdNumber, selRatios, timeLimit)
+
+
+    columns = ['Algorithm', "CamHerdRatio", "ClusteringDistance"]
+    selCamHerdRatio = 1.0 
+    dataInTime =  data.mean('Seed').mean("NumberOfHerds")
+    distances = ['30', '40', '50', '60', '70']
+    kcovChartBuilder.inTimeByValue(columns, selKcov, dataInTime, selCamHerdRatio, distances, timeLimit, name="clusteringDistance")
         
     """""""""""""""""""""""""""
               heatmaps
@@ -425,207 +295,123 @@ if __name__ == '__main__':
     """""""""""""""""""""""""""
     simRatios.reverse()
     herdNumbers.reverse()
-    for herdNumber in herdNumbers:
-        fig = plt.figure(figsize=(8,10))
-        for idx,algo in enumerate(algos):
-            #size = ceil(sqrt(len(algos)))
-            rows = 4
-            cols = 2
-            ax = fig.add_subplot(rows,cols,idx+1)
-            ax.set_ylim([0,1])
-            ax.set_xlim([min(simRatios) - 0.1, max(simRatios) + 0.1])
-            #plt.xticks(rotation=35, ha='right')
-            if idx%cols == 0:
-                ax.set_ylabel("Coverage (%)")
-            else:
-                ax.set_yticklabels([])
-            if idx >= cols * (rows - 1):
-                ax.set_xlabel("n/m")
-            #if idx%rows > 0:
-            #    ax.set_yticklabels([])
-            ax.set_title(algo)
-            ax.set_xticks([0] + simRatios + [max(simRatios) + 0.1])
-            ax.set_xticklabels([""] + noOdds(simRatios) + [""])
-            #if idx < 6:
-            #    ax.set_xticklabels([])
-            chartdataMean = dataKcovsMean.sel(Algorithm=algo, NumberOfHerds=herdNumber)
-            chartdataStd = dataKcovsStd.sel(Algorithm=algo, NumberOfHerds=herdNumber)
-            #xax = np.linspace(min(simRatios),max(simRatios),len(simRatios))
-            for i,s in enumerate(kcovVariables):
-                values = chartdataMean[s].values.tolist()
-                #values.reverse()
-                errors = chartdataStd[s].values.tolist()
-                #.reverse()
-                ax.plot(simRatios, values, label=kcovTrans[i], color=kcovColors[i])
-                for j,r in enumerate(simRatios):
-                    ax.errorbar(r, values[j], yerr=errors[j], fmt='', color=kcovColors[i], elinewidth=1, capsize=0)
-            if idx == cols-1:
-                ax.legend()
-        plt.tight_layout()
-        fig.savefig(charts_dir + 'KCov_lines_herdNumber-'+str(int(herdNumber))+'CamHerdRatio-variable.pdf')
-        plt.close(fig)
+
+
+
+
     
-    
-    for simRatio in simRatios:
-        fig = plt.figure(figsize=(8,10))
-        for idx,algo in enumerate(algos):
-            #size = ceil(sqrt(len(algos)))
-            rows = 4
-            cols = 2
-            ax = fig.add_subplot(rows,cols,idx+1)
-            minRange = min(herdNumbers) - 10
-            maxRange = max(herdNumbers) + 10
-            ax.set_ylim([0,1])
-            ax.set_xlim([minRange, maxRange])
-            plt.xticks(rotation=35, ha='right')
-            if idx%cols == 0:
-                ax.set_ylabel("Coverage (%)")
-            if idx < cols:
-                ax.set_xlabel("r")
-            if idx%rows != 0:
-                ax.set_yticklabels([])
-            ax.set_title(algo)
-            ax.set_xticks([minRange] + herdNumbers + [maxRange])
-            ax.set_xticklabels([""] + [str(round(c)) for c in herdNumbers] + [""])
-            chartdataMean = dataKcovsMean.sel(Algorithm=algo, CamHerdRatio=simRatio)
-            chartdataStd = dataKcovsStd.sel(Algorithm=algo, CamHerdRatio=simRatio)
-            for i,s in enumerate(kcovVariables):
-                values = chartdataMean[s].values.tolist()
-                errors = chartdataStd[s].values.tolist()
-                ax.plot(herdNumbers, values, label=kcovTrans[i], color=kcovColors[i])
-                for j,r in enumerate(herdNumbers):
-                    ax.errorbar(r, values[j], yerr=errors[j], fmt='', color=kcovColors[i], elinewidth=1, capsize=0)
-            if idx == cols-1:
-                ax.legend()
-        plt.tight_layout()
-        fig.savefig(charts_dir + 'KCov_lines_herdNumber-variable_CamHerdRatio-'+str(simRatio)+'.pdf')
-        plt.close(fig)
+    if(generateAll):
+        cols = ["Algorithm", 'NumberOfHerds']
+        kcovChartBuilder.lines(cols, herdNumbers, simRatios, "CamHerdRatio", "n/m", precision=1)
+            
+        cols = ["Algorithm", 'CamHerdRatio']
+        kcovChartBuilder.lines(cols, simRatios, herdNumbers, "herdNumber", "Number of herds")
         
     simRatios.reverse()
     herdNumbers.reverse()
+
+
+  
+
+
+    """""""""""""""""""""""""""
+        kcoverage comparison
+    """""""""""""""""""""""""""
+    if(generateAll):
+        columns = ["Algorithm", 'NumberOfHerds', 'CamHerdRatio']
+        kcovChartBuilder.compare(columns, herdNumbers, simRatios, precision=1)
+        columns = ["Algorithm", 'CamHerdRatio', 'NumberOfHerds']
+        kcovChartBuilder.compare(columns, simRatios, herdNumbers)
+
+    
+    """""""""""""""""""""""""""
+        kcoverage comparison alternative
+    """""""""""""""""""""""""""
+    dataKcovsMean2 = dataMean.mean('Seed').mean('NumberOfHerds') #todo
+    dataKcovsStd2 = dataMean.std('Seed').mean('NumberOfHerds')
+    kcovChartBuilder2 = kcovlib.KcovChartBuilder(charts_dir, dataKcovsMean2, dataKcovsStd2, algos, kcovLabels)
+
+    clusteringDistances = datasets[main_experiment].coords['ClusteringDistance'].data.tolist()
+    clusteringDistances.reverse()
+    
+    
+    columns = ["Algorithm", 'ClusteringDistance', 'CamHerdRatio'] #first fixed the variable values
+    kcovChartBuilder2.compare(columns, clusteringDistances, simRatios, precision=1)
+    columns = ["Algorithm", 'CamHerdRatio', 'ClusteringDistance']
+    kcovChartBuilder2.compare(columns, simRatios, clusteringDistances)
+
+
+    # %%
+    aa = dataMean.mean('Seed')
     
     """""""""""""""""""""""""""
         LaTeX table
     """""""""""""""""""""""""""
-    import textwrap
-    selKcov = '2-coverage'
-    selherdNumbers = [2.0]
-#     selRatios = [0.2, 0.6, 1, 1.2, 1.6, 2]
-    selRatios = [ 0.5, 1.0, 1.5, 2.0]
-    txt = r'''
-    \begin{table}
-        \centering
-        \tiny
-        \begin{tabular}{lccccccc}%{lcccccccccccccccccccccccc}
+#     import textwrap
+#     selKcov = '2-coverage'
+#     selherdNumbers = [2.0]
+# #     selRatios = [0.2, 0.6, 1, 1.2, 1.6, 2]
+#     selRatios = [ 0.5, 1.0, 1.5, 2.0]
+#     txt = r'''
+#     \begin{table}
+#         \centering
+#         \tiny
+#         \begin{tabular}{lccccccc}%{lcccccccccccccccccccccccc}
 
-        \toprule
-        \multirow{2}{*}{$r$} & \multirow{2}{*}{\textsc{Approach}} 
-        & \multicolumn{6}{c}{\textsc{Ratio} $n/m$}\\
-        \cline{3-8}
-        & & ''' + '&'.join(['{:.1f}'.format(r) for r in selRatios]) + r'\\'
-    for herdNumber in selherdNumbers:
-        txt += "\n\n        " + r'\midrule \multirow{8}{*}{' + str(herdNumber) + "}\n"
-        for algo in algos:
-            txt += "        & " + algo.replace('_', r'\_') + ' '
-            for ratio in selRatios:
-                txt += '& {:.2f}'.format(dataKcovsMean[selKcov].sel(Algorithm=algo, NumberOfHerds=herdNumber, CamHerdRatio=ratio).values.tolist())
-                txt += ' ({:.2f}'.format(dataKcovsStd[selKcov].sel(Algorithm=algo, NumberOfHerds=herdNumber, CamHerdRatio=ratio).values.tolist()) + ') '
-            txt += r'\\' + "\n"
-    txt += r'''
-        \bottomrule
-        \end{tabular}
-        \caption{Comparison of mean $OMC_k$ achieved by different approaches with 
-        different communications ranges $r$ and different ratios for 
-        objects/cameras, standard deviation is indicated in brackets.}
-        \label{tab:results}
-    \end{table}
-    '''
-    txt = textwrap.dedent(txt.strip())
-    with open(charts_dir + 'KCov_latex.txt', 'w') as f:
-        f.write(txt)
-    
-    """""""""""""""""""""""""""
-        kcoverage comparison
-    """""""""""""""""""""""""""
-    for r,herdNumber in enumerate(herdNumbers):
-        fig = plt.figure(figsize=(22,20))
-        for j,simRatio in enumerate(simRatios):
-            # rows, columns, index
-            #size = ceil(sqrt(len(simRatios)))
-            rows = 4#size-1
-            cols = 5#size
-            ax = fig.add_subplot(rows, cols,j+1)
-            ax.set_ylim([0,1])
-            #if j<size:
-            ax.set_title("n/m = {0:.1f}".format(simRatio))
-            if j%cols == 0:
-                ax.set_ylabel("Coverage (%)")
-            plt.xticks(rotation=35, ha='right')
-            ax.yaxis.grid(True)
+#         \toprule
+#         \multirow{2}{*}{$r$} & \multirow{2}{*}{\textsc{Approach}} 
+#         & \multicolumn{6}{c}{\textsc{Ratio} $n/m$}\\
+#         \cline{3-8}
+#         & & ''' + '&'.join(['{:.1f}'.format(r) for r in selRatios]) + r'\\'
+#     for herdNumber in selherdNumbers:
+#         txt += "\n\n        " + r'\midrule \multirow{8}{*}{' + str(herdNumber) + "}\n"
+#         for algo in algos:
+#             txt += "        & " + algo.replace('_', r'\_') + ' '
+#             for ratio in selRatios:
+#                 txt += '& {:.2f}'.format(dataKcovsMean[selKcov].sel(Algorithm=algo, NumberOfHerds=herdNumber, CamHerdRatio=ratio).values.tolist())
+#                 txt += ' ({:.2f}'.format(dataKcovsStd[selKcov].sel(Algorithm=algo, NumberOfHerds=herdNumber, CamHerdRatio=ratio).values.tolist()) + ') '
+#             txt += r'\\' + "\n"
+#     txt += r'''
+#         \bottomrule
+#         \end{tabular}
+#         \caption{Comparison of mean $OMC_k$ achieved by different approaches with 
+#         different communications ranges $r$ and different ratios for 
+#         objects/cameras, standard deviation is indicated in brackets.}
+#         \label{tab:results}
+#     \end{table}
+#     '''
+#     txt = textwrap.dedent(txt.strip())
+#     with open(charts_dir + 'KCov_latex.txt', 'w') as f:
+#         f.write(txt)
 
-            for i,s in enumerate(kcovVariables):
-                values = [dataKcovsMean[s].sel(Algorithm=algoname, CamHerdRatio=simRatio, NumberOfHerds=herdNumber).values.tolist() for algoname in algos]
-                errors = [dataKcovsStd[s].sel(Algorithm=algoname, CamHerdRatio=simRatio, NumberOfHerds=herdNumber).values.tolist() for algoname in algos]
-                ax.bar(algos, values, yerr=errors, label=kcovTrans[i], capsize=4, color=kcovColors[i], ecolor=kcovEcolors[i])
-            if j == cols-1:
-                ax.legend()
-        plt.tight_layout()
-        fig.savefig(charts_dir + 'KCov_herdNumber-'+str(herdNumber)+'_CamHerdRatio-variable.pdf')
-        plt.close(fig)
-    
-    algosWithoutNocomm = algos#[a for a in algos if a != "nocomm"]
-    for r,simRatio in enumerate(simRatios):
-        fig = plt.figure(figsize=(14,10))
-        for j,herdNumber in enumerate(herdNumbers):
-            # rows, columns, index
-            size = ceil(sqrt(len(herdNumbers)))
-            rows = size
-            cols = size
-            ax = fig.add_subplot(rows, cols,j+1)
-            ax.set_ylim([0,1])
-            ax.set_title("Herd number = {0:.0f}".format(herdNumber))
-            if j%cols == 0:
-                ax.set_ylabel("Coverage (%)")
-            plt.xticks(rotation=35, ha='right')
-            ax.yaxis.grid(True)
-
-            for i,s in enumerate(kcovVariables):
-                values = [dataKcovsMean[s].sel(Algorithm=algoname, CamHerdRatio=simRatio, NumberOfHerds=herdNumber).values.tolist() for algoname in algosWithoutNocomm]
-                errors = [dataKcovsStd[s].sel(Algorithm=algoname, CamHerdRatio=simRatio, NumberOfHerds=herdNumber).values.tolist() for algoname in algosWithoutNocomm]
-                ax.bar(algosWithoutNocomm, values, yerr=errors, label=kcovTrans[i], capsize=4, color=kcovColors[i], ecolor=kcovEcolors[i])
-            if j == cols-1:
-                ax.legend()
-        plt.tight_layout()
-        fig.savefig(charts_dir + 'KCov_herdNumber-variable_CamHerdRatio-'+str(simRatio)+'.pdf')
-        plt.close(fig)
 
     
     """""""""""""""""""""""""""
         distance traveled
     """""""""""""""""""""""""""
-    chartDataMean = dataDistMean.sel(CamHerdRatio=1, method='nearest')
-    chartDataStd = dataDistStd.sel(CamHerdRatio=1, method='nearest')
+    # chartDataMean = dataDistMean.sel(CamHerdRatio=1, method='nearest')
+    # chartDataStd = dataDistStd.sel(CamHerdRatio=1, method='nearest')
     
-    simRatio = 1
-    for r,herdNumber in enumerate(herdNumbers):
-        fig = plt.figure(figsize=(6,6))
-        ax = fig.add_subplot(1, 1, 1)
-        ax.set_ylim([0,1])
-        #if j<size:
-        #ax.set_title("n/m = {0:.1f}".format(simRatio))
-        if j%cols == 0:
-            ax.set_ylabel("MovEfficiency (%)")
-        plt.xticks(rotation=35, ha='right')
-        ax.yaxis.grid(True)
+    # simRatio = 1
+    # for r,herdNumber in enumerate(herdNumbers):
+    #     fig = plt.figure(figsize=(6,6))
+    #     ax = fig.add_subplot(1, 1, 1)
+    #     ax.set_ylim([0,1])
+    #     #if j<size:
+    #     #ax.set_title("n/m = {0:.1f}".format(simRatio))
+    #     if j%cols == 0:
+    #         ax.set_ylabel("MovEfficiency (%)")
+    #     plt.xticks(rotation=35, ha='right')
+    #     ax.yaxis.grid(True)
 
-        #for i,s in enumerate(kcovVariables):
-        values = [chartDataMean.MovEfficiency.sel(Algorithm=algoname, NumberOfHerds=herdNumber).values.tolist() for algoname in algos]
-        errors = [chartDataStd.MovEfficiency.sel(Algorithm=algoname, NumberOfHerds=herdNumber).values.tolist() for algoname in algos]
-        ax.bar(algos, values, yerr=errors, capsize=4, color=kcovColors[i], ecolor=kcovEcolors[i])
+    #     #for i,s in enumerate(kcovVariables):
+    #     values = [chartDataMean.MovEfficiency.sel(Algorithm=algoname, NumberOfHerds=herdNumber).values.tolist() for algoname in algos]
+    #     errors = [chartDataStd.MovEfficiency.sel(Algorithm=algoname, NumberOfHerds=herdNumber).values.tolist() for algoname in algos]
+    #     ax.bar(algos, values, yerr=errors, capsize=4, color=kcovColors[i], ecolor=kcovEcolors[i])
 
-        plt.tight_layout()
-        fig.savefig(charts_dir + 'MovEfficiency_CamHerdRatio-'+str(simRatio)+'_herdNumber-'+str(herdNumber)+'.pdf')
-        plt.close(fig)
+    #     plt.tight_layout()
+    #     fig.savefig(charts_dir + 'MovEfficiency_CamHerdRatio-'+str(simRatio)+'_herdNumber-'+str(herdNumber)+'.pdf')
+    #     plt.close(fig)
     
     
     
@@ -633,3 +419,4 @@ if __name__ == '__main__':
     
     
         
+# %%
