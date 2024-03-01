@@ -66,7 +66,17 @@ variables:
     formula: 40
   Algorithm: &Algorithm
     type: ListOf
-    parameters: [ "ff_linpro", "clustering:bc_re_c", "bc_re", "clustering:sm_av_c", "sm_av",  "ff_linpro_c",  "ff_linproF_c", "ff_linpro", "ff_linproF", "ff_nocomm_c", "ff_nocomm"]
+    parameters:
+      - "ff_linpro"
+      - "ff_linpro_c"
+      - "ff_linproF"
+      - "ff_linproF_c"
+      - "ff_nocomm"
+      - "ff_nocomm_c"
+      - "sm_av"
+      - "sm_av_c"
+      - "bc_re"
+      - "bc_re_c"
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
 ##### Other

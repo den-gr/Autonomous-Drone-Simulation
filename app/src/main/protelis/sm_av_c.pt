@@ -2,8 +2,7 @@
  * Replicates the SM-AV algorithm, aka k-SMOOTH-Available.
  */
 
-
-module clustering:sm_av_c
+module sm_av_c
 import protelis:coord:spreading
 import protelis:coord:accumulation
 import it.unibo.experiment.clustering.HerdExperimentUtils.buildOverlapRelationsClusterGraph
@@ -15,8 +14,6 @@ import it.unibo.experiment.ProtelisUtils.getDataByDevice
 import utils
 import clustering:utils_c
 import exploration_strategies
-
-
 
 
 rep(info <- [noTarget(), buildOverlapRelationsClusterGraph(1, 0.995, 0.95)]) {
@@ -53,7 +50,6 @@ rep(info <- [noTarget(), buildOverlapRelationsClusterGraph(1, 0.995, 0.95)]) {
     } else {
         allTargets.get(allTargets.indexof(myTarget)) // updated position
     };
-    env.put("myTarget", newTarget)
     followOrExplorePoint(newTarget, fieldExploration)
     avoidCameraCollisionForCentroid(newTarget)
 

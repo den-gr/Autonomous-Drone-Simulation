@@ -13,13 +13,11 @@ import clustering:adaptive_clustering
 
 public def linproo(is_fair, is_clustering_adaptive, explorationStrategy) =
     rep(solver <- getClusterSolver()) {
-
-        let localTargets = getLocalTargets()
-        let externalTargets = foldUnion([], nbr(localTargets))
-        let targets = localTargets.union(externalTargets)
+        let localVisibleNodes = getLocalTargets()
+        let allVisible = foldUnion(nbr(localVisibleNodes))
         let cameras = nbr(getCenterOfFov())
 
-        let clusters = getClusters(targets, getClusteringDistance())
+        let clusters = getClusters(allVisible, getClusteringDistance())
         env.put("Clusters", clusters) // Used by GUI to draw the clusters
         let assignedClusters = solver.solve(cameras, clusters, getMaxCamerasPerTarget(), is_fair)
         let myCluster = assignedClusters.getOrDefault(getUID(), emptyCluster())
@@ -29,7 +27,7 @@ public def linproo(is_fair, is_clustering_adaptive, explorationStrategy) =
 
         if(is_clustering_adaptive){
             let assignedNodes = getAssignedNodes(assignedClusters, clusters)
-            env.put("ClusteringDistance", getNewClusteringDistance(myCluster, localTargets, assignedNodes))
-        }else{ 0 } //safe domain branching
+            env.put("ClusteringDistance", getNewClusteringDistance(myCluster, localVisibleNodes, assignedNodes))
+        }else{ 0 } 
         solver
     }

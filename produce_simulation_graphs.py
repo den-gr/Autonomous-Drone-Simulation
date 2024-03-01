@@ -145,9 +145,9 @@ if __name__ == '__main__':
     experiments = [main_experiment]
     floatPrecision = '{: 0.2f}'
     seedVars = ['Seed']
-    timeSamples = 200
+    timeSamples = 180
     minTime = 0
-    maxTime = 2000
+    maxTime = 1800
     timeColumnName = 'time'
     logarithmicTime = False
     
@@ -249,12 +249,12 @@ if __name__ == '__main__':
     matplotlib.rcParams.update({'axes.titlesize': 13})
     matplotlib.rcParams.update({'axes.labelsize': 12})
     
-    kcovColors = ['#00d0ebFF','#61a72cFF','#e30000FF']
-    kcovEcolors = ['#0300ebFF', '#8cff9dFF', '#f5b342FF'] # error bars
-    kcovVariables = ['1-coverage','2-coverage','3-coverage']
-    kcovTrans = ['1-cov','2-cov','3-cov']
+    kcovColors =  ['#00d0ebFF','#61a72cFF'] # ['#00d0ebFF','#61a72cFF','#e30000FF']
+    kcovEcolors =  ['#0300ebFF', '#8cff9dFF'] # ['#0300ebFF', '#8cff9dFF', '#f5b342FF'] # error bars
+    kcovVariables = ['1-coverage','2-coverage']
+    kcovTrans = ['1-cov','2-cov']
     data = datasets[main_experiment]
-    algos = ["ff_linpro_c", "ff_linpro", "ff_nocomm_c", "ff_nocomm"]
+    algos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
 #     algos = data.coords['Algorithm'].data.tolist()
 
     # now load data from previous simulations
@@ -267,12 +267,12 @@ if __name__ == '__main__':
     #pickle.dump(mergedDatasets, open(pickleOutput + '_datasets_merged', 'wb'), protocol=-1)
     
     dataMean = data.mean('time')
-    dataKcovsMean = dataMean.mean('Seed')
-    dataKcovsStd = dataMean.std('Seed')
+    dataKcovsMean = dataMean.mean('Seed').mean('ClusteringDistance') #todo
+    dataKcovsStd = dataMean.std('Seed').mean('ClusteringDistance')
     
     dataDist = data.sum('time').assign(MovEfficiency = lambda d: d.ObjDist / d.CamDist)
-    dataDistMean = dataDist.mean('Seed')
-    dataDistStd = dataDist.std('Seed')
+    dataDistMean = dataDist.mean('Seed').mean('ClusteringDistance')
+    dataDistStd = dataDist.std('Seed').mean('ClusteringDistance')
     
     simRatios = data.coords['CamHerdRatio'].data.tolist()
     simRatios.reverse()
@@ -296,19 +296,14 @@ if __name__ == '__main__':
         zs = []
         for xd in dataarray:
             for i, yd in enumerate(xd):
-                if(isinstance(xd[xcord].values, np.ndarray)):
-                    xs.append(xd[xcord].values.tolist()[i])
+                vals = xd[xcord].values
+                if(isinstance(vals, np.ndarray) and vals.size > 1):
+                    xs.append(vals.tolist()[i])
                 else:
-                    xs.append(xd[xcord].values.tolist())
+                    xs.append(vals.tolist())
 
                 ys.append(yd[ycord].values.tolist())
                 zs.append(yd.values.tolist())
-
-#         if(isinstance(xs[0], list)):
-#             print("ad hoc fix")
-#             n = round(len(ys)/ len(xs[0]))
-#             xs = [element for element in xs[0] for _ in range(n)]
-
 
         return xs, ys, zs
         
@@ -332,15 +327,16 @@ if __name__ == '__main__':
         
         fakeLinesForLegend = []
         def kcov(whichKCov,x,y):
-            return dataKcovsMean[whichKCov].sel(Algorithm=algo, CamHerdRatio=y, NumberOfHerds
-            =x).values.tolist()#[0]
+            return dataKcovsMean[whichKCov].sel(Algorithm=algo, CamHerdRatio=y, NumberOfHerds=x).values.tolist()#[0]
         forKcovVars = [kcovVariables[0], kcovVariables[-1]]
         forKcovTrans = []
         for k, whichKCov in enumerate(kcovVariables):
             if not whichKCov in forKcovVars:
                 continue
             x,y,z = getSurfData(dataKcovsMean[whichKCov].sel(Algorithm=algo), 'NumberOfHerds', 'CamHerdRatio')
-#             print(x)
+            # print(x)
+            # print(y)
+            # print(z)
             ax.plot_trisurf(x,y,z, linewidth=2, antialiased=False, shade=True, alpha=0.5, color=kcovColors[k])
             fakeLinesForLegend.append(matplotlib.lines.Line2D([0],[0], linestyle='none', c=kcovColors[k], marker='o'))
             forKcovTrans.append(kcovTrans[k])
@@ -355,14 +351,15 @@ if __name__ == '__main__':
     """""""""""""""""""""""""""
           kcov in time
     """""""""""""""""""""""""""
-    timeLimit = 100
+    timeLimit = timeSamples
 #     selAlgos = ['ff_linpro', 'zz_linpro', 'ff_nocomm', 'nocomm']
-    selAlgos = ["ff_linpro_c", "ff_linpro", "ff_nocomm_c",  "ff_nocomm"]
+    selAlgos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
 
     selRatios = [ '0.5', '1.0', '1.5', '2.0']
-    selKcov = ['1-coverage', "2-coverage", '3-coverage']
+    selKcov = ['1-coverage', "2-coverage"]
     selHerdNumber = 6.0
     dataInTime = data.mean('Seed')
+    dataInTime = dataInTime.mean('ClusteringDistance') ## TODO
     for whichKCov in selKcov:
         rows = 2
         cols = 2
@@ -375,6 +372,7 @@ if __name__ == '__main__':
             timeLimitIdx = next((i for i,x in enumerate(xdata) if x >= timeLimit)) # first idx of time > timeLimit
             xdata = xdata[:timeLimitIdx]
             ydata = ydata[:timeLimitIdx]
+  
             axes[r][c].plot(xdata, ydata)
             axes[r][c].set_title('n/m = ' + whichRatio)
             axes[r][c].set_ylim([0,1])
@@ -510,7 +508,7 @@ if __name__ == '__main__':
         LaTeX table
     """""""""""""""""""""""""""
     import textwrap
-    selKcov = '3-coverage'
+    selKcov = '2-coverage'
     selherdNumbers = [2.0]
 #     selRatios = [0.2, 0.6, 1, 1.2, 1.6, 2]
     selRatios = [ 0.5, 1.0, 1.5, 2.0]

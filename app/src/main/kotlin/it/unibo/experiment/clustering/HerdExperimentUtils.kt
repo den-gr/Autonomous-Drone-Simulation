@@ -8,7 +8,6 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.alchemist.model.protelis.AlchemistExecutionContext
 import it.unibo.alchemist.protelis.properties.ProtelisDevice
 import it.unibo.experiment.OverlapRelationsGraph
-import it.unibo.experiment.OverlapRelationsGraphForProtelis
 import it.unibo.experiment.toTargets
 import org.protelis.lang.datatype.Field
 import org.protelis.lang.datatype.Tuple
@@ -59,7 +58,7 @@ class HerdExperimentUtils {
          */
         @JvmStatic
         fun isClusterCentroidVisible(context: AlchemistExecutionContext<Euclidean2DPosition>, cluster: Cluster): Boolean {
-            return  isPointVisible(context, cluster.centroid)
+            return isPointVisible(context, cluster.centroid)
         }
 
         @JvmStatic
@@ -119,16 +118,16 @@ class HerdExperimentUtils {
 
         @JvmStatic
         fun getClusters(targets: Tuple, clusteringLimit: Double): List<Cluster> {
-            val clusters = groupByClusters(targets, clusteringLimit)
-            val centroids = mutableListOf<Cluster>()
+            val clustersMap = groupByClusters(targets, clusteringLimit)
+            val clusters = mutableListOf<Cluster>()
             val MPL = 4.0
-            for (cluster in clusters.entries) {
-                val c = cluster.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
-                val size = cluster.value.size
+            for (clusterEntry in clustersMap.entries) {
+                val c = clusterEntry.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
+                val size = clusterEntry.value.size
                 val centroid = Euclidean2DPosition(round((c.x / size) / MPL) * MPL, round((c.y / size) / MPL) * MPL)
-                centroids.add(Cluster(cluster.key, centroid, cluster.value))
+                clusters.add(Cluster(clusterEntry.key, centroid, clusterEntry.value))
             }
-            return centroids
+            return clusters
         }
 
         @JvmStatic
@@ -142,7 +141,7 @@ class HerdExperimentUtils {
             val data = nodes.map { it.position.coordinates }.toTypedArray()
             val c = hclust(data, "upgma") // upgma = average, wpgma = weighted avarege
             val labels = if (c.height().last() <= clusteringLimit) {
-                IntArray(data.size) { 0 }
+                IntArray(data.size) { 0 } // single cluster
             } else {
                 c.partition(clusteringLimit)
             }

@@ -6,7 +6,7 @@
  * In case there are multiple targets with the least requests number, then the closest one is chosen.
  */
 
-module clustering:bc_re_c
+module bc_re_c
 import protelis:lang:utils
 import protelis:coord:spreading
 import protelis:coord:accumulation

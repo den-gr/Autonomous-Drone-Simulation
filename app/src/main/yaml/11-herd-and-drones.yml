@@ -50,39 +50,44 @@ variables:
     language: kotlin
 ###### Drones
   CameraSpeed: &CameraSpeed
-    formula: 4
+    formula: 10
   EnvironmentSize: &EnvironmentSize
     formula: 2000
   FoVAngle: &FoVAngle
-    formula: 77
+    formula: 80
   FoVDistance: &FoVDistance
     formula: 100
   FoVBlindSpotDistance: &FoVBlindSpotDistance
-    formula: 20
+    formula: 18
   RotationSpeed: &RotationSpeed
-    formula: 24
+    formula: 60
   CommunicationRange: &CommunicationRange
     formula: EnvironmentSize
-  DefaultClusteringDistance: &ClusteringDistance
-    formula: 30
+  ClusteringDistance: &ClusteringDistance
+    type: ArbitraryVariable
+    parameters: [ 50, 30, 40, 50, 60, 70]
+#    formula: 30
   Algorithm: &Algorithm
     type: ListOf
-    parameters: [ "ff_linpro_c", "ff_linpro", "ff_nocomm_c", "bc_re"]
-    #["clustering:ff_linpro_c", "clustering:sm_av_c", "clustering:ff_nocomm_c", "clustering:bc_re_c" ]
+    parameters:
+      - "ff_linpro_c"
+      - "ff_linproF_c"
+      - "sm_av_c"
+      - "bc_re_c"
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
 ##### Other
   CamHerdRatio:
     type: ArbitraryVariable
-    parameters: [2.0, 0.5, 1.0, 1.5, 2.0]
+    parameters: [2.5, 0.5, 1.0, 1.5, 2.0]
   NumberOfHerds: &HerdNumber
     type: ArbitraryVariable
-    parameters: [6, 2, 4, 6]
+    parameters: [10, 2, 4, 6, 8]
   NumCameras: &NumCameras
-    formula: Math.ceil(CamHerdRatio*NumberOfHerds)
+    formula: Math.ceil((CamHerdRatio)*NumberOfHerds)
     language: kotlin
   NumberOfAnimals: &NumberOfAnimals
-    formula:  60
+    formula:  100
   EnvironmentRadius: &EnvironmentRadius
     formula: EnvironmentSize / 2
   Seed: &Seed
@@ -138,7 +143,6 @@ _herdParameters: &herdParameters
   - *HerdNumber
   - *EnvironmentRadius
 
-
 _herd: &herd
   - time-distribution: 1
     type: Event
@@ -154,12 +158,11 @@ network-model:
   type: ConnectToGroup
   parameters: [*CommunicationRange, drone]
 
-
 export:
   - type: CustomCSVExporter
     parameters:
-      fileNameRoot: "drone_herd_export"
-      interval: 10.0
+      fileNameRoot: "experiment_export"
+      interval: 5.0
       exportPath: "build/export"
     data:
       - time
