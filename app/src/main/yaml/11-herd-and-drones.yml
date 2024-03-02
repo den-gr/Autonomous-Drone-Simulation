@@ -63,19 +63,15 @@ variables:
     formula: 60
   CommunicationRange: &CommunicationRange
     formula: EnvironmentSize
-  ClusteringDistance: &ClusteringDistance
-     formula: 60
   Algorithm: &Algorithm
     type: ListOf
     parameters:
       - "ff_linpro_c"
-      - "ff_linpro"
-      - "sm_av_c"
-      - "sm_av"
-      - "bc_re_c"
-      - "bc_re"
-      - "ff_nocomm_c"
-      - "ff_nocomm"
+      - "ff_linpro_ac"
+  ClusteringDistance: &ClusteringDistance
+    type: ListOf
+    parameters: [10, 30, 50, 70, 90]
+#    formula: 60
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
 ##### Other
@@ -94,7 +90,7 @@ variables:
     formula: EnvironmentSize / 2
   Seed: &Seed
     type: ListOf
-    parameters: [16, 17, 18, 19, 20]
+    parameters: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 seeds:
   scenario: *Seed

@@ -110,7 +110,7 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                 """
                     launcher:
                         type: HeadlessSimulationLauncher
-                        parameters: [["Seed", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
+                        parameters: [["Seed","ClusteringDistance", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
                     terminate:
                       - type: AfterTime
                         parameters: 1800
