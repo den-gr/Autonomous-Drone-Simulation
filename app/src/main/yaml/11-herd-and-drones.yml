@@ -64,16 +64,18 @@ variables:
   CommunicationRange: &CommunicationRange
     formula: EnvironmentSize
   ClusteringDistance: &ClusteringDistance
-    type: ArbitraryVariable
-    parameters: [ 50, 10, 90]
-#    formula: 30
+     formula: 60
   Algorithm: &Algorithm
     type: ListOf
     parameters:
+      - "ff_nocomm_c"
       - "ff_linpro_c"
-      - "ff_linproF_c"
+      - "ff_linpro"
       - "sm_av_c"
+      - "sm_av"
       - "bc_re_c"
+      - "bc_re"
+      - "ff_nocomm"
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
 ##### Other
@@ -92,12 +94,11 @@ variables:
     formula: EnvironmentSize / 2
   Seed: &Seed
     type: ListOf
-    parameters: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
+    parameters: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 seeds:
   scenario: *Seed
-  simulation: 1
+  simulation: *Seed
 
 _drone: &drone
   - time-distribution: 2
@@ -203,8 +204,8 @@ deployments:
       - molecule: ClusteringDistance
         concentration: *ClusteringDistance
     programs: *drone
-  - type: SpecificPositions
-    parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
-    contents:
-      - molecule: landmark
-        concentration: true
+#  - type: SpecificPositions
+#    parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
+#    contents:
+#      - molecule: landmark
+#        concentration: true

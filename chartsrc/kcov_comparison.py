@@ -130,7 +130,7 @@ class KcovChartBuilder:
                 ydata = ydata[:timeLimitIdx]
 
                 axes[r][c].plot(xdata, ydata)
-                axes[r][c].set_title('n/m = ' + algorithm)
+                axes[r][c].set_title(algorithm)
                 axes[r][c].set_ylim([0,1])
                 if c == 0:
                     axes[r][c].set_ylabel(whichKCov + ' (%)')
@@ -138,5 +138,5 @@ class KcovChartBuilder:
                     axes[r][c].set_xlabel('t')
                 if r == 0 and c == cols -1:
                     axes[r][c].legend(ydata.coords[columns[2]].data.tolist())
-            fig.savefig(self.charts_dir + whichKCov + "_" + name + '_InTime.pdf')
+            fig.savefig(self.charts_dir + whichKCov + "_" + columns[1] + "-" + str(fixedType) + "_" + name + '_InTime.pdf')
             plt.close(fig)

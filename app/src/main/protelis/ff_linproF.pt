@@ -11,11 +11,11 @@ import exploration_strategies
 
 
 rep(solver <- getLinproSolver()) {
-let localTargets = getLocalTargets()
-let targets = unionHood PlusSelf(nbr(localTargets))
-let cameras = nbr(getCenterOfFov())
-let myTarget = solver.solve(cameras, targets, getMaxCamerasPerTarget(), true).getOrDefault(getUID(), noTarget())
-followOrExplore(myTarget, fieldExploration)
-avoidCameraCollision(myTarget, localTargets)
-solver
+    let localTargets = getLocalTargets()
+    let targets = foldUnion(nbr(localTargets))
+    let cameras = nbr(getCenterOfFov())
+    let myTarget = solver.solve(cameras, targets, getMaxCamerasPerTarget(), true).getOrDefault(getUID(), noTarget())
+    followOrExplore(myTarget, fieldExploration)
+    avoidCameraCollision(myTarget, localTargets)
+    solver
 }

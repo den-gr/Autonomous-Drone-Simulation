@@ -9,13 +9,16 @@ import utils
 import clustering:utils_c
 import exploration_strategies
 
-
-let c = getClusters(getLocalTargets(), getClusteringDistance())
-env.put("Clusters", c)
-let clusters = tupleOf(c)
-if(!clusters.isEmpty()){
-    let centroids = clusters.map(m -> {m.getCentroid()})
-    followCentroid(closestCoordinateToFov(centroids))
-}else{
-    fieldExploration()
+def nocommc() {
+    let c = getClusters(getLocalTargets(), getClusteringDistance())
+    env.put("Clusters", c)
+    let clusters = tupleOf(c)
+    if(!clusters.isEmpty()){
+        let centroids = clusters.map(m -> {m.getCentroid()})
+        followCentroid(closestCoordinateToFov(centroids))
+    }else{
+        fieldExploration()
+    }
 }
+
+nocommc()

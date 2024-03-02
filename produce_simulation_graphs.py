@@ -16,7 +16,8 @@ from chartsrc.utils import *
 
 # %%
 if __name__ == '__main__':
-    generateAll = False
+    generateAll = True
+    isClusteringDistance = False
 
     main_experiment = "experiment_export"
     # CONFIGURE SCRIPT
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     kcovLabels = Labels(kcovColors, kcovEcolors, kcovVariables, kcovTrans)
 
     data = datasets[main_experiment]
-    algos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
+    algos = ["ff_linpro_c", "ff_linpro", "sm_av_c", "sm_av", "bc_re", "bc_re_c", "ff_nocomm_c", "ff_nocomm"]
 #     algos = data.coords['Algorithm'].data.tolist()
 
     # now load data from previous simulations
@@ -147,12 +148,12 @@ if __name__ == '__main__':
     #pickle.dump(mergedDatasets, open(pickleOutput + '_datasets_merged', 'wb'), protocol=-1)
     
     dataMean = data.mean('time')
-    dataKcovsMean = dataMean.mean('Seed').mean('ClusteringDistance') #todo
-    dataKcovsStd = dataMean.std('Seed').mean('ClusteringDistance')
+    dataKcovsMean = dataMean.mean('Seed') #todo
+    dataKcovsStd = dataMean.std('Seed')
     
     dataDist = data.sum('time').assign(MovEfficiency = lambda d: d.ObjDist / d.CamDist)
-    dataDistMean = dataDist.mean('Seed').mean('ClusteringDistance')
-    dataDistStd = dataDist.std('Seed').mean('ClusteringDistance')
+    dataDistMean = dataDist.mean('Seed')
+    dataDistStd = dataDist.std('Seed')
     
     simRatios = data.coords['CamHerdRatio'].data.tolist()
     simRatios.reverse()
@@ -237,23 +238,27 @@ if __name__ == '__main__':
     """""""""""""""""""""""""""
     timeLimit = timeSamples
 #     selAlgos = ['ff_linpro', 'zz_linpro', 'ff_nocomm', 'nocomm']
-    selAlgos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
+    selAlgos = ["ff_linpro_c", "ff_linpro", "sm_av_c", "sm_av", "bc_re", "bc_re_c", "ff_nocomm_c", "ff_nocomm"]
 
     selRatios = [ '0.5', '1.0', '1.5', '2.0']
     selKcov = ['1-coverage', "2-coverage"]
     selHerdNumber = 6.0
-    dataInTime = data.mean('Seed').mean('ClusteringDistance')
+    dataInTime = data.mean('Seed')
 
 
     columns = ['Algorithm', "NumberOfHerds", "CamHerdRatio"]
     kcovChartBuilder.inTime(columns, selKcov, dataInTime, selHerdNumber, selRatios, timeLimit)
 
 
-    columns = ['Algorithm', "CamHerdRatio", "ClusteringDistance"]
-    selCamHerdRatio = 1.0 
-    dataInTime =  data.mean('Seed').mean("NumberOfHerds")
-    distances = ['30', '40', '50', '60', '70']
-    kcovChartBuilder.inTimeByValue(columns, selKcov, dataInTime, selCamHerdRatio, distances, timeLimit, name="clusteringDistance")
+    if(generateAll and isClusteringDistance): # Only for clustering distance
+        columns = ['Algorithm', "NumberOfHerds", "ClusteringDistance"]
+        # selCamHerdRatio = 1.0 
+        selHerdNumbers = [2.0, 8.0]
+        dataInTime =  data.mean('Seed').mean("CamHerdRatio")
+        distances = ['10', '30', '50', '70', '90']
+
+        for selHerdNumber in selHerdNumbers:
+            kcovChartBuilder.inTimeByValue(columns, selKcov, dataInTime, selHerdNumber, distances, timeLimit, name="clust-distances")
         
     """""""""""""""""""""""""""
               heatmaps
@@ -327,18 +332,20 @@ if __name__ == '__main__':
     """""""""""""""""""""""""""
         kcoverage comparison alternative
     """""""""""""""""""""""""""
-    dataKcovsMean2 = dataMean.mean('Seed').mean('NumberOfHerds') #todo
-    dataKcovsStd2 = dataMean.std('Seed').mean('NumberOfHerds')
-    kcovChartBuilder2 = kcovlib.KcovChartBuilder(charts_dir, dataKcovsMean2, dataKcovsStd2, algos, kcovLabels)
 
-    clusteringDistances = datasets[main_experiment].coords['ClusteringDistance'].data.tolist()
-    clusteringDistances.reverse()
-    
-    
-    columns = ["Algorithm", 'ClusteringDistance', 'CamHerdRatio'] #first fixed the variable values
-    kcovChartBuilder2.compare(columns, clusteringDistances, simRatios, precision=1)
-    columns = ["Algorithm", 'CamHerdRatio', 'ClusteringDistance']
-    kcovChartBuilder2.compare(columns, simRatios, clusteringDistances)
+    if(generateAll and isClusteringDistance):
+        dataKcovsMean2 = dataMean.mean('Seed').mean('NumberOfHerds') #todo
+        dataKcovsStd2 = dataMean.std('Seed').mean('NumberOfHerds')
+        kcovChartBuilder2 = kcovlib.KcovChartBuilder(charts_dir, dataKcovsMean2, dataKcovsStd2, algos, kcovLabels)
+
+        clusteringDistances = datasets[main_experiment].coords['ClusteringDistance'].data.tolist()
+        clusteringDistances.reverse()
+        
+        
+        columns = ["Algorithm", 'ClusteringDistance', 'CamHerdRatio'] #first fixed the variable values
+        kcovChartBuilder2.compare(columns, clusteringDistances, simRatios, precision=1)
+        columns = ["Algorithm", 'CamHerdRatio', 'ClusteringDistance']
+        kcovChartBuilder2.compare(columns, simRatios, clusteringDistances)
 
 
     # %%
