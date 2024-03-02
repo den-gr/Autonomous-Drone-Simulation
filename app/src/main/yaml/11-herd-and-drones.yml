@@ -68,13 +68,13 @@ variables:
   Algorithm: &Algorithm
     type: ListOf
     parameters:
-      - "ff_nocomm_c"
       - "ff_linpro_c"
       - "ff_linpro"
       - "sm_av_c"
       - "sm_av"
       - "bc_re_c"
       - "bc_re"
+      - "ff_nocomm_c"
       - "ff_nocomm"
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
@@ -143,6 +143,7 @@ _herdParameters: &herdParameters
   - *trailerSeedChange
   - *HerdNumber
   - *EnvironmentRadius
+  - *Seed
 
 _herd: &herd
   - time-distribution: 1
