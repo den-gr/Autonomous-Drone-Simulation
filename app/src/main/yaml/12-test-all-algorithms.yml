@@ -100,7 +100,7 @@ variables:
 
 seeds:
   scenario: *Seed
-  simulation: 1
+  simulation: *Seed
 
 _drone: &drone
   - time-distribution: 2
@@ -145,6 +145,7 @@ _herdParameters: &herdParameters
   - *trailerSeedChange
   - *HerdNumber
   - *EnvironmentRadius
+  - *Seed
 
 
 _herd: &herd
