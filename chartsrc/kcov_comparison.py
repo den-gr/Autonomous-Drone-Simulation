@@ -87,7 +87,7 @@ class KcovChartBuilder:
         for whichKCov in kcovTypes:
             rows = 2
             cols = 2
-            fig, axes = plt.subplots(rows, cols, figsize=(8,5), sharex='col', sharey='row')
+            fig, axes = plt.subplots(rows, cols, figsize=(12,8), sharex='col', sharey='row')
             for idx, variableType in enumerate(variableTypes):
                 r = int(idx / cols)
                 c = int(idx % cols)
@@ -116,7 +116,8 @@ class KcovChartBuilder:
         for whichKCov in kcovTypes:
             rows = 2
             cols = 2
-            fig, axes = plt.subplots(rows, cols, figsize=(8,5), sharex='col', sharey='row')
+            fig, axes = plt.subplots(rows, cols, figsize=(12,8), sharex='col', sharey='row')
+            # axes = [axes]
             for idx, algorithm in enumerate(self.algos):
                 r = int(idx / cols)
                 c = int(idx % cols)
