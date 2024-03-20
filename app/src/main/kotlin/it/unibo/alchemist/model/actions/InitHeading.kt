@@ -11,7 +11,7 @@ import kotlin.math.sin
 
 /**
  * Sets heading once, and then removes itself.
- * Should be part of node initialization via construtor parameter?
+ * Should be part of node initialization via constructor parameter?
  */
 class InitHeading @JvmOverloads constructor(
     node: Node<Any>,
@@ -20,7 +20,6 @@ class InitHeading @JvmOverloads constructor(
     private val rng: RandomGenerator,
     private val initialAngle: Double = rng.randomAngle(),
 ) : AbstractAction<Any>(node) {
-    // private var executed = false
 
     init {
         execute()
@@ -29,10 +28,8 @@ class InitHeading @JvmOverloads constructor(
     override fun cloneAction(n: Node<Any>, r: Reaction<Any>) = InitHeading(n, r, env, rng, initialAngle)
 
     override fun execute() {
-        // require(!executed)
         reaction.actions = reaction.actions.minusElement(this)
         env.setHeading(node, env.makePosition(cos(initialAngle), sin(initialAngle)))
-        // executed = true
     }
 
     override fun getContext() = Context.LOCAL

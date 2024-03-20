@@ -1,20 +1,18 @@
 package it.unibo.alchemist.model.actions.zones.shapes
 
+/**
+ * Shape of a node's zone.
+ */
 interface ZoneShape<T> {
+    /**
+     * Shape of the zone.
+     */
     val shape: T
 
+    /**
+     * Allows create a new copy of the zone.
+     */
     fun makeCopy(): ZoneShape<T>
-}
-
-class RectangularZoneShape<T>(
-    override val shape: T,
-    private val width: Double,
-    private val height: Double,
-) : ZoneShape<T> {
-
-    override fun makeCopy(): ZoneShape<T> {
-        return RectangularZoneShape(shape, width, height)
-    }
 }
 
 class EllipseZoneShape<T>(
@@ -37,5 +35,19 @@ class CircularSegmentZoneShape<T>(
 
     override fun makeCopy(): ZoneShape<T> {
         return CircularSegmentZoneShape(shape, radius, angle)
+    }
+}
+
+/**
+ * Original rectangle zone shape. Not used anymore. Can be removed from the codebase.
+ */
+class RectangularZoneShape<T>(
+    override val shape: T,
+    private val width: Double,
+    private val height: Double,
+) : ZoneShape<T> {
+
+    override fun makeCopy(): ZoneShape<T> {
+        return RectangularZoneShape(shape, width, height)
     }
 }

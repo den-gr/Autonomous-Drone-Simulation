@@ -93,7 +93,14 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                 )
             }
         }
-        tasks.register<JavaExec>("runBatch${it.nameWithoutExtension.uppercase()}") {
+        runAll.dependsOn(task)
+    }
+
+File(rootProject.rootDir.path + "/app/src/main/yaml/batch").listFiles()
+    ?.filter { it.extension == "yml" } // pick all yml files in src/main/yaml
+    ?.sortedBy { it.nameWithoutExtension } // sort them, we like reproducibility
+    ?.forEach {
+        tasks.register<JavaExec>("execBatch-${it.nameWithoutExtension.uppercase()}") {
             group = alchemistBatchGroup // This is for better organization when running ./gradlew tasks
             description = "Launches simulation ${it.nameWithoutExtension}" // Just documentation
             mainClass.set("it.unibo.alchemist.Alchemist") // The class to launch
@@ -110,14 +117,13 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                 """
                     launcher:
                         type: HeadlessSimulationLauncher
-                        parameters: [["Seed","ClusteringDistance", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
+                        parameters: [["Seed", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
                     terminate:
                       - type: AfterTime
                         parameters: 1800
                 """,
             )
         }
-        runAll.dependsOn(task)
     }
 
 tasks.withType<Tar>().configureEach {

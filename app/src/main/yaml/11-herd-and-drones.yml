@@ -17,7 +17,7 @@ variables:
   rearZoneRadius:
     formula: attractionZoneRadius
   stressZoneRepulsionFactor: &stressRepulsionFactor
-    formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
+    formula: 0.5 # [0; 1] Slow down by this factor if there are neighbors ahead of the individual in the stress zone.
   attractionSpeedUp: &attractionSpeedUpFactor
     formula: 1.5 # [1; inf] if there are nodes in attraction zone multiply the speed-up factor to current velocity
   leadersSlowDown:
@@ -67,30 +67,31 @@ variables:
     type: ListOf
     parameters:
       - "ff_linpro_c"
+      - "bc_re_c"
       - "ff_linpro_ac"
   ClusteringDistance: &ClusteringDistance
     type: ListOf
-    parameters: [400]
+    parameters: [60]
 #    formula: 60
   MaxCamerasPerTarget: &MaxCamerasPerTarget
     formula: 2
 ##### Other
   CamHerdRatio:
     type: ArbitraryVariable
-    parameters: [2.5, 0.5, 1.0, 1.5, 2.0]
+    parameters: [1.5, 0.5, 1.0, 1.5, 2.0]
   NumberOfHerds: &HerdNumber
     type: ArbitraryVariable
-    parameters: [2, 2, 4, 6, 8]
+    parameters: [8, 2, 4, 6, 8]
   NumCameras: &NumCameras
     formula: Math.ceil((CamHerdRatio)*NumberOfHerds)
     language: kotlin
   NumberOfAnimals: &NumberOfAnimals
-    formula:  100
+    formula:  140
   EnvironmentRadius: &EnvironmentRadius
     formula: EnvironmentSize / 2
   Seed: &Seed
     type: ListOf
-    parameters: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    parameters: [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 seeds:
   scenario: *Seed

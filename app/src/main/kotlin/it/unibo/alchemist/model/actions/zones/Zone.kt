@@ -16,19 +16,19 @@ interface Zone {
     val zoneShape: ZoneShape<Euclidean2DShape>
 
     /**
-     * Search for nodes in node's zone
+     * Search for neighbors in the zone.
      * @return true if there are at least one node in zone.
      */
     fun areNodesInZone(): Boolean
 
     /**
-     * Search for nodes in the zone
+     * Search for neighbors in the zone.
      * @return all nodes that are in the zone, except zone owner and irrelevant nodes (as nodes from other groups).
      */
     fun getNodesInZone(): List<Node<Any>>
 
     /**
-     * In base of neighbours positions in the zone define the next movement
+     * In base of neighbours relative positions define the next movement.
      * @return vector of next movement.
      */
     fun getNextMovement(): Euclidean2DPosition

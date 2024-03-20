@@ -7,16 +7,11 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import kotlin.math.atan2
 
-enum class RelativeLateralZonePosition(val startAngle: Double, val endAngle: Double) {
-    LEFT(0.0, Math.PI),
-    RIGHT(Math.PI, 2 * Math.PI),
-}
-
 abstract class AbstractZone(
     protected val owner: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     protected val movementProvider: MovementProvider,
-    private val numberOfHerds: Int = 1,
+    private val herdRecognitionPredicate: (Int) -> Boolean = { _ -> true },
 ) : Zone {
     abstract val visibleNodes: Molecule
 
@@ -47,7 +42,7 @@ abstract class AbstractZone(
         )
     }
 
-    protected open fun filterOtherHerds(nodes: List<Node<Any>>): List<Node<Any>> = nodes.filter { it.id % numberOfHerds == owner.id % numberOfHerds }
+    protected open fun filterOtherHerds(nodes: List<Node<Any>>): List<Node<Any>> = nodes.filter { herdRecognitionPredicate(it.id) }
 
     protected fun getAngleFromHeadingToNeighbour(neighbourPosition: Euclidean2DPosition): Double {
         val nodePosition = environment.getPosition(owner)

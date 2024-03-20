@@ -49,7 +49,7 @@ variables:
     language: kotlin
 #### other
   NumberOfHerds: &NumberOfHerds
-    formula: 1
+    formula: 5
 
 
 _herdParameters: &herdParameters
@@ -78,7 +78,7 @@ seeds:
 
 deployments:
   - type: GroupsDeployment
-    parameters: [5, 0, 0, 400, *NumberOfHerds, 25]
+    parameters: [50, 0, 0, 400, *NumberOfHerds, 25]
     contents:
       - molecule: zebra
         concentration: true

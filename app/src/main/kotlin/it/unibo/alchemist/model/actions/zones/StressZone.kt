@@ -16,7 +16,7 @@ class StressZone(
     movementProvider: MovementProvider,
     private val repulsionFactor: Double,
 ) : AbstractZone(node, environment, movementProvider) {
-    override val visibleNodes: Molecule = SimpleMolecule("Stress zone T")
+    override val visibleNodes: Molecule = SimpleMolecule("Stress zone")
 
     override fun getNextMovement(): Euclidean2DPosition {
         return getStressZoneMovement(getNodesInZone())

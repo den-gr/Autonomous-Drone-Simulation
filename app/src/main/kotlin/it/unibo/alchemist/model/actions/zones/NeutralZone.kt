@@ -14,17 +14,17 @@ class NeutralZone(
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
-    numberOfHerds: Int,
-) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
+    herdRecognitionPredicate: (Int) -> Boolean,
+) : AbstractZone(node, environment, movementProvider, herdRecognitionPredicate) {
 
     override val visibleNodes: Molecule = SimpleMolecule("Neutral zone")
 
     override fun getNextMovement(): Euclidean2DPosition {
-        val positions = mutableSetOf<RelativeLateralZonePosition>()
+        val positions = mutableSetOf<RelativeLateralPosition>()
 
         for (neighbourNode in getNodesInZone()) {
             val angle = getAngleFromHeadingToNeighbour(environment.getPosition(neighbourNode))
-            for (relativePos in RelativeLateralZonePosition.values()) {
+            for (relativePos in RelativeLateralPosition.values()) {
                 if (angle in relativePos.startAngle..relativePos.endAngle) {
                     positions.add(relativePos)
                 }
@@ -32,9 +32,9 @@ class NeutralZone(
         }
 
         val movement = movementProvider.getRandomMovement()
-        if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
+        if (positions.contains(RelativeLateralPosition.LEFT) && !positions.contains(RelativeLateralPosition.RIGHT)) {
             return movement + movementProvider.toLeft()
-        } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
+        } else if (!positions.contains(RelativeLateralPosition.LEFT) && positions.contains(RelativeLateralPosition.RIGHT)) {
             return movement + movementProvider.toRight()
         }
         return movement
