@@ -8,8 +8,6 @@ class KcovChartBuilder:
         self.dataKcovsStd = dataKcovsStd
         self.algos = algos
         self.labels = labels
-        
-
 
     def compare(self, columns, fixesData, variableData, fancyTitle='', precision=0):
         if(fancyTitle == ''):
@@ -112,12 +110,12 @@ class KcovChartBuilder:
             fig.savefig(self.charts_dir + whichKCov + "_" + name + '_InTime.pdf')
             plt.close(fig)
     
-    def inTimeByValue(self, columns, kcovTypes, dataInTime, fixedType, variableTypes, timeLimit, name = ''):
+    def inTimeByValue(self, columns, kcovTypes, dataInTime, fixedType, variableTypes, timeLimit, name = '', unit=''):
         for whichKCov in kcovTypes:
-            rows = 2
+            rows = 1
             cols = 2
-            fig, axes = plt.subplots(rows, cols, figsize=(12,8), sharex='col', sharey='row')
-            # axes = [axes]
+            fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex='col', sharey='row')
+            axes = [axes] # COMMENT in case rows > 1
             for idx, algorithm in enumerate(self.algos):
                 r = int(idx / cols)
                 c = int(idx % cols)
@@ -138,6 +136,7 @@ class KcovChartBuilder:
                 if r == rows-1:
                     axes[r][c].set_xlabel('t')
                 if r == 0 and c == cols -1:
-                    axes[r][c].legend(ydata.coords[columns[2]].data.tolist())
+                    legend_labels = [f"{value} " + unit for value in ydata.coords[columns[2]].data.tolist()]
+                    axes[r][c].legend(legend_labels)
             fig.savefig(self.charts_dir + whichKCov + "_" + columns[1] + "-" + str(fixedType) + "_" + name + '_InTime.pdf')
             plt.close(fig)

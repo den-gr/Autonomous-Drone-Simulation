@@ -21,9 +21,9 @@ if __name__ == '__main__':
 
     main_experiment = "experiment_export"
     # CONFIGURE SCRIPT
-    dir = "export-big-clustering"
+    dir = "export-big-adaptive"
     directory = 'app/build/' + dir + '/'
-    charts_dir = 'app/build/charts-clustering/'
+    charts_dir = 'app/build/charts-adaptive/'
     pickleOutput = 'data_summary'
     experiments = [main_experiment]
     floatPrecision = '{: 0.2f}'
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     data = datasets[main_experiment]
     # algos = ["ff_linpro_c", "ff_linpro", "sm_av_c", "sm_av", "bc_re_c", "bc_re", "ff_nocomm_c", "ff_nocomm"]
     algos = ["ff_linpro_c", "ff_linpro_ac"]
-    algos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
+#     algos = ["ff_linpro_c", "ff_linproF_c", "sm_av_c", "bc_re_c"]
 
 #     algos = data.coords['Algorithm'].data.tolist()
 
@@ -257,10 +257,10 @@ if __name__ == '__main__':
         # selCamHerdRatio = 1.0 
         selHerdNumbers = [2.0, 4.0, 6.0, 8.0]
         dataInTime =  data.mean('Seed').mean("CamHerdRatio")
-        distances = ['10', '30', '50', '70', '90']
+        distances = ['10', '30', '50', '70', '400']
 
         for selHerdNumber in selHerdNumbers:
-            kcovChartBuilder.inTimeByValue(columns, selKcov, dataInTime, selHerdNumber, distances, timeLimit, name="clust-distances")
+            kcovChartBuilder.inTimeByValue(columns, selKcov, dataInTime, selHerdNumber, distances, timeLimit, name="clust-distances", unit="m")
         
     """""""""""""""""""""""""""
               heatmaps
