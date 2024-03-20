@@ -15,7 +15,7 @@ import java.lang.Math.toRadians
  * the list of [it.unibo.alchemist.model.VisibleNode],
  * containing [filterByMolecule].
  * [distance] and [angle] define the field of view.
- * [blindSpotDistance] define the zone of FoV where nodes are not visible.
+ * [blindSpotDistance] define the radius of a zone inside node's FoV where neighbors are not visible.
  */
 class CameraSeeWithBlindSpot @JvmOverloads constructor(
     node: Node<Any>,

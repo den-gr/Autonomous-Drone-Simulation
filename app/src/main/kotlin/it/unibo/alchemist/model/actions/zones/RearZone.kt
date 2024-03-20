@@ -17,9 +17,9 @@ class RearZone(
     movementProvider: MovementProvider,
     private val slowDownFactor: Double,
     private val slowDownProbability: Double,
-    numberOfHerds: Int,
+    herdRecognitionPredicate: (Int) -> Boolean,
     private val randomizer: Random,
-) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
+) : AbstractZone(node, environment, movementProvider, herdRecognitionPredicate) {
     override val visibleNodes: Molecule = SimpleMolecule("Rear zone")
 
     init {

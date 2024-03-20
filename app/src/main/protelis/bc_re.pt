@@ -25,6 +25,6 @@ rep(myTarget <- noTarget()) {
     } else {
         localTargets.get(localTargets.indexof(myTarget)) // updated position
     }
-    followOrExplore(newTarget, zigZagExploration)
+    followOrExplore(newTarget, fieldExploration)
     avoidCameraCollision(newTarget, localTargets)
 }

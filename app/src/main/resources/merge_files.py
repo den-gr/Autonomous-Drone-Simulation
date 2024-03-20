@@ -28,9 +28,10 @@ df_f = pd.read_csv(flight_data_path)
 
 ### Preproces video dataframe
 df_video = df_v.loc[:, columns]
-df_video.loc[df_video['id'] != 1, 'id'] = 2
 
-df_video[ANIMALS] = df_video.apply(lambda row: (row["id"], row["behaviour"], (row["xtl"], row["ytl"], row["xbr"], row["ybr"])), axis=1)
+# df_video.loc[df_video['id'] != 1, 'id'] = 2 # ad-hoc id change
+
+df_video[ANIMALS] = df_video.apply(lambda row: (row["id"], row["behaviour"], (row[XTL], row[YTL], row[XBR], row[YBR])), axis=1)
 df_video = df_video.groupby(["frame", LATITUDE, LONGITUDE, ALTITUDE])[ANIMALS].apply(list).reset_index(name=ANIMALS)
 
 
@@ -40,7 +41,7 @@ def round_and_average(vec):
 
 # Group multiple dataframe rows in a single df row
 def group_video_df_rows(rows):
-    rows_df = pd.DataFrame(rows)['animals'].explode().values.tolist()
+    rows_df = pd.DataFrame(rows)[ANIMALS].explode().values.tolist()
     df = pd.DataFrame(rows_df, columns=["id", "behaviour", 'box'])
     df_behavior = df.groupby(['id'])['behaviour'].first().reset_index()
     df_box = df.groupby(['id'])['box'].apply(round_and_average).reset_index()

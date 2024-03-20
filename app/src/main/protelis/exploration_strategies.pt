@@ -27,7 +27,8 @@ def getAttractiveForce(distance) {
 def getEnvironmentBoundaryForce(envPoint) {
     let myPos = self.getCoordinates()
     let distance = distanceBetweenPos(myPos, envPoint)
-    if(!env.has("CommRange") || env.get("CommRange") >= distance){
+    //TODO modification that was made to the original algorithm: add division to 10 in:  env.get("CommRange") / 10
+    if(!env.has("CommRange") || env.get("CommRange") / 10 >= distance){
         let versor = unitVector(myPos - envPoint)
         getRepulsiveForce(distance) * versor
     } else {

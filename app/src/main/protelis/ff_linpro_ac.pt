@@ -1,4 +1,4 @@
-module clustering:ff_linpro_c
+module ff_linpro_c
 import clustering:linpro
 import exploration_strategies
 

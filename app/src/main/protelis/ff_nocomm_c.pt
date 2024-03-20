@@ -1,0 +1,24 @@
+/*
+ *  Avoids communications between cameras except during the exploration phase in which it uses the fieldExploration.
+ *  Follows closest target in sight if present.
+ */
+
+module ff_nocomm_c
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
+import utils
+import clustering:utils_c
+import exploration_strategies
+
+def nocommc() {
+    let c = getClusters(getLocalTargets(), getClusteringDistance())
+    env.put("Clusters", c)
+    let clusters = tupleOf(c)
+    if(!clusters.isEmpty()){
+        let centroids = clusters.map(m -> {m.getCentroid()})
+        followCentroid(closestCoordinateToFov(centroids))
+    }else{
+        fieldExploration()
+    }
+}
+
+nocommc()

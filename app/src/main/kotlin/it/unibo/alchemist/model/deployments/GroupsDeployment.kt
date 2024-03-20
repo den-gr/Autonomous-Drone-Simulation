@@ -5,6 +5,17 @@ import it.unibo.alchemist.model.Position
 import org.apache.commons.math3.random.RandomGenerator
 import org.apache.commons.math3.util.FastMath
 
+/**
+ * Allows deploy nodes in multiple groups.
+ * @param environment
+ * @param randomGenerator
+ * @param nodeCount total number of nodes.
+ * @param centerX x coordinate of the deployment zone center.
+ * @param centerY y coordinate of the deployment zone center.
+ * @param radius of the circle where all groups will be deployed.
+ * @param groupNumber number of groups.
+ * @param groupRadius radius of the circle where nodes from the same group will be deployed.
+ */
 class GroupsDeployment<P : Position<out P>>(
     environment: Environment<*, P>,
     randomGenerator: RandomGenerator,

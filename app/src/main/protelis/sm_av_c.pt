@@ -1,0 +1,57 @@
+/* Based on "Online Multi-object k-coverage with Mobile Smart Cameras" by Lukas Esterle and Peter Lewis.
+ * Replicates the SM-AV algorithm, aka k-SMOOTH-Available.
+ */
+
+module sm_av_c
+import protelis:coord:spreading
+import protelis:coord:accumulation
+import it.unibo.experiment.clustering.HerdExperimentUtils.buildOverlapRelationsClusterGraph
+import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
+import it.unibo.experiment.clustering.HerdExperimentUtils.getVisibleCentroids
+import it.unibo.experiment.ProtelisUtils.findDevicesByData
+import it.unibo.experiment.ProtelisUtils.cloneFieldToMap
+import it.unibo.experiment.ProtelisUtils.getDataByDevice
+import utils
+import clustering:utils_c
+import exploration_strategies
+
+
+rep(info <- [noTarget(), buildOverlapRelationsClusterGraph(1, 0.995, 0.95)]) {
+    let myTarget = info.get(0)
+    let graph = info.get(1)
+    let localObjects = getVision()
+
+    let allObjects = foldUnion(nbr(localObjects))
+    let clusters = getClusters(allObjects, getClusteringDistance())
+    env.put("Clusters", clusters) // Used by GUI to draw the clusters
+    let visibleCentroids = tupleOf(getVisibleCentroids(clusters))
+
+    let globalObjects = cloneFieldToMap(nbr(visibleCentroids))
+    graph.evaporate()
+    graph.update(globalObjects)
+
+    let devicesToNotify = graph.smooth()
+    //env.put("devicesToNotify", devicesToNotify)
+    let notifiedDevices = nbr(devicesToNotify)
+    //env.putField("notifiedDevices", notifiedDevices)
+    let notifiers = findDevicesByData(notifiedDevices) {
+        it.contains(self.getDeviceUID())
+    }
+    //env.put("notifiers", notifiers)
+    // now filter targets by who really notified me
+    let allTargets = notifiers
+        .map { id -> globalObjects.get(id) } // onlyTargets(globalObjects.get(id))
+        .reduce([]) { d1, d2 -> d1.union(d2) }
+        .union(visibleCentroids) // onlyTargets(localObjects)
+    // env.put("allTargets", allTargets)
+
+    let newTarget = if(myTarget == noTarget() || !allTargets.contains(myTarget)) {
+        closestPoint(allTargets)
+    } else {
+        allTargets.get(allTargets.indexof(myTarget)) // updated position
+    };
+    followOrExplorePoint(newTarget, fieldExploration)
+    avoidCameraCollisionForCentroid(newTarget)
+
+    [newTarget, graph]
+}

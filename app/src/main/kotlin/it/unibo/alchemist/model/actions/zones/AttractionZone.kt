@@ -15,16 +15,15 @@ class AttractionZone(
     private val environment: Physics2DEnvironment<Any>,
     movementProvider: MovementProvider,
     private val speedUpFactor: Double,
-    numberOfHerds: Int,
-) : AbstractZone(node, environment, movementProvider, numberOfHerds) {
+    herdRecognitionPredicate: (Int) -> Boolean,
+) : AbstractZone(node, environment, movementProvider, herdRecognitionPredicate) {
     override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
 
     override fun getNextMovement(): Euclidean2DPosition {
-        val positions = mutableSetOf<RelativeLateralZonePosition>()
-        val nodePosition = environment.getPosition(owner)
-        for (neighbourNode in getNodesInZone(nodePosition)) {
-            val angle = getAngleFromHeadingToNeighbour(nodePosition, environment.getPosition(neighbourNode))
-            for (relativePos in RelativeLateralZonePosition.values()) {
+        val positions = mutableSetOf<RelativeLateralPosition>()
+        for (neighbourNode in getNodesInZone()) {
+            val angle = getAngleFromHeadingToNeighbour(environment.getPosition(neighbourNode))
+            for (relativePos in RelativeLateralPosition.values()) {
                 if (angle in relativePos.startAngle..relativePos.endAngle) {
                     positions.add(relativePos)
                 }
@@ -32,11 +31,11 @@ class AttractionZone(
         }
 
         val movement = movementProvider.getRandomMovement()
-        if (positions.contains(RelativeLateralZonePosition.LEFT) && !positions.contains(RelativeLateralZonePosition.RIGHT)) {
+        if (positions.contains(RelativeLateralPosition.LEFT) && !positions.contains(RelativeLateralPosition.RIGHT)) {
             return movement + (movementProvider.toLeft() * speedUpFactor)
-        } else if (!positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
+        } else if (!positions.contains(RelativeLateralPosition.LEFT) && positions.contains(RelativeLateralPosition.RIGHT)) {
             return movement + (movementProvider.toRight() * speedUpFactor)
-        } else if (positions.contains(RelativeLateralZonePosition.LEFT) && positions.contains(RelativeLateralZonePosition.RIGHT)) {
+        } else if (positions.contains(RelativeLateralPosition.LEFT) && positions.contains(RelativeLateralPosition.RIGHT)) {
             return movement + (movementProvider.forward() * speedUpFactor)
         }
         throw IllegalStateException("Nodes not found in attraction zone")

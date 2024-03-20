@@ -6,35 +6,37 @@
  * In case there are multiple targets with the least requests number, then the closest one is chosen.
  */
 
-module clustering:bc_re_c
+module bc_re_c
 import protelis:lang:utils
 import protelis:coord:spreading
 import protelis:coord:accumulation
 import it.unibo.experiment.clustering.HerdExperimentUtils.clustersWithLeastSources
 import it.unibo.experiment.clustering.HerdExperimentUtils.getClusters
 import it.unibo.experiment.clustering.HerdExperimentUtils.getVisibleCentroids
+import it.unibo.experiment.clustering.HerdExperimentUtils.getVisibleClusters
 import it.unibo.experiment.clustering.HerdExperimentUtils.isPointVisible
 import utils
 import clustering:utils_c
 import exploration_strategies
 
 
-rep(myTarget <- noTarget()) {
+rep(myTarget <- emptyCluster()) {
     let localTargets = getLocalTargets()
     let allTargets = foldUnion(nbr(localTargets))
 
-    let clusters = getClusters(allTargets, getClusteringLimit())
+    let clusters = getClusters(allTargets, getClusteringDistance())
     env.put("Clusters", clusters) // Used by GUI to draw the clusters
-    let visibleCentroids = tupleOf(getVisibleCentroids(clusters))
-    let allVisibleClusters = nbr(visibleCentroids)
+    let visibleCentroids = tupleOf(getVisibleClusters(clusters))
+    let allVisibleCentroids = nbr(visibleCentroids)
 
-    let possibleTarget = closestPoint( clustersWithLeastSources(allVisibleClusters))
-    env.put("whaaaaaaaaaaaaaaaaaaaaaaaaaata", possibleTarget)
-    let newTarget = if(myTarget == noTarget()|| !isPointVisible(myTarget)) {
+    let possibleTarget = closestCluster(clustersWithLeastSources(allVisibleCentroids))
+    let newTarget = if(myTarget == emptyCluster() || !isPointVisible(myTarget.getCentroid())) {
         possibleTarget
     } else {
-        closestCoordinateToFov(visibleCentroids) // updated position
+        closestCluster(visibleCentroids) // updated position
     }
-    followOrExplorePoint(newTarget, zigZagExploration)
-    avoidCameraCollision(newTarget, localTargets)
+
+    followOrExploreCluster(newTarget, fieldExploration)
+    avoidCameraCollisionForClusters(newTarget)
+    newTarget
 }

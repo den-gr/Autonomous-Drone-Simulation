@@ -46,8 +46,9 @@ class NeutralZoneTest : AbstractZoneTest() {
             NEUTRAL_ZONE_ANGLE,
         )
 
-        neutralZone1 = NeutralZone(neutralZoneShape, node1, environment, movementsProvider, 1)
-        neutralZone2 = NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movementsProvider, 1)
+        val sameHerdPredicate: (Int) -> Boolean = { _ -> true }
+        neutralZone1 = NeutralZone(neutralZoneShape, node1, environment, movementsProvider, sameHerdPredicate)
+        neutralZone2 = NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movementsProvider, sameHerdPredicate)
     }
 
     @BeforeEach

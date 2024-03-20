@@ -7,6 +7,7 @@ import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.alchemist.model.protelis.AlchemistExecutionContext
 import it.unibo.alchemist.protelis.properties.ProtelisDevice
+import it.unibo.experiment.OverlapRelationsGraph
 import it.unibo.experiment.toTargets
 import org.protelis.lang.datatype.Field
 import org.protelis.lang.datatype.Tuple
@@ -57,7 +58,7 @@ class HerdExperimentUtils {
          */
         @JvmStatic
         fun isClusterCentroidVisible(context: AlchemistExecutionContext<Euclidean2DPosition>, cluster: Cluster): Boolean {
-            return  isPointVisible(context, cluster.centroid)
+            return isPointVisible(context, cluster.centroid)
         }
 
         @JvmStatic
@@ -88,6 +89,17 @@ class HerdExperimentUtils {
             return clusters.filter { isClusterCentroidVisible(context, it) }.map { it.centroid }
         }
 
+        /**
+         * A cluster is considered visible if its centroid is visible
+         */
+        @JvmStatic
+        fun getVisibleClusters(context: AlchemistExecutionContext<Euclidean2DPosition>, clusters: List<Cluster>): List<Cluster>{
+            return clusters.filter { isClusterCentroidVisible(context, it) }
+        }
+
+        /**
+         * Given a map from device to assigned cluster (target) returns all elements of this clusters.
+         */
         @JvmStatic
         fun getAssignedNodes(clusterAssignments: Map<String, Cluster>, clusters: List<Cluster>): Tuple {
             val ids = clusterAssignments.values.stream().map { m -> m.id}
@@ -106,16 +118,16 @@ class HerdExperimentUtils {
 
         @JvmStatic
         fun getClusters(targets: Tuple, clusteringLimit: Double): List<Cluster> {
-            val clusters = groupByClusters(targets, clusteringLimit)
-            val centroids = mutableListOf<Cluster>()
+            val clustersMap = groupByClusters(targets, clusteringLimit)
+            val clusters = mutableListOf<Cluster>()
             val MPL = 4.0
-            for (cluster in clusters.entries) {
-                val c = cluster.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
-                val size = cluster.value.size
+            for (clusterEntry in clustersMap.entries) {
+                val c = clusterEntry.value.foldRight(Euclidean2DPosition(0.0, 0.0)) { v, acc -> v.position + acc }
+                val size = clusterEntry.value.size
                 val centroid = Euclidean2DPosition(round((c.x / size) / MPL) * MPL, round((c.y / size) / MPL) * MPL)
-                centroids.add(Cluster(cluster.key, centroid, cluster.value))
+                clusters.add(Cluster(clusterEntry.key, centroid, clusterEntry.value))
             }
-            return centroids
+            return clusters
         }
 
         @JvmStatic
@@ -127,9 +139,9 @@ class HerdExperimentUtils {
                 return mapOf(0 to nodes)
             }
             val data = nodes.map { it.position.coordinates }.toTypedArray()
-            val c = hclust(data, "ward") // wpgma
+            val c = hclust(data, "upgma") // upgma = average, wpgma = weighted avarege
             val labels = if (c.height().last() <= clusteringLimit) {
-                IntArray(data.size) { 0 }
+                IntArray(data.size) { 0 } // single cluster
             } else {
                 c.partition(clusteringLimit)
             }
@@ -150,20 +162,39 @@ class HerdExperimentUtils {
          */
         @JvmStatic
         fun clustersWithLeastSources(field: Field<Tuple>): Tuple {
-            val counts = mutableMapOf<Any, Int>()
+            val counts = mutableMapOf<Cluster, Int>()
             field.values().forEach { tuple ->
                 tuple.forEach {
-                    counts.merge(it, 1) { v1, v2 -> v1 + v2 }
+                    counts.merge((it as Cluster), 1) { v1, v2 -> v1 + v2 }
                 }
             }
             val min = if (counts.values.isEmpty()) Int.MAX_VALUE else counts.values.min()
             return counts.filterValues { it <= min }.keys.toTuple()
         }
+
+        //-----------------------------------------------------------------------------------
+        /**
+         * See [OverlapRelationsGraph].
+         */
+        @JvmStatic
+        fun buildOverlapRelationsClusterGraph(
+            context: AlchemistExecutionContext<Euclidean2DPosition>,
+            strengthenValue: Double,
+            evaporationBaseFactor: Double,
+            evaporationMovementFactor: Double,
+        ) =
+            OverlapRelationsGraphForProtelisClusters(
+                context.deviceUID,
+                strengthenValue,
+                evaporationBaseFactor,
+                evaporationMovementFactor,
+            )
+
     }
 }
 
 private fun <P : Position2D<P>> Position2D<P>.toTuple(): Tuple = ArrayTupleImpl(x, y)
-private fun Collection<*>.toTuple(): Tuple = with(iterator()) { ArrayTupleImpl(*Array(size) { next() }) }
+fun Collection<*>.toTuple(): Tuple = with(iterator()) { ArrayTupleImpl(*Array(size) { next() }) }
 private fun Tuple.toPosition(): Euclidean2DPosition {
     require(size() == 2)
     val x = get(0)

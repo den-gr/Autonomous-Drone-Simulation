@@ -45,7 +45,7 @@ class RearZoneTest : AbstractZoneTest() {
             REAR_ZONE_ANGLE,
             true,
         )
-
+        val sameHerdPredicate: (Int) -> Boolean = { _ -> true }
         rearZone = RearZone(
             rearZoneShape,
             node1,
@@ -53,7 +53,7 @@ class RearZoneTest : AbstractZoneTest() {
             movementsProvider,
             SLOW_DOWN_FACTOR,
             SLOW_DOWN_PROBABILITY,
-            1,
+            sameHerdPredicate,
             Random(1),
         )
     }

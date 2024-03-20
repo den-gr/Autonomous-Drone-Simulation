@@ -1,9 +1,7 @@
 package it.unibo.alchemist.model.actions.zones.shapes
 
-import it.unibo.alchemist.model.geometry.Euclidean2DShape
-
 /**
- * Factory that create shapes for zones
+ * Factory that create shapes of zones.
  */
 interface ZoneShapeFactory<P> {
 
@@ -23,8 +21,8 @@ interface ZoneShapeFactory<P> {
 
     /**
      * @param radius base width radius
-     * @param ratio how many times shape should be length should be bigger than radius
+     * @param ratio how many times the length of ellipse should be bigger than radius (width)
      * @return Ellipse zone shape
      */
-    fun produceEllipseZoneShape(radius: Double, ratio: Double): ZoneShape<Euclidean2DShape>
+    fun produceEllipseZoneShape(radius: Double, ratio: Double): ZoneShape<P>
 }
