@@ -1,5 +1,6 @@
 package it.unibo.experiment.linpro
 
+import it.unibo.experiment.CameraTargetAssignmentProblem
 import org.danilopianini.util.LinkedListSet
 
 /**
@@ -32,8 +33,8 @@ class LinproCache<S, D> {
         ) -> Map<S, D>,
     ): Map<S, D> {
         if (tid == -1L) {
-            tid = Thread.currentThread().id
-        } else if (tid != Thread.currentThread().id) {
+            tid = Thread.currentThread().threadId()
+        } else if (tid != Thread.currentThread().threadId()) {
             throw IllegalAccessException("This is not thread-safe!")
         }
         val destsSet = LinkedListSet(destinations)

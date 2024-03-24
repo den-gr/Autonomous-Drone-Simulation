@@ -35,7 +35,7 @@ class CircularPositionProvider(
     }
 
     fun getNorthWestInZonePosition(): Euclidean2DPosition {
-        return Euclidean2DPosition(-radius / 2, radius / 2 )
+        return Euclidean2DPosition(-radius / 2, radius / 2)
     }
 
     fun getPointsInRadius(radius: Double, numPoints: Int = 10): List<Euclidean2DPosition> {
@@ -52,7 +52,11 @@ class CircularPositionProvider(
         return points.toList()
     }
 
-    fun generateEquidistantPointsInHalfCircle(radius: Double, numberOfPoints: Int, headingAngle: Double): List<Euclidean2DPosition> {
+    fun generateEquidistantPointsInHalfCircle(
+        radius: Double,
+        numberOfPoints: Int,
+        headingAngle: Double,
+    ): List<Euclidean2DPosition> {
         val points = mutableListOf<Euclidean2DPosition>()
 
         val normalizedHeadingAngle = (headingAngle - PI / 2 + PI) % (2 * PI) - PI

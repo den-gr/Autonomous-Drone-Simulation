@@ -17,12 +17,15 @@ import java.awt.Graphics2D
 import java.awt.Point
 import kotlin.math.ceil
 
+/**
+ * Draw clusters from the point of view of a single camera.
+ */
 open class DrawVisibleClusters : AbstractDrawOnce() {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DrawVisibleClusters::class.java)
-        protected val ks = 1.0
-        protected val sizex = 12
+        protected const val ks = 1.0
+        protected const val sizex = 12
 
         @JvmStatic
         protected val listOfColors = listOf(
@@ -61,7 +64,6 @@ open class DrawVisibleClusters : AbstractDrawOnce() {
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     open fun <T> draw(
         graphics: Graphics2D,
         environment: Physics2DEnvironment<T>,
@@ -77,7 +79,7 @@ open class DrawVisibleClusters : AbstractDrawOnce() {
                     .flatMap { it.seenTargets }
             }
             .toSet()
-            .map { it as Node<T> }
+            .filterIsInstance<Node<T>>()
             .map { environment.getPosition(it) }
 
         val data = allVisibleNodesPositions.map { it.coordinates }.toTypedArray()
@@ -90,8 +92,9 @@ open class DrawVisibleClusters : AbstractDrawOnce() {
                 .first { it.contains(SimpleMolecule("drone")) }
                 .getConcentration(SimpleMolecule("Clusters"))
 
-            if (result != null) {
-                val sortedPairs = (result as List<Cluster>).sortedBy { it.centroid.asAngle }
+            if (result != null && result is List<*>) {
+                val visibleClustersList: List<Cluster> = result.filterIsInstance<Cluster>()
+                val sortedPairs = visibleClustersList.sortedBy { it.centroid.asAngle }
 
                 sortedPairs.forEachIndexed { idx, cluster ->
 

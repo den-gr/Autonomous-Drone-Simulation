@@ -19,7 +19,13 @@ interface CameraTargetAssignmentProblem<S, D> {
      * @param fair if fair then it tries to assign destinations evenly among sources.
      * @return a map from sources to destinations
      */
-    fun solve(sources: List<S>, destinations: List<D>, maxSourcesPerDestination: Int, fair: Boolean, cost: (source: S, destination: D) -> Double): Map<S, D>
+    fun solve(
+        sources: List<S>,
+        destinations: List<D>,
+        maxSourcesPerDestination: Int,
+        fair: Boolean,
+        cost: (source: S, destination: D) -> Double,
+    ): Map<S, D>
 
     companion object {
         fun <S, D> getSolver(): CameraTargetAssignmentProblem<S, D> =

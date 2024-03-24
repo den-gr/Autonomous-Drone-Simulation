@@ -22,6 +22,9 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Arc2D
 import java.awt.geom.Ellipse2D
 
+/**
+ * Draws individuals stress, neutral, attraction and rear zones.
+ */
 @Suppress("DEPRECATION")
 class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
     companion object {
@@ -89,7 +92,15 @@ class DrawZones : it.unibo.alchemist.boundary.swingui.effect.api.Effect {
                         is CircularSegmentZoneShape<Euclidean2DShape> -> {
                             val shape = z.zoneShape as CircularSegmentZoneShape<Euclidean2DShape>
                             val startAngle = shape.direction * -shape.angle / 2
-                            val fov: java.awt.Shape = Arc2D.Double(-shape.radius, -shape.radius, shape.radius * 2, shape.radius * 2, startAngle, shape.angle, Arc2D.PIE)
+                            val fov: java.awt.Shape = Arc2D.Double(
+                                -shape.radius,
+                                -shape.radius,
+                                shape.radius * 2,
+                                shape.radius * 2,
+                                startAngle,
+                                shape.angle,
+                                Arc2D.PIE,
+                            )
                             graphics.draw(transform.createTransformedShape(fov))
                         }
                         else -> {

@@ -5,4 +5,4 @@ import exploration_strategies
 let is_fair = false
 let is_clustering_adaptive = false
 let explorationStrategy = fieldExploration
-linproo(is_fair, is_clustering_adaptive, explorationStrategy)
+linpro(is_fair, is_clustering_adaptive, explorationStrategy)

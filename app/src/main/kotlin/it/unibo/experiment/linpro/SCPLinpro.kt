@@ -22,7 +22,8 @@ class SCPLinpro<S, D> : AbstractLinpro<S, D>() {
     companion object {
         fun isAvailable() = SolverFactory.newDefault() != null
     }
-    private val solver: LinearProgramSolver = SolverFactory.newDefault() ?: throw IllegalAccessException("SCPLinpro is not available, try ApacheLinpro instead")
+    private val solver: LinearProgramSolver = SolverFactory.newDefault()
+        ?: throw IllegalAccessException("SCPLinpro is not available, try ApacheLinpro instead")
     init {
         if (solver.javaClass.simpleName.equals("GLPKSolver", ignoreCase = true)) {
             System.out.close() // avoid the HUGE console output of GPLK

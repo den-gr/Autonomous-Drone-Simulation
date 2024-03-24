@@ -1,14 +1,15 @@
 package it.unibo.alchemist.model.actions.zones
 
-import it.unibo.alchemist.model.Molecule
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
-import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 
+/**
+ * Attraction zone responsible of group cohesion.
+ */
 class AttractionZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
     node: Node<Any>,
@@ -17,7 +18,6 @@ class AttractionZone(
     private val speedUpFactor: Double,
     herdRecognitionPredicate: (Int) -> Boolean,
 ) : AbstractZone(node, environment, movementProvider, herdRecognitionPredicate) {
-    override val visibleNodes: Molecule = SimpleMolecule("Attraction zone")
 
     override fun getNextMovement(): Euclidean2DPosition {
         val positions = mutableSetOf<RelativeLateralPosition>()
@@ -31,13 +31,14 @@ class AttractionZone(
         }
 
         val movement = movementProvider.getRandomMovement()
-        if (positions.contains(RelativeLateralPosition.LEFT) && !positions.contains(RelativeLateralPosition.RIGHT)) {
-            return movement + (movementProvider.toLeft() * speedUpFactor)
+        return if (positions.contains(RelativeLateralPosition.LEFT) && !positions.contains(RelativeLateralPosition.RIGHT)) {
+            movement + (movementProvider.toLeft() * speedUpFactor)
         } else if (!positions.contains(RelativeLateralPosition.LEFT) && positions.contains(RelativeLateralPosition.RIGHT)) {
-            return movement + (movementProvider.toRight() * speedUpFactor)
+            movement + (movementProvider.toRight() * speedUpFactor)
         } else if (positions.contains(RelativeLateralPosition.LEFT) && positions.contains(RelativeLateralPosition.RIGHT)) {
-            return movement + (movementProvider.forward() * speedUpFactor)
+            movement + (movementProvider.forward() * speedUpFactor)
+        } else {
+            error("Nodes not found in attraction zone")
         }
-        throw IllegalStateException("Nodes not found in attraction zone")
     }
 }

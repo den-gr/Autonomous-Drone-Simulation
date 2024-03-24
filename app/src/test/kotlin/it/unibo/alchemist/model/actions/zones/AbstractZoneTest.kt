@@ -60,7 +60,10 @@ abstract class AbstractZoneTest {
         setDefaultHeading(node)
     }
 
-    protected fun Euclidean2DPosition.addVelocityModifier(lateralModifier: Double, forwardModifier: Double): Euclidean2DPosition {
+    protected fun Euclidean2DPosition.addVelocityModifier(
+        lateralModifier: Double,
+        forwardModifier: Double,
+    ): Euclidean2DPosition {
         return Euclidean2DPosition(
             x + x * lateralModifier,
             y + y * forwardModifier,

@@ -1,14 +1,15 @@
 package it.unibo.alchemist.model.actions.zones
 
-import it.unibo.alchemist.model.Molecule
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.actions.zones.shapes.ZoneShape
 import it.unibo.alchemist.model.geometry.Euclidean2DShape
-import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.physics.environments.Physics2DEnvironment
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 
+/**
+ * Stress zone of an individual, it is responsible for near distance repulsion.
+ */
 class StressZone(
     override val zoneShape: ZoneShape<Euclidean2DShape>,
     node: Node<Any>,
@@ -16,7 +17,6 @@ class StressZone(
     movementProvider: MovementProvider,
     private val repulsionFactor: Double,
 ) : AbstractZone(node, environment, movementProvider) {
-    override val visibleNodes: Molecule = SimpleMolecule("Stress zone")
 
     override fun getNextMovement(): Euclidean2DPosition {
         return getStressZoneMovement(getNodesInZone())
@@ -50,7 +50,9 @@ class StressZone(
         // lateral forces are already added, so add only forward force
         if (positions.contains(RelativePosition.BEHIND_RIGHT) && positions.contains(RelativePosition.BEHIND_LEFT)) {
             movement = (movementProvider.forward() + movement).addVelocityModifier(0.0, repulsionFactor)
-        } else if (positions.contains(RelativePosition.BEHIND_RIGHT) || positions.contains(RelativePosition.BEHIND_LEFT)) {
+        } else if (positions.contains(RelativePosition.BEHIND_RIGHT) ||
+            positions.contains(RelativePosition.BEHIND_LEFT)
+        ) {
             movement += movementProvider.forward()
         }
 

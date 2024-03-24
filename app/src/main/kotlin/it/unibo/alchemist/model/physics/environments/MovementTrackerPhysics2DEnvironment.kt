@@ -5,11 +5,26 @@ import it.unibo.alchemist.model.Molecule
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 
+/**
+ * Allows query the total distance traveled by nodes.
+ */
 interface NodeMovementTracker {
+    /**
+     * @return total distance traveled by cameras since last query.
+     */
     fun queryCameraMovementsSinceLastQuery(): Double
+
+    /**
+     * @return total distance traveled by objects since last query.
+     */
     fun queryObjectMovementsSinceLastQuery(): Double
 }
 
+/**
+ * Environment that track nodes movements.
+ * @param incarnation
+ * @param filterCamera allows filter the cameras nodes.
+ */
 @Suppress("unused")
 class MovementTrackerPhysics2DEnvironment<T>(
     incarnation: Incarnation<T, Euclidean2DPosition>,

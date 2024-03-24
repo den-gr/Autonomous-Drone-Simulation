@@ -48,9 +48,27 @@ class StressZoneTest : AbstractZoneTest() {
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceCircleZoneShape(STRESS_ZONE_RADIUS)
 
-        stressZone1 = StressZone(stressZoneShape, node1, environment, getNewMovementProvider(node1.id), REPULSION_FACTOR)
-        stressZone2 = StressZone(stressZoneShape.makeCopy(), node2, environment, getNewMovementProvider(node2.id), REPULSION_FACTOR)
-        stressZone4 = StressZone(stressZoneShape.makeCopy(), node4, environment, getNewMovementProvider(node4.id), REPULSION_FACTOR)
+        stressZone1 = StressZone(
+            stressZoneShape,
+            node1,
+            environment,
+            getNewMovementProvider(node1.id),
+            REPULSION_FACTOR,
+        )
+        stressZone2 = StressZone(
+            stressZoneShape.makeCopy(),
+            node2,
+            environment,
+            getNewMovementProvider(node2.id),
+            REPULSION_FACTOR,
+        )
+        stressZone4 = StressZone(
+            stressZoneShape.makeCopy(),
+            node4,
+            environment,
+            getNewMovementProvider(node4.id),
+            REPULSION_FACTOR,
+        )
 
         environment.removeNode(node4)
         environment.removeNode(node2)
@@ -141,7 +159,7 @@ class StressZoneTest : AbstractZoneTest() {
     }
 
     /**
-     * Verify that the nodes positioned behind in the both sides force the node to move forward
+     * Verify that the nodes positioned behind in the both sides force the node to move forward.
      */
     @Test
     fun testForwardMovement() {
@@ -152,7 +170,11 @@ class StressZoneTest : AbstractZoneTest() {
         assertTrue(stressZone1.areNodesInZone())
 
         val movement = stressZone1.getNextMovement()
-        assertEquals((movementsProvider.forward() + randomMovement1).addVelocityModifier(0.0, REPULSION_FACTOR).y, movement.y)
+        assertEquals(
+            (movementsProvider.forward() + randomMovement1)
+                .addVelocityModifier(0.0, REPULSION_FACTOR).y,
+            movement.y,
+        )
         assertEquals(randomMovement1.x, movement.x)
     }
 

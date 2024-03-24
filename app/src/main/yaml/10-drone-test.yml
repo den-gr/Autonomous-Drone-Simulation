@@ -50,45 +50,15 @@ variables:
       program: "ff_linpro"
     - program: send
 
-#  Seed: &Seed
-#    type: LinearVariable
-#    #default, min, max, step
-#    parameters: [1, 1, 1, 1]
-#  Algorithm: &Algorithm
-#    type: ListOf
-#    parameters: ["ff_linpro"]
-#  HumanSpeed: &HumanSpeed
-#    type: ArbitraryVariable
-#    parameters: [1.4]
-#  NumHumans: &NumHumans
-#    formula: 30
-#  NumCameras: &NumCameras
-#    formula: 15
-#  HalfEnvironmentSize: &HalfEnvironmentSize # needed for calculations
-#    formula: EnvironmentSize / 2
-#  NegHalfEnvironmentSize: &NegHalfEnvironmentSize # needed for calculations
-#    formula: -HalfEnvironmentSize
-#  NetworkConnectionMaxDistance: &NetworkConnectionMaxDistance
-#    formula: EnvironmentSize * EnvironmentSize
-#  WantedProbability: &WantedProbability
-#    type: ArbitraryVariable
-#    parameters: [0.05]
-#  WantedTimeDistribution: &WantedTimeDistribution # how many times per second the dice is rolled
-#    type: ArbitraryVariable
-#    parameters: [0.05]
 network-model:
   type: ConnectToGroup
   parameters: [*CommunicationRange, Drone_sign]
 environment:
   type: ContinuousPhysics2DEnvironment
-#  type: Rectangular2DEnvironment
-#  parameters: [*EnvironmentSize, *EnvironmentSize]
-
-
 
 deployments:
-  - type: SpecificPositions
-    parameters: [[-20, 8], [50, 50], [-50, 50], [0, 1]]
+  - type: Circle
+    parameters: [ 7, 0, 0, 200]
     contents:
       - molecule: Drone_sign
         concentration: true
@@ -118,6 +88,3 @@ deployments:
         concentration: true
       - molecule: wanted
         concentration: true
-#    properties:
-#      - type: RectangularArea
-#        parameters: [ 2, 2 ]

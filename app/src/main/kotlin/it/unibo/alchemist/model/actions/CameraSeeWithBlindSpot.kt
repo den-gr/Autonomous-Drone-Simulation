@@ -12,25 +12,19 @@ import java.lang.Math.toRadians
 
 /**
  * Checks nodes in the [environment] and writes in [outputMolecule]
- * the list of [it.unibo.alchemist.model.VisibleNode],
- * containing [filterByMolecule].
- * [distance] and [angle] define the field of view.
- * [blindSpotDistance] define the radius of a zone inside node's FoV where neighbors are not visible.
+ * the list of [it.unibo.alchemist.model.VisibleNode], containing [filterByMolecule].
+ * @param node owner of the action
+ * @param blindSpotDistance radius of the blind spot inside FoV.
+ * @param distance radius of the FoV.
+ * @param angle of the FoV.
+ * @param outputMolecule for visible nodes.
+ * @param filterByMolecule allows to consider only target nodes.
  */
 class CameraSeeWithBlindSpot @JvmOverloads constructor(
     node: Node<Any>,
     private val environment: Physics2DEnvironment<Any>,
-    /**
-     * Distance of the blind spot of field of view.
-     */
     val blindSpotDistance: Double,
-    /**
-     * Distance of the field of view.
-     */
     val distance: Double,
-    /**
-     * Angle in degrees of the field of view.
-     */
     val angle: Double,
     private val outputMolecule: Molecule = SimpleMolecule("vision"),
     private val filterByMolecule: Molecule? = null,
@@ -45,6 +39,9 @@ class CameraSeeWithBlindSpot @JvmOverloads constructor(
             toRadians(angle),
         )
 
+    /**
+     * used by GUI to draw clusters.
+     */
     var seenTargets: List<Node<Any>> = emptyList()
 
     init {
