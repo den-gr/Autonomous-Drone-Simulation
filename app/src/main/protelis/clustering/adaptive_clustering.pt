@@ -1,3 +1,7 @@
+/*
+ *  Allows dynamically changing the hierarchical clustering distance in a network of devices.
+ */
+
 module clustering:adaptive_clustering
 import it.unibo.experiment.clustering.HerdExperimentUtils.isClusterCentroidVisible
 import clustering:utils_c
@@ -16,7 +20,6 @@ public def getNewClusteringDistance(myCluster, localVisibleNodes, allAssignedNod
             getDistanceWhenTargetNotCovered(localVisibleNodes, myClusterNodes, myClusterVisibleNodesSize, allClusteringDistances)
         }
     }else{
-        env.put("->>>>>>>>>>>>>>>>>>>>", "a1")
         adapt(allClusteringDistances)
     }
 }  
@@ -28,10 +31,8 @@ def getDistanceWhenTargetCovered(localVisibleNodes, allAssignedNodes, myClusterN
         let extraneous = localVisibleNodes.subtract(myClusterNodes)
         let extraneousCoverage = extraneous.size() / localVisibleNodes.size()
         if(!allAssignedNodes.containsAll(extraneous) || extraneousCoverage > 0.5){
-            env.put("->>>>>>>>>>>>>>>>>>>>", "i")
             max(increment(), allClusteringDistances.max(0))
         }else{
-            env.put("->>>>>>>>>>>>>>>>>>>>", "a3")
             adapt(allClusteringDistances)
         }
     }else{
@@ -42,10 +43,8 @@ def getDistanceWhenTargetCovered(localVisibleNodes, allAssignedNodes, myClusterN
 def getDistanceWhenTargetNotCovered(localVisibleNodes, myClusterNodes, myClusterVisibleNodesSize, allClusteringDistances) {
     let myClusterCoverage = myClusterVisibleNodesSize / myClusterNodes.size()
     if(myClusterVisibleNodesSize == localVisibleNodes.size() && myClusterCoverage < 0.7 ){
-        env.put("->>>>>>>>>>>>>>>>>>>>", "d")
         min(decrement(), allClusteringDistances.min(0))
     }else{
-        env.put("->>>>>>>>>>>>>>>>>>>>", "a4")
         adapt(allClusteringDistances)
     }
 }
