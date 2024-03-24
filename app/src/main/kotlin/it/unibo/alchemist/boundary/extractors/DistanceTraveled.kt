@@ -7,6 +7,9 @@ import it.unibo.alchemist.model.physics.environments.NodeMovementTracker
 import kotlin.math.pow
 import kotlin.math.round
 
+/**
+ * Extract from an environment that implement [NodeMovementTracker] the total distance traveled by objects and cameras.
+ */
 class DistanceTraveled : AbstractDoubleExporter() {
     override val columnNames: List<String> = listOf("CamDist", "ObjDist")
 
@@ -16,14 +19,11 @@ class DistanceTraveled : AbstractDoubleExporter() {
         time: Time,
         step: Long,
     ): Map<String, Double> {
-        return if (environment is NodeMovementTracker) {
-            mapOf(
-                "CamDist" to coverageRound(environment.queryCameraMovementsSinceLastQuery()),
-                "ObjDist" to coverageRound(environment.queryObjectMovementsSinceLastQuery()),
-            )
-        } else {
-            throw IllegalArgumentException("DistanceTraveled only works with environments implementing NodeMovementTracker")
-        }
+        require(environment is NodeMovementTracker)
+        return mapOf(
+            "CamDist" to coverageRound(environment.queryCameraMovementsSinceLastQuery()),
+            "ObjDist" to coverageRound(environment.queryObjectMovementsSinceLastQuery()),
+        )
     }
 
     private fun coverageRound(num: Double): Double {

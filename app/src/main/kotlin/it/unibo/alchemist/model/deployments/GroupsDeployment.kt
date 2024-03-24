@@ -33,7 +33,10 @@ class GroupsDeployment<P : Position<out P>>(
         if (!groupRandomValuesMap.containsKey(groupIndex)) {
             val groupAngle = randomDouble(0.0, 2 * FastMath.PI)
             val groupRad: Double = radius * FastMath.sqrt(randomDouble())
-            val groupCenter = makePosition(centerX + groupRad * FastMath.cos(groupAngle), centerY + groupRad * FastMath.sin(groupAngle))
+            val groupCenter = makePosition(
+                centerX + groupRad * FastMath.cos(groupAngle),
+                centerY + groupRad * FastMath.sin(groupAngle),
+            )
             groupRandomValuesMap[groupIndex] = groupCenter
         }
         val groupCenter = groupRandomValuesMap.getOrDefault(groupIndex, makePosition(0, 0)).coordinates

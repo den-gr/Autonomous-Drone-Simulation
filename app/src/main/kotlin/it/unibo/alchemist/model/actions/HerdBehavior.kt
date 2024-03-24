@@ -3,7 +3,7 @@ package it.unibo.alchemist.model.actions
 import it.unibo.alchemist.model.Context
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
-import it.unibo.alchemist.model.actions.utils.GeometryUtils.Companion.rotateVector
+import it.unibo.alchemist.model.actions.utils.GeometryUtils.rotateVector
 import it.unibo.alchemist.model.actions.utils.MovementProvider
 import it.unibo.alchemist.model.actions.zones.AttractionZone
 import it.unibo.alchemist.model.actions.zones.NeutralZone
@@ -26,7 +26,7 @@ import kotlin.random.Random
  * Action for agent based herd movement behavior.
  * @param node action owner.
  * @param environment
- * @param zones_radii array that contains radii of [stress, neutral, attraction, rear] zones.
+ * @param zonesRadii array that contains radii of [stress, neutral, attraction, rear] zones.
  * @param velocities array that contains [lateral, forward] intrinsic velocities.
  * @param movementProbabilities contains probabilities to move [left, forward, right] directions.
  * @param stressZoneRepulsionFactor [0; 1] Slow down by a factor if there are neighbors ahead of the individual in the stress zone.
@@ -37,7 +37,7 @@ import kotlin.random.Random
 class HerdBehavior @JvmOverloads constructor(
     node: Node<Any>,
     private val environment: ContinuousPhysics2DEnvironment<Any>,
-    private val zones_radii: ArrayList<Double>,
+    private val zonesRadii: ArrayList<Double>,
     private val velocities: ArrayList<Double>,
     private val movementProbabilities: ArrayList<Double>,
     private val stressZoneRepulsionFactor: Double,
@@ -65,15 +65,31 @@ class HerdBehavior @JvmOverloads constructor(
     private val nodeRandomizer: Random
 
     companion object {
+        /**
+         * How many times stress zone length is bigger than width.
+         */
         const val STRESS_ZONE_ELLIPSE_RATIO = 2.0
+
+        /**
+         * Zones angle in degrees (except stress zone).
+         */
         const val ANGLE_OF_ZONE = 180.0 // degrees
+
+        /**
+         * The tendency to preserve individual's own direction.
+         */
         const val MAINTAIN_DIRECTION_WEIGHT = 0.8
+
+        /**
+         * The probability to change direction while inside desired world borders.
+         */
         const val TURNING_PROBABILITY_INSIDE_WORLD = 0.1
     }
 
     init {
         // allows to recognize individuals from the same herd
-        val herdRecognitionPredicate: (Int) -> Boolean = { neighborId -> node.id % numberOfHerds == neighborId % numberOfHerds }
+        val herdRecognitionPredicate: (Int) -> Boolean =
+            { neighborId -> node.id % numberOfHerds == neighborId % numberOfHerds }
 
         herdRandomizer = Random((node.id % numberOfHerds) + seed)
         nodeRandomizer = Random(node.id + seed)
@@ -92,10 +108,10 @@ class HerdBehavior @JvmOverloads constructor(
         )
         environment.setHeading(node, Euclidean2DPosition(cos(herdDirectionAngle), sin(herdDirectionAngle)))
 
-        val stressZoneRadius: Double = zones_radii[0]
-        val neutralZoneRadius: Double = zones_radii[1]
-        val attractionZoneRadius: Double = zones_radii[2]
-        val rearZoneRadius: Double = zones_radii[3]
+        val stressZoneRadius: Double = zonesRadii[0]
+        val neutralZoneRadius: Double = zonesRadii[1]
+        val attractionZoneRadius: Double = zonesRadii[2]
+        val rearZoneRadius: Double = zonesRadii[3]
 
         val zoneShapeFactory = ZoneShapeFactoryImpl(environment.shapeFactory)
         val stressZoneShape = zoneShapeFactory.produceEllipseZoneShape(stressZoneRadius, STRESS_ZONE_ELLIPSE_RATIO)
@@ -105,12 +121,29 @@ class HerdBehavior @JvmOverloads constructor(
         neutralZone = NeutralZone(neutralZoneShape, node, environment, movementProvider, herdRecognitionPredicate)
 
         val attractionZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(attractionZoneRadius, ANGLE_OF_ZONE)
-        attractionZone = AttractionZone(attractionZoneShape, node, environment, movementProvider, attractionZoneSpeedUpFactor, herdRecognitionPredicate)
+        attractionZone = AttractionZone(
+            attractionZoneShape,
+            node,
+            environment,
+            movementProvider,
+            attractionZoneSpeedUpFactor,
+            herdRecognitionPredicate,
+        )
 
         val leaderSlowDownFactor = leaderSlowDown[0]
         val leaderSlowDownProbability = leaderSlowDown[1]
-        val rearZoneShape = zoneShapeFactory.produceCircularSectorZoneShape(rearZoneRadius, ANGLE_OF_ZONE, true)
-        rearZone = RearZone(rearZoneShape, node, environment, movementProvider, leaderSlowDownFactor, leaderSlowDownProbability, herdRecognitionPredicate, nodeRandomizer)
+        val rearZoneShape = zoneShapeFactory
+            .produceCircularSectorZoneShape(rearZoneRadius, ANGLE_OF_ZONE, true)
+        rearZone = RearZone(
+            rearZoneShape,
+            node,
+            environment,
+            movementProvider,
+            leaderSlowDownFactor,
+            leaderSlowDownProbability,
+            herdRecognitionPredicate,
+            nodeRandomizer,
+        )
 
         zones = listOf(stressZone, neutralZone, attractionZone, rearZone)
     }
@@ -119,7 +152,7 @@ class HerdBehavior @JvmOverloads constructor(
         HerdBehavior(
             node,
             environment,
-            zones_radii,
+            zonesRadii,
             velocities,
             movementProbabilities,
             stressZoneRepulsionFactor,
@@ -166,8 +199,13 @@ class HerdBehavior @JvmOverloads constructor(
         val ownerHeading = environment.getHeading(node)
         val avgGroupHeading = nodes.map { environment.getHeading(it) }
             .foldRight(environment.makePosition(0, 0)) { elem, acc -> acc + elem }
-        val normAvgGroupHeading = if (avgGroupHeading == environment.makePosition(0, 0)) avgGroupHeading else avgGroupHeading.normalized()
-        val newHeading = ownerHeading.times(MAINTAIN_DIRECTION_WEIGHT) + normAvgGroupHeading.times(1 - MAINTAIN_DIRECTION_WEIGHT)
+        val normAvgGroupHeading = if (avgGroupHeading == environment.makePosition(0, 0)) {
+            avgGroupHeading
+        } else {
+            avgGroupHeading.normalized()
+        }
+        val newHeading = ownerHeading.times(MAINTAIN_DIRECTION_WEIGHT) +
+            normAvgGroupHeading.times(1 - MAINTAIN_DIRECTION_WEIGHT)
         environment.setHeading(node, newHeading)
     }
 
@@ -208,5 +246,6 @@ class HerdBehavior @JvmOverloads constructor(
         return environment.makePosition(cos(headingAngle), sin(headingAngle))
     }
 
-    private fun getTurningAngle(additionalAngles: Double = 0.0): Double = toRadians(1.0 + additionalTurningForce + additionalAngles) * turningDirection
+    private fun getTurningAngle(additionalAngles: Double = 0.0): Double =
+        toRadians(1.0 + additionalTurningForce + additionalAngles) * turningDirection
 }

@@ -47,8 +47,10 @@ class NeutralZoneTest : AbstractZoneTest() {
         )
 
         val sameHerdPredicate: (Int) -> Boolean = { _ -> true }
-        neutralZone1 = NeutralZone(neutralZoneShape, node1, environment, movementsProvider, sameHerdPredicate)
-        neutralZone2 = NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movementsProvider, sameHerdPredicate)
+        neutralZone1 =
+            NeutralZone(neutralZoneShape, node1, environment, movementsProvider, sameHerdPredicate)
+        neutralZone2 =
+            NeutralZone(neutralZoneShape.makeCopy(), node2, environment, movementsProvider, sameHerdPredicate)
     }
 
     @BeforeEach
@@ -125,7 +127,7 @@ class NeutralZoneTest : AbstractZoneTest() {
         setPositionAndVerifySetting(node1, Euclidean2DPosition(0.0, 10.0))
         val x: Euclidean2DPosition = environment.getHeading(node1)
         assertEquals(Euclidean2DPosition(0.0, 1.0), x)
-        for (i in 1..10) {
+        repeat(10) {
             val headingAngle = environment.getHeading(node1).asAngle + 18
             environment.setHeading(node1, environment.makePosition(cos(headingAngle), sin(headingAngle)))
             val heading = environment.getHeading(node1)

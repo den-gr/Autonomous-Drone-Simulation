@@ -21,10 +21,13 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.io.Serial;
 
+@SuppressWarnings("deprecation")
 public final class DrawSmartcamWithBlindSpot implements Effect {
     private static final Logger LOGGER = LoggerFactory.getLogger(DrawSmartcamWithBlindSpot.class);
     private static final SimpleMolecule WANTED = new SimpleMolecule("wanted");
+    @Serial
     private static final long serialVersionUID = 1L;
     private boolean alreadyLogged;
     private static final Color transparentBlack = new Color(0.0f, 0.0f, 0.0f, 0.1f);
@@ -40,9 +43,9 @@ public final class DrawSmartcamWithBlindSpot implements Effect {
         final Point viewPoint = wormhole.getViewPoint(environment.getPosition(node));
         final int x = viewPoint.x;
         final int y = viewPoint.y;
-        if (environment instanceof Physics2DEnvironment) {
+        if (environment instanceof final Physics2DEnvironment<?> physicsEnv) {
             @SuppressWarnings("unchecked")
-            final Physics2DEnvironment<T> physicsEnvironment = (Physics2DEnvironment<T>) environment;
+            final Physics2DEnvironment<T> physicsEnvironment = (Physics2DEnvironment<T>) physicsEnv;
             drawShape(graphics, node, physicsEnvironment, zoom, x, y);
             drawFieldOfView(graphics, node, physicsEnvironment, zoom, x, y);
         } else {
@@ -121,7 +124,7 @@ public final class DrawSmartcamWithBlindSpot implements Effect {
         final AffineTransform transform = new AffineTransform();
         transform.translate(x, y);
         transform.scale(zoom, zoom);
-        transform.rotate(-rotation); // invert angle because the y axis is inverted in the gui
+        transform.rotate(-rotation); // invert angle because the y-axis is inverted in the gui
         return transform;
     }
 

@@ -1,9 +1,17 @@
 package it.unibo.alchemist.model.actions.utils
 
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import java.lang.IllegalStateException
 import kotlin.random.Random
 
+/**
+ * Helps produce individuals movements in base of initial setup.
+ * @param lateralVelocity velocity to go left and right.
+ * @param forwardVelocity velocity to go forward.
+ * @param leftMovementProbability
+ * @param forwardMovementProbability
+ * @param rightMovementProbability
+ * @param randomizer to preserve reproducibility.
+ */
 class MovementProvider(
     private val lateralVelocity: Double,
     private val forwardVelocity: Double,
@@ -30,10 +38,6 @@ class MovementProvider(
 
     fun toRight(): Euclidean2DPosition = movements.getValue(Direction.RIGHT)
 
-    fun toLeftForward(): Euclidean2DPosition = movements.getValue(Direction.LEFT) + movements.getValue(Direction.FORWARD)
-
-    fun toRightForward(): Euclidean2DPosition = movements.getValue(Direction.RIGHT) + movements.getValue(Direction.FORWARD)
-
     fun getRandomMovement(): Euclidean2DPosition {
         val randomNumber = randomizer.nextDouble()
         var cumulativeProbability = 0.0
@@ -44,7 +48,7 @@ class MovementProvider(
                 return movements.getValue(probability.key) // .addVelocityModifier(getNoiseModifier(), getNoiseModifier())
             }
         }
-        throw IllegalStateException("The sum of movement probabilities is not equal to 1")
+        error("The sum of movement probabilities is not equal to 1")
     }
 
     override fun toString(): String {

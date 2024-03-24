@@ -103,11 +103,16 @@ class ProtelisUtils {
 
         @Suppress("UNCHECKED_CAST")
         @JvmStatic
-        fun findNonCollidingPosition(context: AlchemistExecutionContext<Euclidean2DPosition>, field: Field<*>, default: Tuple, target: VisibleNode<Any, Euclidean2DPosition>, distance: Double): Tuple {
+        fun findNonCollidingPosition(
+            context: AlchemistExecutionContext<Euclidean2DPosition>,
+            field: Field<*>,
+            default: Tuple,
+            target: VisibleNode<Any, Euclidean2DPosition>,
+            distance: Double,
+        ): Tuple {
             val env = context.environmentAccess
             require(env is Physics2DEnvironment<Any>)
             val nodee = context.deviceUID
-//            require(node is Node<*>)
             nodee as ProtelisDevice<Euclidean2DPosition>
             val node = nodee.node
             val allNodes = field.stream()

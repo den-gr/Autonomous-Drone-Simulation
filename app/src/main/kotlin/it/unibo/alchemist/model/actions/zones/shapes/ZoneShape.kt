@@ -15,6 +15,12 @@ interface ZoneShape<T> {
     fun makeCopy(): ZoneShape<T>
 }
 
+/**
+ * Zone in the shape of an ellipse.
+ * @param shape
+ * @param radius of the ellipse width
+ * @param ratio how many times length of ellipse is bigger and width.
+ */
 class EllipseZoneShape<T>(
     override val shape: T,
     val radius: Double,
@@ -26,6 +32,14 @@ class EllipseZoneShape<T>(
     }
 }
 
+/**
+ * Zone shaped like a circular segment.
+ * @param shape
+ * @param radius
+ * @param angle of the circular segment.
+ * @param direction 1.0 if is same to the heading,
+ *                 -1.0 if is inverse (rotated by 180 degrees).
+ */
 class CircularSegmentZoneShape<T>(
     override val shape: T,
     val radius: Double,
@@ -40,6 +54,9 @@ class CircularSegmentZoneShape<T>(
 
 /**
  * Original rectangle zone shape. Not used anymore. Can be removed from the codebase.
+ * @param shape
+ * @param width of rectangle.
+ * @param height of rectangle.
  */
 class RectangularZoneShape<T>(
     override val shape: T,

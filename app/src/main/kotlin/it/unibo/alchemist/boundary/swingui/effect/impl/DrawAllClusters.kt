@@ -9,6 +9,10 @@ import smile.clustering.hclust
 import java.awt.Graphics2D
 import java.awt.Point
 
+/**
+ * Draw clusters. Perform it own clustering independently of cameras.
+ * This GUI effect can be used to see how different clustering algorithm partition object in the simulation.
+ */
 class DrawAllClusters : DrawVisibleClusters() {
 
     override fun <T> draw(

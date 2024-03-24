@@ -6,6 +6,7 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.apache.commons.math3.random.RandomGenerator
 import org.danilopianini.util.LinkedListSet
 import org.protelis.lang.datatype.Tuple
+import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -22,15 +23,26 @@ internal inline fun <reified P : Position<P>> Any?.toPosition(env: Environment<*
                 it
             }.let { env.makePosition(*it.toTypedArray()) }
     }
-    else -> throw IllegalArgumentException("Expected a Protelis Tuple or Euclidean2DPosition but got a ${this?.javaClass}")
+    else ->
+        throw IllegalArgumentException("Expected a Protelis Tuple or Euclidean2DPosition but got a ${this?.javaClass}")
 }
 
-internal fun offsetPositionAtDistance(env: Environment<*, Euclidean2DPosition>, source: Euclidean2DPosition, direction: Euclidean2DPosition, distance: Double) =
+internal fun offsetPositionAtDistance(
+    env: Environment<*, Euclidean2DPosition>,
+    source: Euclidean2DPosition,
+    direction: Euclidean2DPosition,
+    distance: Double,
+) =
     with(direction.asAngle) {
         source + env.makePosition(cos(this) * distance, sin(this) * distance)
     }
 
-internal fun closestPositionToTargetAtDistance(env: Environment<*, Euclidean2DPosition>, source: Euclidean2DPosition, target: Euclidean2DPosition, distance: Double) =
+internal fun closestPositionToTargetAtDistance(
+    env: Environment<*, Euclidean2DPosition>,
+    source: Euclidean2DPosition,
+    target: Euclidean2DPosition,
+    distance: Double,
+) =
     offsetPositionAtDistance(env, target, source - target, distance)
 
 internal fun <T> Iterable<T>.toListSet() = LinkedListSet<T>(toList())
@@ -42,7 +54,10 @@ fun Any?.toBooleanOrNull(): Boolean? =
         is Int -> !equals(0)
         is Double -> compareTo(0.0).toBoolean()
         is Number -> toDouble().toBoolean()
-        is String -> with(decapitalize()) { equals("true") || equals("on") || equals("yes") || toDoubleOrNull().toBooleanOrNull() ?: false }
+        is String ->
+            with(replaceFirstChar { it.lowercase(Locale.getDefault()) }) {
+                equals("true") || equals("on") || equals("yes") || toDoubleOrNull().toBooleanOrNull() ?: false
+            }
         else -> null
     }
 

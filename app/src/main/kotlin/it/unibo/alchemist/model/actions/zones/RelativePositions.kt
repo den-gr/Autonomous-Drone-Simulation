@@ -5,6 +5,8 @@ import kotlin.math.PI
 /**
  * Map the angles with different directions. Helps to determinate the direction of node's neighbors.
  * These position are used for Stress zone.
+ * @param startAngle initial angle of direction circular sector.
+ * @param endAngle end angle of direction circular sector.
  */
 enum class RelativePosition(val startAngle: Double, val endAngle: Double) {
     LEFT(0.0, PI),
@@ -17,6 +19,8 @@ enum class RelativePosition(val startAngle: Double, val endAngle: Double) {
 /**
  * Map the angles with directions.
  * These positions are used for Attraction and Neutral zones.
+ * @param startAngle initial angle of direction circular sector.
+ * @param endAngle end angle of direction circular sector.
  */
 enum class RelativeLateralPosition(val startAngle: Double, val endAngle: Double) {
     LEFT(0.0, Math.PI),

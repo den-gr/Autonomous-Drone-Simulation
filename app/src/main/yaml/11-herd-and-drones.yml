@@ -50,17 +50,17 @@ variables:
     language: kotlin
 ###### Drones
   CameraSpeed: &CameraSpeed
-    formula: 10
+    formula: 10 # m/s
   EnvironmentSize: &EnvironmentSize
-    formula: 2000
+    formula: 2000 # meters
   FoVAngle: &FoVAngle
-    formula: 80
+    formula: 80 # degrees
   FoVDistance: &FoVDistance
-    formula: 100
+    formula: 100 # meters
   FoVBlindSpotDistance: &FoVBlindSpotDistance
-    formula: 18
+    formula: 18 # meters
   RotationSpeed: &RotationSpeed
-    formula: 60
+    formula: 60 # degrees / s
   CommunicationRange: &CommunicationRange
     formula: EnvironmentSize
   Algorithm: &Algorithm

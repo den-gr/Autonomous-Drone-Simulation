@@ -59,7 +59,8 @@ class OverlapRelationsGraphForProtelisClusters(
         graph.links.entries.sortedByDescending { it.value }.take(atMost).map { it.key }.toTuple()
 
     /**
-     * Returns devices chosen according to the Smooth strategy described in "Online Multi-object k-coverage with Mobile Smart Cameras"
+     * Returns devices chosen according to the Smooth strategy described in
+     * "Online Multi-object k-coverage with Mobile Smart Cameras".
      */
     fun smooth(ctx: ExecutionContext): Tuple {
         return if (graph.links.isEmpty()) {

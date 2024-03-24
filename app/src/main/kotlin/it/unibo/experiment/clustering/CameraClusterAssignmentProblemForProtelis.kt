@@ -12,7 +12,12 @@ class CameraClusterAssignmentProblemForProtelis {
      * Just an adapter for protelis which works for Euclidean2DPosition only.
      * See [CameraTargetAssignmentProblem.solve]
      */
-    fun solve(cameras: Field<*>, clusters: List<Cluster>, maxCamerasPerDestination: Int, fair: Boolean): Map<String, Cluster> {
+    fun solve(
+        cameras: Field<*>,
+        clusters: List<Cluster>,
+        maxCamerasPerDestination: Int,
+        fair: Boolean,
+    ): Map<String, Cluster> {
         return problem.solve(
             cameras.toCameras(),
             clusters,

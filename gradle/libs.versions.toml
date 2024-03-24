@@ -1,6 +1,7 @@
 [versions]
 alchemist = "29.4.0"
 kotlin = "1.9.20"
+smile = "3.0.2"
 
 [libraries]
 alchemist = { module = "it.unibo.alchemist:alchemist", version.ref = "alchemist" }
@@ -12,9 +13,10 @@ alchemist-ui-tooling = {module = "it.unibo.alchemist:alchemist-ui-tooling", vers
 alchemist-euclidean-geometry = {module = "it.unibo.alchemist:alchemist-euclidean-geometry", version.ref = "alchemist" }
 alchemist-smartcam = {module = "it.unibo.alchemist:alchemist-smartcam", version.ref = "alchemist" }
 slf4j = "org.slf4j:slf4j-api:2.0.9"
+smile-core = {module = "com.github.haifengl:smile-core", version.ref = "smile"}
+smile-kotlin = {module = "com.github.haifengl:smile-kotlin", version.ref = "smile"}
 
-#alchemist-ui-tooling = {module = "it.unibo.alchemist:alchemist-ui-tooling", version.ref = "alchemist" }
-#slf4j = "org.slf4j:slf4j-api:2.0.9"
+
 #mapsforge = "org.mapsforge:mapsforge-map-awt:0.20.0"
 
 [bundles]
@@ -27,6 +29,7 @@ alchemist = [
     "alchemist-ui-tooling",
     "alchemist-euclidean-geometry",
     "alchemist-smartcam"]
+smile = ["smile-core", "smile-kotlin"]
 
 [plugins]
 kotlin-qa = { id = "org.danilopianini.gradle-kotlin-qa", version = "0.52.0" }

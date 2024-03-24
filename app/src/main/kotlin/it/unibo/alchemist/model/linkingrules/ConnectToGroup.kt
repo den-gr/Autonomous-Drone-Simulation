@@ -3,6 +3,11 @@ package it.unibo.alchemist.model.linkingrules
 import it.unibo.alchemist.model.* // ktlint-disable no-wildcard-imports
 import it.unibo.alchemist.model.neighborhoods.Neighborhoods
 
+/**
+ * Allows limit connection of nodes to a specific group.
+ * @param radius of connection.
+ * @param groupName molecule that must have all group members.
+ */
 class ConnectToGroup<T, P : Position<P>>(
     radius: Double,
     private val groupName: Molecule,

@@ -1,6 +1,6 @@
 package it.unibo.alchemist.model.actions.zones
 
-import it.unibo.alchemist.model.actions.utils.GeometryUtils.Companion.rotateVector
+import it.unibo.alchemist.model.actions.utils.GeometryUtils.rotateVector
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import org.junit.jupiter.api.Test
 import kotlin.math.* // ktlint-disable no-wildcard-imports
@@ -61,10 +61,10 @@ class GeometryTest {
         assertEquals(halfPi, diffFun(p4.asAngle, p3.asAngle))
     }
 
-    private fun angleDifference(angle1: Double, angle2: Double): Double {
-        val rawDiff = angle2 - angle1
-        return (rawDiff + PI) % (2 * PI) - PI
-    }
+//    private fun angleDifference(angle1: Double, angle2: Double): Double {
+//        val rawDiff = angle2 - angle1
+//        return (rawDiff + PI) % (2 * PI) - PI
+//    }
 
     /**
      * Return minor angle difference in radians. The value is always > 0

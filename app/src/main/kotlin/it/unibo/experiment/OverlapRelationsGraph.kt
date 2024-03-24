@@ -4,13 +4,13 @@ package it.unibo.experiment
  * Models the partial view of each camera of the overlap relations graph
  * as described in "Online Multi-object k-coverage with Mobile Smart Cameras" by Lukas Esterle and Peter Lewis.
  * It is a map from the camera id to the relative link strength.
- * Links can be strengthen, increasing their values by [strengthenValue].
+ * Links can be strengthened, increasing their values by [strengthenValue].
  * Links can be evaporated, multiplying their values with the factors [evaporationBaseFactor] and [evaporationMovementFactor].
  */
 class OverlapRelationsGraph<C>(
     private val strengthenValue: Double,
     private val evaporationBaseFactor: Double,
-    private val evaporationMovementFactor: Double
+    private val evaporationMovementFactor: Double,
 ) {
 
     /**
