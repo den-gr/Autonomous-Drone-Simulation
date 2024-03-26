@@ -50,7 +50,7 @@ This version merge different instances of same animal and add smoothing to the d
 1. To execute `./gradlew run11`
 2. Click `P` to start the simulation
 
-### Using the graphical interface
+## Using the graphical interface
 
 Press <kbd>P</kbd> to start the simulation.
 The available UI bindings are the following:
