@@ -43,7 +43,6 @@ Main problem: when an animal disappear and then reappear its ID change, so it is
 
 ### Drone flight with reconstructed animal movements (Clean version)
 This version merge different instances of same animal and add smoothing to the data. 
-
 1. To execute `./gradlew run05`
 2. Click `P` to start the simulation
 
