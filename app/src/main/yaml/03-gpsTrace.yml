@@ -4,7 +4,7 @@ environment:
 
 _pools:
   - pool: &move
-      - time-distribution: 0.01
+      - time-distribution: 5
         type: Event
         actions:
           - type: ReproduceGPSTrace

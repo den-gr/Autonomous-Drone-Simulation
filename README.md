@@ -1,5 +1,5 @@
 # Autonomous Drone Simulation
-The repository contains two version of drone paths reproduction in [Alchemist](https://github.com/AlchemistSimulator) simulator.
+The repository contains source code related to the thesis with title "*Herd Monitoring with Autonomous Drones: a Decentralized k-Coverage-inspired Approach*".
 
 ## Prerequisites
 This project requires a Java version capable of executing Gradle (Java 8+).
@@ -9,9 +9,9 @@ This project use [Gradle](https://gradle.org) to resolve dependencies and execut
 
 ### Importing the repository
 The preferred way to import this repository is via the [Git SCM](https://git-scm.com):
-- `git clone https://github.com/DenGuzawr22/Autonomous-Drone-Simulation.git`
+- `git clone https://github.com/den-gr/Autonomous-Drone-Simulation.git`
 
-Alternatively, the repository can be [downloaded as compressed archive](https://github.com/DenGuzawr22/Autonomous-Drone-Simulation/archive/refs/heads/master.zip). The archive should then get unpacked, and a terminal should be prepared pointing to the directory containing the build.gradle.kts file.
+Alternatively, the repository can be [downloaded as compressed archive](https://github.com/den-gr/Autonomous-Drone-Simulation/archive/refs/heads/master.zip). The archive should then get unpacked, and a terminal should be prepared pointing to the directory containing the build.gradle.kts file.
 
 
 ## Execution
@@ -22,31 +22,33 @@ Tasks are named after the corresponding YAML file, with the pattern `run<name-of
 
 Note that the first launch will be slow, since Gradle will download all the required files. They will get cached in the user's home folder (as per Gradle normal behavior) and thus subsequent execution will be much faster.
 
-### Run a simulation with herds and drones
-To execute `./gradlew run11` and then press `P` to start
+### Herd simulation
+Run the simulation where some herd are moving in the environment. 
 
-### Run herd movement simulation:
-To execute `./gradlew run00` and then press `P` to start.
-
-Press `R` to slow down the simulation
-
-### Run drone and zebras movement reconstruction
-To execute `./gradlew run05` and then pres `P` to start
-
-### Drone movement reconstruction: GPS Trace based version:
-Simulation configuration: `app/src/main/yaml/03-gpsTrac.yml`    
+The simulation configuration: `app/src/main/yaml/00-herd.yml`
 1. To execute `./gradlew run03`
-2. Click `R` to activate real-time mode and then click `P` to start the simulation
-
-### Drone movement reconstruction: protelis based version
-
-Simulation configuration: `app/src/main/yaml/02-protelis.yml`
-
-1. To execute `./gradlew run02`
 2. Click `P` to start the simulation
 
 
-Technical note: this implementation use a custom action that ignores streets: `CustomTargetMapWalker` located in `app/src/main/java/`
+### Drone flight from extracted GPS traces:
+Simulation configuration: `app/src/main/yaml/03-gpsTrac.yml`    
+1. To execute `./gradlew run03`
+2. Click `P` to start the simulation
+
+### Drone flight with reconstructed animal movements (Raw version)
+1. To execute `./gradlew run04`
+2. Click `P` to start the simulation
+
+Main problem: when an animal disappear and then reappear its ID change, so it is considered as a new individual.
+
+### Drone flight with reconstructed animal movements (Clean version)
+This version merge different instances of same animal and add smoothing to the data. 
+1. To execute `./gradlew run05`
+2. Click `P` to start the simulation
+
+### Drones with herds
+1. To execute `./gradlew run11`
+2. Click `P` to start the simulation
 
 ### Using the graphical interface
 
