@@ -5,7 +5,7 @@ import gpxpy
 import gpxpy.gpx
 from datetime import datetime, timedelta
 import math
-
+import os
 
 def update_alpha(a_v, v):
     return alpha * a_v + (1-alpha) * v
@@ -48,14 +48,21 @@ def rotate_point(x, y, center_x, center_y, angle_degrees):
 
 
 
-file_path = 'data/dataset.json'
-# file_path = 'data/test.json'
-zebras_output_folder_name = "zebras_m/"
-drone_output_folder_name = "drone_m/"
+file_name = 'flight_12'
+file_path = f'data/jflights/{file_name}.json'
+
+
+zebras_output_folder_name = f"flights/{file_name}_zebras/"
+drone_output_folder_name = f"flights/{file_name}_drones/"
+if not os.path.exists(zebras_output_folder_name):
+    os.makedirs(zebras_output_folder_name)
+if not os.path.exists(drone_output_folder_name):
+    os.makedirs(drone_output_folder_name)
+
 
 df = pd.read_json(file_path)
 
-coords_d_zb = df[["latitude", "longitude", "altitude", "animals", "compass", "gimbal_pitch"]].values.tolist()
+coords_d_zb = df[["latitude", "longitude", "altitude", "animals", "compass_heading", "gimbal_pitch"]].values.tolist()
 
 gpx_drone = gpxpy.gpx.GPX()
 gpx_zebras = gpxpy.gpx.GPX()
@@ -82,7 +89,7 @@ for i in ids:
     zebras_segments_dict[i] = segment_zb
 
 # Time increment for each point
-time_increment = timedelta(seconds=30)
+time_increment = timedelta(seconds=1)
 
 
 HORIZONTAL_ANGLE = 80.17 #77.6
