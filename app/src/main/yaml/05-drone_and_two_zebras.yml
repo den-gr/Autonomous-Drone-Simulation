@@ -2,29 +2,29 @@ incarnation: protelis
 environment:
   type: OSMEnvironment
 
-_pools:
-  - pool: &move_drone
+_vars:
+  - drone_reconstruction: &move_drone
       - time-distribution: 1
         type: Event
         actions:
           - type: ReproduceGPSTrace
-            parameters: ["drone2", false, "AlignToFirstTrace"]
-  - pool_zb: &move_zebras
+            parameters: ["flights/drone2", false, "AlignToFirstTrace"]
+  - zebras_reconstruction: &move_zebras
       - time-distribution: 1
         type: Event
         actions:
           - type: ReproduceGPSTrace
-            parameters: [ "zebras2", false, "AlignToFirstTrace" ]
+            parameters: [ "flights/zebras2", false, "AlignToFirstTrace" ]
 deployments:
   - type: FromGPSTrace
-    parameters: [1, "drone2", false, "AlignToFirstTrace"]
+    parameters: [1, "flights/drone2", false, "AlignToFirstTrace"]
     contents:
       - molecule: drone
         concentration: true
     programs:
       - *move_drone
   - type: FromGPSTrace
-    parameters: [2, "zebras2", false, "AlignToFirstTrace"]
+    parameters: [2, "flights/zebras2", false, "AlignToFirstTrace"]
     contents:
       - molecule: zebra
         concentration: true

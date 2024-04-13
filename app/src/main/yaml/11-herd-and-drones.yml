@@ -66,6 +66,7 @@ variables:
   Algorithm: &Algorithm
     type: ListOf
     parameters:
+      - "sm_av_c"
       - "ff_linpro_c"
       - "bc_re_c"
       - "ff_linpro_ac"
@@ -74,7 +75,7 @@ variables:
     parameters: [60]
 #    formula: 60
   MaxCamerasPerTarget: &MaxCamerasPerTarget
-    formula: 2
+    formula: 3
 ##### Other
   CamHerdRatio:
     type: ArbitraryVariable

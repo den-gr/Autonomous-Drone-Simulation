@@ -49,7 +49,7 @@ variables:
     language: kotlin
 #### other
   NumberOfHerds: &NumberOfHerds
-    formula: 5
+    formula: 1
 
 
 _herdParameters: &herdParameters

@@ -1,0 +1,60 @@
+incarnation: protelis
+environment:
+  type: OSMEnvironment
+
+variables:
+  flight_number: &n
+    formula: 12
+  path_zebras: &path_zebras
+    language: kotlin
+    formula: |
+      "flights/flight_${flight_number}_zebras"
+  path_drones: &path_drones
+    language: kotlin
+    formula: |
+      "flights/flight_${flight_number}_drones"
+
+_pools:
+  - pool: &move_drone
+      - time-distribution: 1
+        type: Event
+        actions:
+          - type: ReproduceGPSTrace
+            parameters: [*path_drones, false, "AlignToFirstTrace"]
+  - pool_zb: &move_zebras
+      - time-distribution: 1
+        type: Event
+        actions:
+          - type: ReproduceGPSTrace
+            parameters: [ *path_zebras, false, "AlignToFirstTrace" ]
+          - type: TraceNodeStatus
+            parameters: [ *path_zebras, false, "AlignToFirstTrace" ]
+#  - pool_zb: &move_zebras_best
+#      - time-distribution: 1
+#        type: Event
+#        actions:
+#          - type: ReproduceGPSTrace
+#            parameters: [ "zebras_best", false, "AlignToFirstTrace" ]
+
+deployments:
+  - type: FromGPSTracesDynamic
+    parameters: [*path_drones, false, "AlignToFirstTrace"]
+    contents:
+      - molecule: drone
+        concentration: true
+    programs:
+      - *move_drone
+  - type: FromGPSTracesDynamic
+    parameters: [*path_zebras, false, "AlignToFirstTrace"]
+    contents:
+      - molecule: zebra
+        concentration: true
+    programs:
+      - *move_zebras
+#  - type: FromGPSTrace
+#    parameters: [ 14, "zebras_best", false, "AlignToFirstTrace" ]
+#    contents:
+#      - molecule: best
+#        concentration: true
+#    programs:
+#      - *move_zebras_best
