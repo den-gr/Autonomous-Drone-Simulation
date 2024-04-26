@@ -9,10 +9,18 @@ variables:
     language: kotlin
     formula: |
       "flights/flight_${flight_number}_zebras"
+  path_zebras_best: &path_zebras_best
+    language: kotlin
+    formula: |
+      "flights_new_ids/flight_${flight_number}_zebras"
   path_drones: &path_drones
     language: kotlin
     formula: |
       "flights/flight_${flight_number}_drones"
+  path_fov: &path_fov
+    language: kotlin
+    formula: |
+      "flights/flight_${flight_number}_fov"
 
 _pools:
   - pool: &move_drone
@@ -21,6 +29,12 @@ _pools:
         actions:
           - type: ReproduceGPSTrace
             parameters: [*path_drones, false, "AlignToFirstTrace"]
+  - pool: &move_fov
+      - time-distribution: 1
+        type: Event
+        actions:
+          - type: ReproduceGPSTrace
+            parameters: [ *path_fov, false, "AlignToFirstTrace" ]
   - pool_zb: &move_zebras
       - time-distribution: 1
         type: Event
@@ -29,12 +43,14 @@ _pools:
             parameters: [ *path_zebras, false, "AlignToFirstTrace" ]
           - type: TraceNodeStatus
             parameters: [ *path_zebras, false, "AlignToFirstTrace" ]
-#  - pool_zb: &move_zebras_best
-#      - time-distribution: 1
-#        type: Event
-#        actions:
-#          - type: ReproduceGPSTrace
-#            parameters: [ "zebras_best", false, "AlignToFirstTrace" ]
+  - pool_zb: &move_zebras_best
+      - time-distribution: 1
+        type: Event
+        actions:
+          - type: ReproduceGPSTrace
+            parameters: [ *path_zebras_best, false, "AlignToFirstTrace" ]
+          - type: TraceNodeStatus
+            parameters: [ *path_zebras_best, false, "AlignToFirstTrace" ]
 
 deployments:
   - type: FromGPSTracesDynamic
@@ -45,16 +61,25 @@ deployments:
     programs:
       - *move_drone
   - type: FromGPSTracesDynamic
+    parameters: [ *path_fov, false, "AlignToFirstTrace" ]
+    contents:
+      - molecule: fov
+        concentration: true
+    programs:
+      - *move_fov
+  - type: FromGPSTracesDynamic
     parameters: [*path_zebras, false, "AlignToFirstTrace"]
     contents:
       - molecule: zebra
         concentration: true
     programs:
       - *move_zebras
-#  - type: FromGPSTrace
-#    parameters: [ 14, "zebras_best", false, "AlignToFirstTrace" ]
-#    contents:
-#      - molecule: best
-#        concentration: true
-#    programs:
-#      - *move_zebras_best
+  - type: FromGPSTracesDynamic
+    parameters: [ *path_zebras_best, false, "AlignToFirstTrace" ]
+    contents:
+      - molecule: zebra
+        concentration: true
+      - molecule: best
+        concentration: true
+    programs:
+      - *move_zebras_best

@@ -51,7 +51,8 @@ class TraceNodeStatus<O : RoutingServiceOptions<O>, S : RoutingService<GeoPositi
             normalizer: String,
             vararg normalizerArgs: Any,
         ): GPSTrace {
-            if (iterator == null) {
+            if (iterator == null || !iterator!!.hasNext()) {
+                println("Create new trace loader for ${this.javaClass}")
                 iterator = TraceLoader(path, cycle, normalizer, *normalizerArgs).iterator()
             }
             return if (iterator!!.hasNext()) {
@@ -64,10 +65,8 @@ class TraceNodeStatus<O : RoutingServiceOptions<O>, S : RoutingService<GeoPositi
 
     private val trace: GPSTrace
     private val status: Molecule = SimpleMolecule("on")
-//    private val loader: TraceLoader
 
     init {
-//        loader = TraceLoader(path, cycle, normalizer, *normalizerArgs)
         trace = traceFor(environment, path, cycle, normalizer, normalizerArgs)
         println("${node.id} -> ${trace.startTime}, ${trace.finalTime}")
     }

@@ -4,18 +4,20 @@ import matplotlib.patches as patches
 import matplotlib.animation as animation
 import pandas as pd
 
-for flight_id in [12, 13, 14]:
-    RAW_CSV = True
-    FRAME_WIDTH, FRAME_HEIGHT = 3840, 2160
-    output_path = f'data/flight_{flight_id}.mp4'
-    FPS = 60
+RAW_CSV = False
+FRAME_WIDTH, FRAME_HEIGHT = 3840, 2160
+FPS = 30
+
+for flight_id in [12]: #todo
+    
+    output_path = f'data/flight_new_ids_{flight_id}.mp4'
 
     # TODO external file name input
     if(RAW_CSV):
         file_path = f'data/flights/flight_{flight_id}.csv'
         df_full = pd.read_csv(file_path)
     else:
-        file_path = 'data/dataset.json'
+        file_path = f'data/jflights_new_ids/flight_{flight_id}.json'
         df_full = pd.read_json(file_path)
 
     # df = df_full[df_full["mission id"] == "Jan-12th-2023-12-04PM"].copy()
@@ -36,10 +38,7 @@ for flight_id in [12, 13, 14]:
     if(RAW_CSV):
         boxes = get_drone_and_zebras_coords(df)
     else:
-        # Remove part of the video without animals
-        # TODO make generic
-        boxes = df[502:] 
-        boxes = boxes[:-800]
+        boxes = df
 
     #Animation creation
     plt.rcParams['animation.ffmpeg_path'] = 'ffmpeg'
@@ -88,7 +87,7 @@ for flight_id in [12, 13, 14]:
         ax.text(20, FRAME_HEIGHT-600, (coords +alt + orient ), color="black", fontsize=30)
         # ax.set_title( coords + alt + orient, fontsize=30)
 
-    ani = animation.FuncAnimation(fig, animate, frames=round(len(boxes)))
+    ani = animation.FuncAnimation(fig, animate, frames=len(boxes)) #round(len(boxes)) todo
     FFwriter = animation.FFMpegWriter(fps=FPS)
     ani.save(output_path, writer=FFwriter)
 # %%
