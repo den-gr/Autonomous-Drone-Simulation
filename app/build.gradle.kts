@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.slf4j)
     implementation(fileTree("../libs"))
     testImplementation(kotlin("test"))
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 }
 
 // tasks.compileJava {
@@ -92,6 +93,9 @@ File(rootProject.rootDir.path + "/app/src/main/yaml").listFiles()
                           type: SingleRunSwingUI
                           parameters:
                             graphics: ../effects/${it.nameWithoutExtension}.json
+                        terminate:
+                          - type: StableForSteps
+                            parameters: [20, 5]
                     """,
                 )
             }
@@ -116,14 +120,24 @@ File(rootProject.rootDir.path + "/app/src/main/yaml/batch").listFiles()
             )
             // These are the program arguments
             args("run", it.absolutePath, "--override")
+//            args(
+//                """
+//                    launcher:
+//                        type: HeadlessSimulationLauncher
+//                        parameters: [["Seed", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
+//                    terminate:
+//                      - type: AfterTime
+//                        parameters: 1800
+//                """,
+//            )
             args(
                 """
                     launcher:
                         type: HeadlessSimulationLauncher
-                        parameters: [["Seed", "CamHerdRatio", "NumberOfHerds", "Algorithm"]]
+                        parameters: [["flightID"]]
                     terminate:
-                      - type: AfterTime
-                        parameters: 1800
+                      - type: StableForSteps
+                        parameters: [20, 5]
                 """,
             )
         }

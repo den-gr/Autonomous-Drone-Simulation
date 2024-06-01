@@ -1,0 +1,105 @@
+incarnation: protelis
+environment:
+  type: ContinuousPhysics2DEnvironment
+variables:
+  ###### HERD
+  bodyLength: &bodyLen
+    formula: 2
+  bodyWidth: &bodyWidth
+    formula: bodyLength / 2
+  stressZoneRadius:
+    formula: 1.5 * bodyLength
+  neutralZoneRadius:
+    formula: 10 * bodyLength
+  attractionZoneRadius:
+    formula: 20 * bodyLength
+  rearZoneRadius:
+    formula: attractionZoneRadius
+  stressZoneRepulsionFactor: &stressRepulsionFactor
+    formula: 0.5 # [0; 1] slow down by this factor if forward in stress zone there are neighbours
+  attractionSpeedUp: &attractionSpeedUpFactor
+    formula: 1.5 # [1; inf] if there are nodes in attraction zone multiply the speed-up factor to current velocity
+  leadersSlowDown:
+    formula: 0.7 # [0; 1] if there are neighbors in rear zone slow down by this value
+  leadersSlowDownProbability:
+    formula: 0.8
+  trailersSpeedUp:
+    formula: 2.0
+  trailersSpeedUpProbability:
+    formula: 0.4
+  intrinsicForwardVelocity:
+    formula: 0.6 * bodyLength
+  intrinsicLateralVelocity:
+    formula: 0.3 * bodyLength
+  ### Variable grouping
+  zonesRadii: &zonesRadii
+    formula: listOf(stressZoneRadius, neutralZoneRadius, attractionZoneRadius, rearZoneRadius)
+    language: kotlin
+  velocities: &velocities
+    formula: listOf(intrinsicLateralVelocity, intrinsicForwardVelocity)
+    language: kotlin
+  movementProbabilities: &movementProbabilities
+    formula: listOf(0.25, 0.5, 0.25) # Probability to go [left, forward, right]
+    language: kotlin
+  leaderSeedChange: &leaderSeedChange
+    formula: listOf(leadersSlowDown, leadersSlowDownProbability)
+    language: kotlin
+  trailerSeedChange: &trailerSeedChange
+    formula: listOf(trailersSpeedUp, trailersSpeedUpProbability)
+    language: kotlin
+#### other
+  NumberOfHerds: &NumberOfHerds
+    formula: 1
+
+
+_herdParameters: &herdParameters
+  - *zonesRadii
+  - *velocities
+  - *movementProbabilities
+  - *stressRepulsionFactor
+  - *attractionSpeedUpFactor
+  - *leaderSeedChange
+  - *trailerSeedChange
+  - *NumberOfHerds
+
+_herd: &herd
+  - time-distribution: 1
+    type: Event
+    actions:
+      type: HerdBehavior
+      parameters: *herdParameters
+_animal_area: &animalArea
+  - type: RectangularArea
+    parameters: [ *bodyLen, *bodyWidth ] #inverted
+
+seeds:
+  scenario: 1
+  simulation: 1
+
+export:
+  - type: CustomCSVExporter
+    parameters:
+      fileNameRoot: "velocity_simulation"
+      interval: 10.0
+      exportPath: "build/exportt"
+    data:
+      - time
+      - type: VelocityExtractorEuclidean
+        parameters: [10]
+
+deployments:
+  - type: GroupsDeployment
+    parameters: [10, 0, 0, 400, *NumberOfHerds, 25]
+    contents:
+      - molecule: zebra
+        concentration: true
+      - molecule: onn
+        concentration: true
+    programs: *herd
+    properties: *animalArea
+
+  - type: SpecificPositions
+    parameters: [ [ 0,0 ],[ 1000, 0 ], [ -1000, 0 ], [ 0,1000 ], [ 0, -1000 ] ]
+    contents:
+      - molecule: landmark
+        concentration: true

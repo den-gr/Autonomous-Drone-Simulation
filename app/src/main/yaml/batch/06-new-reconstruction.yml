@@ -3,24 +3,35 @@ environment:
   type: OSMEnvironment
 
 variables:
-  flight_number: &n
-    formula: 12
+  flightID: &n
+    #### The most interesting flights [11, 12, 14]
+    #formula: [11] #[1, 2, 4 ,5, 8, 11, 12, 13, 14]
+    ### Longest flights [12, 14, 5]
+    type: ArbitraryVariable
+    parameters: [11, 11, 12, 14]
+  id:
+    language: kotlin
+    formula: flightID.toInt()
+  flights_folder:
+      language: kotlin
+      formula: |
+        "flights_stable"
   path_zebras: &path_zebras
     language: kotlin
     formula: |
-      "flights/flight_${flight_number}_zebras"
+      "${flights_folder}/flight_${id}_zebras"
   path_zebras_best: &path_zebras_best
     language: kotlin
     formula: |
-      "flights_new_ids/flight_${flight_number}_zebras"
+      "flights_new_ids/flight_${id}_zebras"
   path_drones: &path_drones
     language: kotlin
     formula: |
-      "flights/flight_${flight_number}_drones"
+      "${flights_folder}/flight_${id}_drones"
   path_fov: &path_fov
     language: kotlin
     formula: |
-      "flights/flight_${flight_number}_fov"
+      "${flights_folder}/flight_${id}_fov"
 
 _pools:
   - pool: &move_drone
@@ -52,6 +63,17 @@ _pools:
           - type: TraceNodeStatus
             parameters: [ *path_zebras_best, false, "AlignToFirstTrace" ]
 
+export:
+  - type: CustomCSVExporter
+    parameters:
+      fileNameRoot: "velocity_reconstruction"
+      interval: 300.0 # equivalent to 5 seconds
+      exportPath: "build/exportt"
+    data:
+      - time
+      - type: VelocityExtractor
+        parameters: [10]
+
 deployments:
   - type: FromGPSTracesDynamic
     parameters: [*path_drones, false, "AlignToFirstTrace"]
@@ -74,12 +96,12 @@ deployments:
         concentration: true
     programs:
       - *move_zebras
-  - type: FromGPSTracesDynamic
-    parameters: [ *path_zebras_best, false, "AlignToFirstTrace" ]
-    contents:
-      - molecule: zebra
-        concentration: true
-      - molecule: best
-        concentration: true
-    programs:
-      - *move_zebras_best
+#  - type: FromGPSTracesDynamic
+#    parameters: [ *path_zebras_best, false, "AlignToFirstTrace" ]
+#    contents:
+#      - molecule: zebra
+#        concentration: true
+#      - molecule: best
+#        concentration: true
+#    programs:
+#      - *move_zebras_best
