@@ -1,6 +1,6 @@
 [versions]
 alchemist = "29.4.0"
-kotlin = "1.9.20"
+kotlin = "1.9.23"
 smile = "3.0.2"
 
 [libraries]

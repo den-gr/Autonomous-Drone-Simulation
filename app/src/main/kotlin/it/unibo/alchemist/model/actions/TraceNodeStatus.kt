@@ -68,7 +68,7 @@ class TraceNodeStatus<O : RoutingServiceOptions<O>, S : RoutingService<GeoPositi
 
     init {
         trace = traceFor(environment, path, cycle, normalizer, normalizerArgs)
-        println("${node.id} -> ${trace.startTime}, ${trace.finalTime}")
+//        println("${node.id} -> ${trace.startTime}, ${trace.finalTime}")
     }
 
     override fun cloneAction(node: Node<Any>, reaction: Reaction<Any>): Action<Any> {
