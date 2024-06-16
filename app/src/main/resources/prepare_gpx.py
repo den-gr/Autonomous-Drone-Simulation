@@ -55,7 +55,6 @@ for flight_id in flights:
 
     coords_d_zb = df[["latitude", "longitude", "altitude", "animals", "compass_heading", "gimbal_pitch"]].values.tolist()
 
-
     gpx_drone = gpxpy.gpx.GPX()
     gpx_zebras = gpxpy.gpx.GPX()
     gpx_fov = gpxpy.gpx.GPX()
@@ -82,19 +81,15 @@ for flight_id in flights:
         zebras_segments_dict[i] = create_gpx_segment(gpx_zebras)
 
     # Time increment for each point
-    time_increment = timedelta(seconds=1)
+    time_increment = timedelta(seconds=1) # it is actually is 1/30 of second
 
-
-    HORIZONTAL_ANGLE = 80.17 # New
-    # HORIZONTAL_ANGLE = 77.6
-    VERTICAL_ANGLE = 50.66 #48.6  #47.4715 #48.6
+    HORIZONTAL_ANGLE = 80.17 
+    VERTICAL_ANGLE = 50.66   
     width, height = 3840, 2160
     x_center = width / 2
     y_center = height / 2
 
     physical_focal_len = 8.4 #mm
-    # physical_pixel_size = 0.0024 #mm
-    # physical_pixel_size = 0.003512625 #mm
     ALPHA = 0.98
 
     last_altitudes = []
@@ -161,20 +156,12 @@ for flight_id in flights:
             y_dis = y_center - box_y
             x_dis = x_center - box_x
 
-            # y_angle_from_center = np.rad2deg(np.arctan((y_dis * physical_pixel_size)/(physical_focal_len)))
             y_angle_from_center = (y_dis / y_center) * (VERTICAL_ANGLE/2)
 
                 
             vertical_hypotenuse_len = alt / np.cos(np.deg2rad(vertical_center_angle + y_angle_from_center))
             vertical_oposit_len = np.tan(np.deg2rad(vertical_center_angle + y_angle_from_center)) * alt
-
-
-            ### deprecated
-            # vertical_oposit_blind_len = np.tan(np.deg2rad(vertical_center_angle - VERTICAL_ANGLE/2 )) * alt
-            # vertical_oposit_len = (alt * 7.58 * 1.425)/(8.4*2160)*(height-box_y) *(1/np.cos(np.deg2rad(vertical_center_angle + y_angle_from_center)))
-            # vertical_oposit_len = vertical_oposit_len + vertical_oposit_blind_len
-
-        
+    
             x_angle_from_center = (x_dis / x_center) * (HORIZONTAL_ANGLE/2)
             horisonal_oposit_len = np.tan(np.deg2rad(abs(x_angle_from_center))) * vertical_hypotenuse_len
 
@@ -198,11 +185,9 @@ for flight_id in flights:
                     x1, y1 = curr_dict[k]
                     average_vectors_list.append((x1 - x2, y1 - y2))
                 
-
             average_vector = tuple(sum(coord) / len(average_vectors_list) for coord in zip(*average_vectors_list))
             if(len(average_vectors_list)==0):
                 average_vector = (0, 0)
-
 
             for k, v in curr_dict.items():
                 x = v[0] - average_vector[0]

@@ -6,13 +6,13 @@ import pandas as pd
 
 RAW_CSV = False
 FRAME_WIDTH, FRAME_HEIGHT = 3840, 2160
-FPS = 30
+FPS = 30 #Frames per second
 
-for flight_id in [12]: #todo
-    
+ids = [2]
+
+for flight_id in ids:
     output_path = f'data/flight_new_ids_{flight_id}.mp4'
 
-    # TODO external file name input
     if(RAW_CSV):
         file_path = f'data/flights/flight_{flight_id}.csv'
         df_full = pd.read_csv(file_path)
@@ -20,12 +20,7 @@ for flight_id in [12]: #todo
         file_path = f'data/jflights_new_ids/flight_{flight_id}.json'
         df_full = pd.read_json(file_path)
 
-    # df = df_full[df_full["mission id"] == "Jan-12th-2023-12-04PM"].copy()
     df = df_full.copy()
-
-
-    # df["altitude"] = round(df["altitude"], 1)
-
 
     # Get Zebras data and drone postion grouped by frames (RAW CSV)
     def get_drone_and_zebras_coords(df):
@@ -40,7 +35,7 @@ for flight_id in [12]: #todo
     else:
         boxes = df
 
-    #Animation creation
+    # Animation creation
     plt.rcParams['animation.ffmpeg_path'] = 'ffmpeg'
     fig, ax = plt.subplots(figsize=(FRAME_WIDTH / 100, FRAME_HEIGHT / 100), dpi=100)
     ax.set_xlim(0, FRAME_WIDTH)

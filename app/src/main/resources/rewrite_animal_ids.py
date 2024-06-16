@@ -1,21 +1,18 @@
 # %%
 import pandas as pd
-import math
 import numpy as np
-import json
 
 from importlib import reload
-import utils
-reload(utils)
 from utils import *
+
+output_folder_name = f"data/jflights_new_ids/"
+create_folder_if_not_exists(output_folder_name)
 
 ids = range(1, 15)
 # ids = [1]
 
 for flight_id in ids:
     file_path = f'data/jflights/flight_{flight_id}.json'
-
-    output_folder_name = f"data/new_jflights/"
 
     df = pd.read_json(file_path)
     df_original = df.copy()
@@ -57,7 +54,7 @@ for flight_id in ids:
                     animals_idxs.remove(closest_animal_indx)
                     animal.bounding_box = records[r][DF_BOX_INDEX]
                 else:
-                    print("Attention colosest suitable record already utilized!")
+                    print("Attention! The closest suitable record is already utilized!")
 
         if(len(records_idxs) == 1 and len(animals_idxs) == 1):
             #give last chance
@@ -68,15 +65,14 @@ for flight_id in ids:
                 id_counter +=1
             active_animals = filter_by_indexes(active_animals, animals_idxs)
         
-
         mylist = []
         for active in active_animals:
             mylist.append(active.get_export())
         df.at[idx, 'animals2'] = mylist
 
-
     df.drop(columns=['animals'], inplace=True)
     df.rename(columns={'animals2': "animals"}, inplace=True)
-    df.to_json(f"data/jflights_new_ids/flight_{flight_id}.json")
-    df.to_csv(f"data/jflights_new_ids/flight_{flight_id}.csv")
+    df.to_json(output_folder_name + f"flight_{flight_id}.json")
+    # df.to_csv(output_folder_name + f"flight_{flight_id}.csv")
     print("finish", flight_id)
+# %%

@@ -1,11 +1,16 @@
 import math
 import numpy as np
-
+import os
 
 DF_BEHAVIOR_INDEX = 1
 DF_BOX_INDEX = 2
 
 ### COMMON
+
+def create_folder_if_not_exists(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder '{folder_path}' created.")
 
 def get_box_center(box):
     xtl, ytl, xbr, ybr = box

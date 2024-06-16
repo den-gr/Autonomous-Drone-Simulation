@@ -1,12 +1,8 @@
-
-#%%
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+# %%
 import pandas as pd
 import json
-from datetime import datetime
 from dateutil import parser
-
+from utils import create_folder_if_not_exists
 
 LATITUDE = "latitude"
 LONGITUDE = "longitude"
@@ -16,7 +12,7 @@ ALTITUDE_SEA = "altitude_above_seaLevel"
 file_path = 'data/KABR-telemetry/kabr_telemetry_raw.csv'
 df = pd.read_csv(file_path)
 
-
+# Renaming, type fixing and value rounding.
 df = df.rename(columns={
     "latitude_y":  LATITUDE, 
     "longitude_y": LONGITUDE, 
@@ -35,7 +31,6 @@ df['xtl'] = df['xtl'].astype(int)
 df['ytl'] = df['ytl'].astype(int)
 df['xbr'] = df['xbr'].astype(int)
 df['ybr'] = df['ybr'].astype(int)
-
 
 # Remove currently not used columns
 df = df.drop(columns=[
@@ -81,16 +76,13 @@ df = df.drop(columns=[
         ]
     )
 
-
-
-# dff = df[df["mission id"] == "Jan-12th-2023-12-15PM"].copy()
 dff = df.copy()
 
+# Includes real world elevation to the dataframe
 def add_external_ground_elevation_column_to_df(df):
     with open('ground_seaLevel_map.json', 'r') as f:
         ground_json = json.load(f)
     ground_map = {eval(key): value for key, value in ground_json.items()}
-
 
     def add_ground_level(row):
         return ground_map[(row["latitude"], row["longitude"])]
@@ -100,16 +92,13 @@ def add_external_ground_elevation_column_to_df(df):
 
 dff = add_external_ground_elevation_column_to_df(dff)
 
-
+# Calculates altitude based on real world ground elevation.
 def calc_alt(row):
-    return  round(row["altitude_above_seaLevel"] - row['ground_elevation'],1)#- row["height_sonar"]
-
-def calc_sonar_diff(row):
-    return round(row["height_sonar"] - row['calc_alt'],1) #- row["height_sonar"]
+    return  round(row["altitude_above_seaLevel"] - row['ground_elevation'], 1)#- row["height_sonar"]
 
 dff["above_ground_altitude"] = dff.apply(calc_alt, axis=1)
 
-#Frames enumeration in each DJI clip starts from zero, after connection of consecutive clips we should make new enumeration
+#The frames enumeration in each DJI clip starts from zero (each clip max 5 minutes), after concatenation of consecutive clips we should fix enumeration of frames
 def fix_frames_enumeration(dataframe):
     new_df = dataframe.copy().reset_index(drop=True)
     prev_frame_value = new_df.loc[0]["frame"]
@@ -132,9 +121,9 @@ def save_segment(segment, count):
     if(not segment['frame'].is_monotonic_increasing):
         segment = fix_frames_enumeration(segment)
         print(f"fix enumeration of sequence {count}")
-    # segment.to_csv(f"data/flights/flight_{count}.csv", index=False)
+    create_folder_if_not_exists("data/jflights")
+    # segment.to_csv(f"data/flights/flight_{count}.csv", index=False) # Save files in CSV format
     segment.to_json(f"data/jflights/flight_{count}.json", index=False)
-
 
 def get_drone_and_zebras_coords(df):
     new_df = df.copy()
@@ -142,8 +131,6 @@ def get_drone_and_zebras_coords(df):
     new_df["box"] = new_df.apply(lambda row: (row["id"], row["behaviour"], (row["xtl"], row["ytl"], row["xbr"], row["ybr"])), axis=1)
     new_df = new_df.groupby(columns)["box"].apply(list).reset_index(name='animals')
     return new_df
-
-
 
 dff = dff.sort_values(by=["date_time", 'frame']).reset_index(drop=True)
 # %%
@@ -166,17 +153,15 @@ for index, row in dff.iterrows():
         
     prev_time = parser.parse(row['date_time'])
 print("Last sequence")
-# %%
+
 df_segment = get_drone_and_zebras_coords(dff[prevIndx: dff.index[-1]]).sort_values(by=["date_time", 'frame']).reset_index(drop=True)
 save_segment(df_segment, count)
 
+# %% Optional
+# dff.to_csv('data/kabr_telemetry_clean.csv', index=False)
 
-# %% Save file
-dff.to_csv('data/kabr_telemetry_clean.csv', index=False)
-
-
-
-# %% This code create a json file with all maping from coordinates to ground elevation above sea level
+# %% This code creates a json file with all unique coordinates in dataset and their coresponding ground elevation above sea level.
+# Require lunching a docker server with a database (see https://www.opentopodata.org/datasets/aster/)
 
 # altitude_map = {}
 # def make_request(row):
