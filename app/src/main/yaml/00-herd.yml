@@ -78,7 +78,7 @@ seeds:
 
 deployments:
   - type: GroupsDeployment
-    parameters: [50, 0, 0, 400, *NumberOfHerds, 25]
+    parameters: [140, 0, 0, 3, *NumberOfHerds, 100]
     contents:
       - molecule: zebra
         concentration: true

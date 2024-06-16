@@ -12,7 +12,7 @@ data class NodeSnapshot(
     val position: GeoPosition,
 )
 
-class VelocityExtractor(private val stepInSeconds: Int) : AbstractVelocityExtractor() {
+class VelocityExtractorOSME(private val stepInSeconds: Int) : AbstractVelocityExtractor() {
     var previousSnapshot: List<NodeSnapshot> = emptyList()
 
     override fun <T> extractData(

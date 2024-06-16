@@ -71,7 +71,7 @@ export:
       exportPath: "build/exportt"
     data:
       - time
-      - type: VelocityExtractor
+      - type: VelocityExtractorOSME
         parameters: [10]
 
 deployments:
