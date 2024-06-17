@@ -12,9 +12,13 @@ import utils
 reload(utils)
 from utils import *
 
+STABLE_VERSION = False # the version of reconstruction with noise and "jumps" reduction
+
+# Smoothing telemetry values
 def update_alpha(a_v, v):
     return ALPHA * a_v + (1-ALPHA) * v
 
+# Smoothing compass values
 def update_compass_alpha(alpha_v, v):
     alpha_v_x, alpha_v_y = angle_to_vector(alpha_v)
     v_x, v_y = angle_to_vector(v)
@@ -22,6 +26,7 @@ def update_compass_alpha(alpha_v, v):
     y = update_alpha(alpha_v_y, v_y)
     return vector_to_angle(x, y)
 
+# Create a segment in a GPX (GPS Exchange Format) file
 def create_gpx_segment(gpx):
     track = gpxpy.gpx.GPXTrack()
     gpx.tracks.append(track)
@@ -29,14 +34,18 @@ def create_gpx_segment(gpx):
     track.segments.append(segment)
     return segment
 
+# Create a gpx point from coordinates and time
 def get_gpx_point(coordinates, time):
     lon, lat = coordinates
     return gpxpy.gpx.GPXTrackPoint(round(lat, 6), round(lon, 6), time=time)
 
-output_folder = "flights_stable"
+
+output_folder = "flights_stable" if(STABLE_VERSION) else "flights"
+create_folder_if_not_exists(output_folder + "/")
+
 flights = range(1, 15)
-flights = [12, 14]
-# flight 11 is from [7800:] record
+# flights = [1, 2, 3]
+# flight 11 starts from [7800:] record
 for flight_id in flights:
     file_name = f'flight_{flight_id}'
     file_path = f'data/jflights_new_ids/{file_name}.json'
@@ -53,7 +62,7 @@ for flight_id in flights:
 
     df = pd.read_json(file_path)
 
-    coords_d_zb = df[["latitude", "longitude", "altitude", "animals", "compass_heading", "gimbal_pitch"]].values.tolist()
+    telemetry_df = df[["latitude", "longitude", "altitude", "animals", "compass_heading", "gimbal_pitch"]].values.tolist()
 
     gpx_drone = gpxpy.gpx.GPX()
     gpx_zebras = gpxpy.gpx.GPX()
@@ -83,19 +92,20 @@ for flight_id in flights:
     # Time increment for each point
     time_increment = timedelta(seconds=1) # it is actually is 1/30 of second
 
-    HORIZONTAL_ANGLE = 80.17 
-    VERTICAL_ANGLE = 50.66   
-    width, height = 3840, 2160
-    x_center = width / 2
+    HORIZONTAL_ANGLE = 80.17  # horizonatal angle of FOV in degrees
+    VERTICAL_ANGLE = 50.66   # vertical angle of FOV in degrees
+    width, height = 3840, 2160 # size of video frame in pixels
+    x_center = width / 2 
     y_center = height / 2
 
     physical_focal_len = 8.4 #mm
-    ALPHA = 0.98
+    
+    ALPHA = 0.97  # Data smoothing parameter
 
     last_altitudes = []
     last_compasses = []
 
-    lat, lon, alt, animals, compass, gimbal_pitch = coords_d_zb[0]
+    lat, lon, alt, animals, compass, gimbal_pitch = telemetry_df[0] # get first element
     alpha_lat = lat
     alpha_lon = lon
     alpha_alt = alt
@@ -107,7 +117,7 @@ for flight_id in flights:
 
     # Add each coordinate as a track point with time
     history = []
-    for row in coords_d_zb:
+    for row in telemetry_df:
         lat, lon, alt, animals, compass, gimbal_pitch = row
 
         alpha_compass = update_compass_alpha(alpha_compass, compass)
@@ -124,23 +134,24 @@ for flight_id in flights:
 
         segment_d.points.append(get_gpx_point((lon, lat), time))
 
+        ### FoV visualization points
         fov_angle_1 = (compass + (HORIZONTAL_ANGLE / 2)) % 360
         fov_angle_2 = (compass - (HORIZONTAL_ANGLE / 2)) % 360
         offset = 1e-4
 
-        # add FoV visualization points
         for i, k in enumerate([1, 3, 5]):
             fov_p1 = rotate_point( lon, lat + offset * k, lon, lat, 360-fov_angle_1)
             fov_p2 = rotate_point( lon, lat + offset * k, lon, lat, 360-fov_angle_2)
             fov_segments1[i].points.append(get_gpx_point(fov_p1, time))
             fov_segments2[i].points.append(get_gpx_point(fov_p2, time))
+        ###
         
         vertical_center_angle = 90 + gimbal_pitch
 
         history.append(dict())
         prev_movements = dict()
         movements = dict()
-        behs = dict()
+        behaviours = dict()
         for animal in animals:
             id, behaviour, box, = animal
             box_x, box_y = get_box_center(box)
@@ -156,31 +167,37 @@ for flight_id in flights:
             y_dis = y_center - box_y
             x_dis = x_center - box_x
 
-            y_angle_from_center = (y_dis / y_center) * (VERTICAL_ANGLE/2)
-
+            y_angle_from_center = (y_dis / y_center) * (VERTICAL_ANGLE / 2)
                 
             vertical_hypotenuse_len = alt / np.cos(np.deg2rad(vertical_center_angle + y_angle_from_center))
-            vertical_oposit_len = np.tan(np.deg2rad(vertical_center_angle + y_angle_from_center)) * alt
+            vertical_opposite_len = np.tan(np.deg2rad(vertical_center_angle + y_angle_from_center)) * alt
     
-            x_angle_from_center = (x_dis / x_center) * (HORIZONTAL_ANGLE/2)
+            x_angle_from_center = (x_dis / x_center) * (HORIZONTAL_ANGLE / 2)
             horisonal_oposit_len = np.tan(np.deg2rad(abs(x_angle_from_center))) * vertical_hypotenuse_len
 
-            y_offset = vertical_oposit_len / ((40075* math.cos(math.radians(lat))/360) * 1000)
+            y_offset = vertical_opposite_len / ((40075* math.cos(math.radians(lat)) / 360) * 1000)
             x_offset =  horisonal_oposit_len / 111320 
+
             if(x_dis > 0):
                 x_offset = x_offset * -1
 
-            point_zb = rotate_point( lon + x_offset, lat + y_offset, lon, lat, 360-compass)
-            history[-1][id] = point_zb
-            behs[id] = behaviour
-            # zebras_segments_dict[id].points.append(get_gpx_point(point_zb, time))
+            zebra_coordinates = rotate_point( lon + x_offset, lat + y_offset, lon, lat, 360-compass)
+            if(STABLE_VERSION):
+                history[-1][id] = zebra_coordinates
+                behaviours[id] = behaviour
+            else:
+                # If it is basic reconstruction version save the coordinate
+                zebras_segments_dict[id].points.append(get_gpx_point(zebra_coordinates, time))
 
-
-        if(len(history) > 1):
+        # Stable version requires additional adjustments before saving the coordinates.
+        if(STABLE_VERSION and len(history) > 1): 
+            # Here we calculate the average moving vector for indivduals that do not move (thy have a not moving behavior)
+            # and then remove this noise vector from all individuals.
+            # This simple method works only if there are present not moving individuals. 
             curr_dict = history[-1]
             average_vectors_list = []
             for k in curr_dict.keys():
-                if(k in history[-2] and behs[k] not in ['Walk', "Running", "Trotting"]):
+                if(k in history[-2] and behaviours[k] not in ['Walk', "Running", "Trotting"]):
                     x2, y2 = history[-2][k]
                     x1, y1 = curr_dict[k]
                     average_vectors_list.append((x1 - x2, y1 - y2))
@@ -210,3 +227,5 @@ for flight_id in flights:
 
     print("GPX files generated for flight", flight_id)
 
+
+# %%

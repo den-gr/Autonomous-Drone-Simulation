@@ -5,17 +5,17 @@ environment:
 variables:
   flightID: &n
     #### The most interesting flights [11, 12, 14]
-    #formula: [11] #[1, 2, 4 ,5, 8, 11, 12, 13, 14]
+#    formula: [1] #[1, 2, 4 ,5, 8, 11, 12, 13, 14]
     ### Longest flights [12, 14, 5]
     type: ArbitraryVariable
-    parameters: [11, 11, 12, 14]
+    parameters: [11]
   id:
     language: kotlin
     formula: flightID.toInt()
   flights_folder:
       language: kotlin
       formula: |
-        "flights_stable"
+        "flights"
   path_zebras: &path_zebras
     language: kotlin
     formula: |
