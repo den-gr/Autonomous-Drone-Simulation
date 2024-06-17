@@ -41,9 +41,9 @@ Simulation configuration: `app/src/main/yaml/03-gpsTrac.yml`
 
 Main problem: when an animal disappear and then reappear its ID change, so it is considered as a new individual.
 
-### Drone flight with reconstructed animal movements (Clean version)
-This version merge different instances of same animal and add smoothing to the data. 
-1. To execute `./gradlew run05`
+### Drone flight with reconstructed animal movements (New version)
+This version use new reconstruction method with data smoothing. 
+1. To execute `./gradlew run06`
 2. Click `P` to start the simulation
 
 ### Drones with herds
